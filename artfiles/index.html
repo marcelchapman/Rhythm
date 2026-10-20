@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rhythm - Your Music, Your Way</title>
+    <meta name="description" content="Rhythm is a cross-platform music player that stores your library in your preferred cloud service. Your music follows you everywhere.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #7c3aed;
+            --color-primary-light: #a78bfa;
+            --color-primary-dark: #5b21b6;
+            --color-surface: #0f0f1a;
+            --color-surface-light: #1a1a2e;
+            --color-text: #f1f5f9;
+            --color-text-muted: #94a3b8;
+            --color-accent: #f472b6;
+            --gradient-hero: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #2d1b69 100%);
+            --gradient-glow: radial-gradient(ellipse at 30% 50%, rgba(124,58,237,0.15) 0%, transparent 60%);
+            --gradient-card: linear-gradient(145deg, rgba(26,26,46,0.9), rgba(15,15,26,0.95));
+        }
+
+        * { box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--color-surface);
+            color: var(--color-text);
+            overflow-x: hidden;
+        }
+
+        /* === Animations === */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-12px) rotate(1deg); }
+            66% { transform: translateY(6px) rotate(-0.5deg); }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        @keyframes equalizer {
+            0%, 100% { height: 4px; }
+            20% { height: 28px; }
+            40% { height: 14px; }
+            60% { height: 34px; }
+            80% { height: 10px; }
+        }
+
+        @keyframes slide-up {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slide-left {
+            from { opacity: 0; transform: translateX(60px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes bar1 { 0%,100% { height: 6px; } 30% { height: 28px; } 70% { height: 14px; } }
+        @keyframes bar2 { 0%,100% { height: 20px; } 40% { height: 6px; } 80% { height: 30px; } }
+        @keyframes bar3 { 0%,100% { height: 14px; } 25% { height: 34px; } 65% { height: 8px; } }
+        @keyframes bar4 { 0%,100% { height: 26px; } 35% { height: 10px; } 75% { height: 20px; } }
+        @keyframes bar5 { 0%,100% { height: 10px; } 45% { height: 30px; } 85% { height: 16px; } }
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-delayed { animation: float 8s ease-in-out 1s infinite; }
+        .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        .animate-slide-up { animation: slide-up 0.8s ease-out forwards; }
+        .animate-slide-left { animation: slide-left 0.8s ease-out forwards; }
+        .animate-fade-in { animation: fade-in 1s ease-out forwards; }
+        .animate-spin-slow { animation: spin-slow 20s linear infinite; }
+
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.25s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.4s; opacity: 0; }
+        .stagger-4 { animation-delay: 0.55s; opacity: 0; }
+        .stagger-5 { animation-delay: 0.7s; opacity: 0; }
+        .stagger-6 { animation-delay: 0.85s; opacity: 0; }
+
+        /* Equalizer bars */
+        .eq-bar {
+            width: 4px;
+            background: linear-gradient(to top, var(--color-primary), var(--color-accent));
+            border-radius: 2px;
+            animation-duration: 1.2s;
+            animation-iteration-count: infinite;
+            animation-timing-function: ease-in-out;
+        }
+        .eq-bar:nth-child(1) { animation-name: bar1; }
+        .eq-bar:nth-child(2) { animation-name: bar2; animation-delay: 0.1s; }
+        .eq-bar:nth-child(3) { animation-name: bar3; animation-delay: 0.25s; }
+        .eq-bar:nth-child(4) { animation-name: bar4; animation-delay: 0.05s; }
+        .eq-bar:nth-child(5) { animation-name: bar5; animation-delay: 0.35s; }
+
+        /* Glass card effect */
+        .glass {
+            background: rgba(26, 26, 46, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(124, 58, 237, 0.1);
+        }
+
+        /* Hover lift */
+        .hover-lift {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(124, 58, 237, 0.15);
+        }
+
+        /* Neon border glow */
+        .neon-border {
+            position: relative;
+        }
+        .neon-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-accent), var(--color-primary));
+            background-size: 200% 200%;
+            z-index: -1;
+            animation: spin-slow 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .neon-border:hover::after {
+            opacity: 1;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--color-surface); }
+        ::-webkit-scrollbar-thumb { background: var(--color-primary-dark); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-primary); }
+
+        /* Platform icon animation */
+        .platform-icon {
+            transition: all 0.3s ease;
+        }
+        .platform-icon:hover {
+            transform: scale(1.15);
+            color: var(--color-primary-light);
+        }
+
+        /* Cloud pulse */
+        .cloud-pulse {
+            animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+
+        /* Mobile nav */
+        .mobile-menu-open {
+            max-height: 400px !important;
+            opacity: 1 !important;
+        }
+
+        /* Wave divider */
+        .wave-divider {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== HEADER ===== -->
+    <header class="fixed top-0 left-0 right-0 z-50 glass border-b border-purple-900/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 md:h-20">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2.5 group" id="logo-link">
+                    <div class="relative w-9 h-9 flex items-center justify-center">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg rotate-45 group-hover:rotate-90 transition-transform duration-500"></div>
+                        <i class="fas fa-headphones text-white text-lg relative z-10"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Rhythm</span>
+                </a>
+
+                <!-- Desktop Nav -->
+                <nav class="hidden md:flex items-center gap-8" id="desktop-nav">
+                    <!-- rendered by JS -->
+                </nav>
+
+                <!-- CTA -->
+                <div class="hidden md:flex items-center gap-3">
+                    <a href="#" class="text-sm text-gray-400 hover:text-white transition-colors px-3 py-2" id="btn-signin">Sign In</a>
+                    <a href="#" class="relative inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 rounded-full hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 hover-lift" id="btn-download-top">
+                        <i class="fas fa-download text-xs"></i> Download
+                    </a>
+                </div>
+
+                <!-- Mobile Toggle -->
+                <button class="md:hidden p-2 text-gray-400 hover:text-white transition-colors" id="mobile-toggle" aria-label="Toggle navigation">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="md:hidden overflow-hidden max-h-0 opacity-0 transition-all duration-400 ease-in-out" id="mobile-menu">
+            <nav class="px-4 py-4 space-y-1 border-t border-purple-900/10" id="mobile-nav">
+                <!-- rendered by JS -->
+            </nav>
+        </div>
+    </header>
+
+    <!-- ===== MAIN ===== -->
+    <main>
+
+        <!-- ===== HERO ===== -->
+        <section class="relative min-h-screen flex items-center overflow-hidden pt-16" id="hero">
+            <!-- Background gradients -->
+            <div class="absolute inset-0 bg-gradient-to-br from-[#0f0f1a] via-[#1a1a2e] to-[#2d1b69]"></div>
+            <div class="absolute inset-0" style="background: radial-gradient(ellipse at 30% 40%, rgba(124,58,237,0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, rgba(244,114,182,0.08) 0%, transparent 50%);"></div>
+
+            <!-- Animated floating orbs -->
+            <div class="absolute top-20 left-10 w-72 h-72 rounded-full bg-purple-600/10 blur-3xl animate-pulse-glow"></div>
+            <div class="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-pink-500/8 blur-3xl animate-pulse-glow" style="animation-delay: 1.5s;"></div>
+
+            <!-- Grid pattern overlay -->
+            <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 60px 60px;"></div>
+
+            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-16 pb-20 md:pt-24 md:pb-32">
+                <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+
+                    <!-- Left: Text -->
+                    <div class="space-y-6 md:space-y-8">
+                        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-sm text-purple-300 border border-purple-500/20 animate-fade-in stagger-1">
+                            <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                            Now in Public Beta
+                        </div>
+
+                        <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight animate-slide-up stagger-2">
+                            <span class="bg-gradient-to-r from-white via-purple-100 to-purple-300 bg-clip-text text-transparent">Your music,</span><br>
+                            <span class="bg-gradient-to-r from-purple-400 via-pink-400 to-rose-300 bg-clip-text text-transparent">everywhere.</span>
+                        </h1>
+
+                        <p class="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-lg animate-slide-up stagger-3">
+                            <span class="text-white font-medium">Rhythm</span> syncs your music library to your cloud. 
+                            Access your playlists, albums, and tracks on any device — 
+                            <span class="text-purple-300">Android, iOS, macOS, Linux, Windows.</span>
+                        </p>
+
+                        <div class="flex flex-wrap gap-4 animate-slide-up stagger-4">
+                            <a href="#" class="relative inline-flex items-center gap-2.5 px-7 py-3.5 text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 rounded-full shadow-xl shadow-purple-500/20 hover:shadow-purple-500/35 transition-all duration-300 hover-lift group" id="btn-hero-cta">
+                                <i class="fas fa-cloud-arrow-up text-sm group-hover:-translate-y-0.5 transition-transform"></i>
+                                Get Started Free
+                            </a>
+                            <a href="#" class="inline-flex items-center gap-2.5 px-7 py-3.5 text-base font-semibold text-gray-300 glass rounded-full hover:text-white hover:border-purple-500/30 transition-all duration-300 group" id="btn-hero-demo">
+                                <span class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                                    <i class="fas fa-play text-xs text-purple-400 ml-0.5"></i>
+                                </span>
+                                See how it works
+                            </a>
+                        </div>
+
+                        <!-- Trusted by -->
+                        <div class="pt-4 flex items-center gap-4 text-sm text-gray-500 animate-fade-in stagger-5">
+                            <div class="flex -space-x-2">
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-xs font-bold text-white border-2 border-[#0f0f1a]">A</div>
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-xs font-bold text-white border-2 border-[#0f0f1a]">M</div>
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white border-2 border-[#0f0f1a]">K</div>
+                                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-xs font-bold text-white border-2 border-[#0f0f1a]">S</div>
+                            </div>
+                            <span>Trusted by <span class="text-white font-medium">12,000+</span> early adopters</span>
+                        </div>
+                    </div>
+
+                    <!-- Right: Visual -->
+                    <div class="relative flex items-center justify-center animate-slide-left stagger-3">
+                        <!-- Main visual card -->
+                        <div class="relative w-full max-w-md">
+                            <!-- Glow behind -->
+                            <div class="absolute -inset-8 bg-gradient-to-r from-purple-600/20 via-pink-500/10 to-purple-600/20 rounded-[40px] blur-2xl"></div>
+
+                            <!-- Player mockup -->
+                            <div class="relative glass rounded-3xl p-6 sm:p-8 border border-purple-500/15 shadow-2xl backdrop-blur-2xl">
+                                <!-- Top bar -->
+                                <div class="flex items-center justify-between mb-6">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                                            <i class="fas fa-headphones text-white text-xs"></i>
+                                        </div>
+                                        <span class="font-semibold text-sm">Rhythm</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-green-400 shadow-lg shadow-green-400/30"></div>
+                                        <div class="w-2.5 h-2.5 rounded-full bg-gray-600"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Album art area -->
+                                <div class="relative mx-auto w-48 h-48 sm:w-56 sm:h-56 rounded-2xl overflow-hidden mb-5 shadow-xl animate-float">
+                                    <img src="https://picsum.photos/400/400?random=42" alt="Album artwork visualization" class="w-full h-full object-cover" loading="eager">
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                    <!-- Playing indicator -->
+                                    <div class="absolute bottom-3 left-3 flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                                        <span class="text-[10px] text-white/70 font-medium">PLAYING</span>
+                                    </div>
+                                </div>
+
+                                <!-- Track info -->
+                                <div class="text-center mb-4">
+                                    <h3 class="font-bold text-lg truncate">Midnight Waves</h3>
+                                    <p class="text-sm text-gray-400 truncate">Aurora Dreams</p>
+                                </div>
+
+                                <!-- Progress -->
+                                <div class="space-y-1.5 mb-5">
+                                    <div class="h-1.5 bg-gray-700/50 rounded-full overflow-hidden">
+                                        <div class="h-full w-[67%] bg-gradient-to-r from-purple-500 to-pink-500 rounded-full relative">
+                                            <div class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg shadow-purple-500/40"></div>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between text-[11px] text-gray-500">
+                                        <span>2:14</span>
+                                        <span>3:47</span>
+                                    </div>
+                                </div>
+
+                                <!-- Controls -->
+                                <div class="flex items-center justify-center gap-5 mb-5">
+                                    <button class="text-gray-400 hover:text-white transition-colors" aria-label="Previous"><i class="fas fa-step-backward"></i></button>
+                                    <button class="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all hover:scale-105" aria-label="Play/Pause">
+                                        <i class="fas fa-play ml-0.5"></i>
+                                    </button>
+                                    <button class="text-gray-400 hover:text-white transition-colors" aria-label="Next"><i class="fas fa-step-forward"></i></button>
+                                </div>
+
+                                <!-- Equalizer -->
+                                <div class="flex items-center justify-center gap-1 h-8">
+                                    <div class="eq-bar"></div>
+                                    <div class="eq-bar"></div>
+                                    <div class="eq-bar"></div>
+                                    <div class="eq-bar"></div>
+                                    <div class="eq-bar"></div>
+                                </div>
+
+                                <!-- Cloud badge -->
+                                <div class="absolute -top-3 -right-3 glass rounded-full px-3 py-1.5 border border-purple-500/20 text-xs font-medium text-purple-300 flex items-center gap-1.5">
+                                    <i class="fas fa-cloud text-[10px]"></i>
+                                    <span>Cloud Sync</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Scroll indicator -->
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-fade-in stagger-6">
+                <span class="text-[10px] text-gray-600 tracking-widest uppercase">Scroll</span>
+                <div class="w-5 h-8 rounded-full border border-gray-600 flex justify-center pt-1.5">
+                    <div class="w-1 h-2 rounded-full bg-purple-400 animate-bounce"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CLOUD SYNC BANNER ===== -->
+        <section class="relative py-16 md:py-20 overflow-hidden" id="cloud-banner">
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-transparent to-pink-900/10"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <div class="inline-flex items-center gap-3 mb-4 text-sm text-gray-500">
+                    <i class="fas fa-database text-purple-400"></i>
+                    <span class="w-8 h-px bg-gray-700"></span>
+                    <span>Choose your cloud</span>
+                    <span class="w-8 h-px bg-gray-700"></span>
+                    <i class="fas fa-cloud text-pink-400"></i>
+                </div>
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                    Your library,<br class="sm:hidden">
+                    <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">your cloud.</span>
+                </h2>
+                <p class="text-gray-400 max-w-xl mx-auto text-lg mb-8">
+                    Bring your own cloud storage — Dropbox, Google Drive, OneDrive, iCloud, or any WebDAV server. 
+                    No vendor lock-in, no size limits.
+                </p>
+                <div class="flex flex-wrap items-center justify-center gap-6 sm:gap-10" id="cloud-providers">
+                    <!-- rendered by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FEATURES ===== -->
+        <section class="relative py-20 md:py-28" id="features">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <span class="inline-block px-4 py-1 rounded-full glass text-sm text-purple-300 border border-purple-500/20 mb-4">
+                        <i class="fas fa-sparkles text-xs mr-1.5"></i> Features
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">Built for music lovers,<br>powered by the cloud.</h2>
+                    <p class="text-gray-400 text-lg">Everything you expect from a modern music player, with a cloud-first architecture that sets you free.</p>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" id="features-grid">
+                    <!-- rendered by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== PLATFORMS ===== -->
+        <section class="relative py-20 md:py-28" id="platforms">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-pink-900/5 to-transparent"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <span class="inline-block px-4 py-1 rounded-full glass text-sm text-pink-300 border border-pink-500/20 mb-4">
+                        <i class="fas fa-globe text-xs mr-1.5"></i> Cross-Platform
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">One player,<br><span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">every device.</span></h2>
+                    <p class="text-gray-400 text-lg">Seamless experience across all your devices. Your music, playlists, and settings sync automatically.</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-6 md:gap-10" id="platforms-grid">
+                    <!-- rendered by JS -->
+                </div>
+
+                <!-- Sync illustration -->
+                <div class="mt-16 glass rounded-3xl p-8 md:p-12 border border-purple-500/10 max-w-4xl mx-auto text-center">
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 mb-6">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-mobile-screen-button text-2xl text-purple-400"></i>
+                            <span class="text-sm text-gray-400">Phone</span>
+                        </div>
+                        <i class="fas fa-arrow-right text-gray-600 hidden sm:block"></i>
+                        <i class="fas fa-arrow-down text-gray-600 sm:hidden"></i>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-cloud text-2xl text-pink-400"></i>
+                            <span class="text-sm text-gray-400">Cloud</span>
+                        </div>
+                        <i class="fas fa-arrow-right text-gray-600 hidden sm:block"></i>
+                        <i class="fas fa-arrow-down text-gray-600 sm:hidden"></i>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-laptop text-2xl text-purple-400"></i>
+                            <span class="text-sm text-gray-400">Desktop</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-500 text-sm">Play a track on your phone, continue on your laptop. Always in sync.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== TESTIMONIALS ===== -->
+        <section class="relative py-20 md:py-28" id="testimonials">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <span class="inline-block px-4 py-1 rounded-full glass text-sm text-purple-300 border border-purple-500/20 mb-4">
+                        <i class="fas fa-quote-left text-xs mr-1.5"></i> Testimonials
+                    </span>
+                    <h2 class="text-3xl sm:text-4xl font-bold mb-4">Loved by early adopters.</h2>
+                </div>
+
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8" id="testimonials-grid">
+                    <!-- rendered by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== CTA ===== -->
+        <section class="relative py-20 md:py-28" id="cta-section">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-pink-900/10"></div>
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+                <div class="glass rounded-3xl p-10 md:p-16 border border-purple-500/15 neon-border">
+                    <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-xl shadow-purple-500/20">
+                        <i class="fas fa-headphones text-white text-2xl"></i>
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
+                        Ready to<br class="sm:hidden">
+                        <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">break free?</span>
+                    </h2>
+                    <p class="text-gray-400 text-lg max-w-lg mx-auto mb-8">
+                        Stop moving music files manually. Rhythm keeps your library in the cloud — available on all your devices, instantly.
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="#" class="inline-flex items-center gap-2.5 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-purple-600 to-pink-500 rounded-full shadow-xl shadow-purple-500/20 hover:shadow-purple-500/35 transition-all duration-300 hover-lift" id="btn-cta-primary">
+                            <i class="fab fa-apple"></i>
+                            Download for macOS
+                        </a>
+                        <a href="#" class="inline-flex items-center gap-2.5 px-8 py-4 text-base font-semibold text-gray-300 glass rounded-full hover:text-white hover:border-purple-500/30 transition-all duration-300" id="btn-cta-secondary">
+                            <i class="fab fa-google-play"></i>
+                            Get on Android
+                        </a>
+                    </div>
+                    <p class="mt-6 text-xs text-gray-600">
+                        <i class="fas fa-check-circle text-green-500 mr-1"></i> Also available for iOS, Windows &amp; Linux
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="relative border-t border-purple-900/10 bg-[#0b0b18]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8">
+                <!-- Brand -->
+                <div class="lg:col-span-2 space-y-4">
+                    <a href="#" class="flex items-center gap-2.5 group">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                            <i class="fas fa-headphones text-white text-sm"></i>
+                        </div>
+                        <span class="text-lg font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Rhythm</span>
+                    </a>
+                    <p class="text-gray-500 text-sm max-w-xs leading-relaxed">
+                        Your music, your way. The cross-platform cloud music player that follows you everywhere.
+                    </p>
+                    <div class="flex gap-3">
+                        <a href="#" class="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-purple-600 hover:text-white transition-all" aria-label="Twitter"><i class="fab fa-twitter text-sm"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-purple-600 hover:text-white transition-all" aria-label="GitHub"><i class="fab fa-github text-sm"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-purple-600 hover:text-white transition-all" aria-label="Discord"><i class="fab fa-discord text-sm"></i></a>
+                    </div>
+                </div>
+
+                <!-- Footer link columns -->
+                <div id="footer-links-container">
+                    <!-- rendered by JS -->
+                </div>
+            </div>
+
+            <div class="mt-10 pt-8 border-t border-gray-800/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-gray-600">
+                <p>&copy; 2025 Rhythm. All rights reserved.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-gray-400 transition-colors">Privacy Policy</a>
+                    <a href="#" class="hover:text-gray-400 transition-colors">Terms of Service</a>
+                    <a href="#" class="hover:text-gray-400 transition-colors">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ============================================================
+        // DATA LAYER
+        // ============================================================
+
+        const navItems = [
+            { label: "Features", href: "#features" },
+            { label: "Platforms", href: "#platforms" },
+            { label: "Testimonials", href: "#testimonials" },
+            { label: "Downloads", href: "#cta-section" }
+        ];
+
+        const cloudProviders = [
+            { name: "Dropbox", icon: "fab fa-dropbox", color: "text-blue-400" },
+            { name: "Google Drive", icon: "fab fa-google-drive", color: "text-green-400" },
+            { name: "OneDrive", icon: "fab fa-microsoft", color: "text-blue-300" },
+            { name: "iCloud", icon: "fab fa-apple", color: "text-gray-200" },
+            { name: "WebDAV", icon: "fas fa-server", color: "text-purple-400" }
+        ];
+
+        const features = [
+            {
+                icon: "fas fa-cloud-upload-alt",
+                title: "Cloud-First Library",
+                description: "Store your music in any cloud service you already use. No upload limits, no proprietary storage — just your files, your way.",
+                gradient: "from-purple-500 to-pink-500"
+            },
+            {
+                icon: "fas fa-list-music",
+                title: "Smart Playlists",
+                description: "Create dynamic playlists that update automatically. Filter by genre, mood, BPM, or any tag. Share playlists across devices instantly.",
+                gradient: "from-pink-500 to-rose-500"
+            },
+            {
+                icon: "fas fa-wave-square",
+                title: "High-Fidelity Audio",
+                description: "Support for FLAC, ALAC, WAV, DSD, and all major formats. Bit-perfect playback with built-in EQ, crossfade, and gapless support.",
+                gradient: "from-violet-500 to-purple-500"
+            },
+            {
+                icon: "fas fa-arrows-rotate",
+                title: "Seamless Sync",
+                description: "Start on one device, continue on another. Playback position, queue, settings — everything syncs in real-time via your cloud.",
+                gradient: "from-cyan-500 to-blue-500"
+            },
+            {
+                icon: "fas fa-shield-halved",
+                title: "Privacy First",
+                description: "End-to-end encrypted sync. We never see your files. Your cloud credentials stay on your devices. Open-source and auditable.",
+                gradient: "from-emerald-500 to-teal-500"
+            },
+            {
+                icon: "fas fa-paint-brush",
+                title: "Beautiful UI",
+                description: "Elegant, native-feeling interfaces for every platform. Dark mode, custom themes, and a pixel-perfect design that puts your music first.",
+                gradient: "from-amber-400 to-orange-500"
+            }
+        ];
+
+        const platforms = [
+            { name: "Android", icon: "fab fa-android", color: "text-green-400", desc: "Version 8.0+" },
+            { name: "iOS", icon: "fab fa-apple", color: "text-gray-200", desc: "iOS 15+" },
+            { name: "macOS", icon: "fab fa-apple", color: "text-gray-200", desc: "macOS 12+" },
+            { name: "Windows", icon: "fab fa-windows", color: "text-blue-400", desc: "Windows 10+" },
+            { name: "Linux", icon: "fab fa-linux", color: "text-amber-400", desc: "AppImage / Flatpak" }
+        ];
+
+        const testimonials = [
+            {
+                quote: "I've been looking for a player that syncs my FLAC library across my Mac and phone without re-encoding. Rhythm is exactly what I needed.",
+                name: "Alex Morgan",
+                role: "Audiophile &amp; Producer",
+                avatar: "https://picsum.photos/100/100?random=10"
+            },
+            {
+                quote: "The fact that I can use my own Google Drive instead of paying for yet another subscription is genius. This is how music should work.",
+                name: "Sophia Chen",
+                role: "Software Engineer",
+                avatar: "https://picsum.photos/100/100?random=11"
+            },
+            {
+                quote: "Rhythm replaced three different music apps on my devices. One library, one interface, everywhere. The sync is flawless.",
+                name: "Marcus Johnson",
+                role: "Music Teacher",
+                avatar: "https://picsum.photos/100/100?random=12"
+            }
+        ];
+
+        const footerLinkGroups = [
+            {
+                title: "Product",
+                links: [
+                    { label: "Features", href: "#features" },
+                    { label: "Pricing", href: "#" },
+                    { label: "Integrations", href: "#" },
+                    { label: "Changelog", href: "#" }
+                ]
+            },
+            {
+                title: "Download",
+                links: [
+                    { label: "macOS", href: "#" },
+                    { label: "Windows", href: "#" },
+                    { label: "Linux", href: "#" },
+                    { label: "Android", href: "#" },
+                    { label: "iOS", href: "#" }
+                ]
+            },
+            {
+                title: "Resources",
+                links: [
+                    { label: "Documentation", href: "#" },
+                    { label: "API Reference", href: "#" },
+                    { label: "Community", href: "#" },
+                    { label: "Support", href: "#" }
+                ]
+            }
+        ];
+
+        // ============================================================
+        // RENDER FUNCTIONS
+        // ============================================================
+
+        function renderNav(items) {
+            return items.map(i =>
+                `<a href="${i.href}" class="text-sm text-gray-400 hover:text-white transition-colors relative group py-1">
+                    ${i.label}
+                    <span class="absolute -bottom-0.5 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-500 to-pink-500 group-hover:w-full transition-all duration-300"></span>
+                </a>`
+            ).join("");
+        }
+
+        function renderMobileNav(items) {
+            return items.map(i =>
+                `<a href="${i.href}" class="block px-3 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-purple-500/10 rounded-lg transition-all">${i.label}</a>`
+            ).join("");
+        }
+
+        function renderCloudProviders(items) {
+            return items.map(i =>
+                `<div class="flex flex-col items-center gap-2 platform-icon group cursor-default">
+                    <i class="${i.icon} ${i.color} text-3xl sm:text-4xl"></i>
+                    <span class="text-xs text-gray-500 group-hover:text-gray-300 transition-colors">${i.name}</span>
+                </div>`
+            ).join("");
+        }
+
+        function renderFeatures(items) {
+            return items.map(f =>
+                `<article class="glass rounded-2xl p-6 md:p-8 border border-purple-500/8 hover:border-purple-500/20 transition-all duration-300 hover-lift group">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br ${f.gradient} flex items-center justify-center mb-5 shadow-lg shadow-purple-500/10 group-hover:scale-110 transition-transform duration-300">
+                        <i class="${f.icon} text-white text-lg"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">${f.title}</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">${f.description}</p>
+                </article>`
+            ).join("");
+        }
+
+        function renderPlatforms(items) {
+            return items.map(p =>
+                `<div class="flex flex-col items-center gap-3 px-6 py-6 glass rounded-2xl border border-purple-500/8 hover:border-purple-500/20 transition-all duration-300 hover-lift w-36">
+                    <i class="${p.icon} ${p.color} text-4xl"></i>
+                    <span class="font-semibold text-sm">${p.name}</span>
+                    <span class="text-[10px] text-gray-500">${p.desc}</span>
+                </div>`
+            ).join("");
+        }
+
+        function renderTestimonials(items) {
+            return items.map(t =>
+                `<article class="glass rounded-2xl p-6 md:p-8 border border-purple-500/8 hover:border-purple-500/15 transition-all duration-300 hover-lift">
+                    <div class="flex items-center gap-1 text-amber-400 mb-4">
+                        <i class="fas fa-star text-xs"></i>
+                        <i class="fas fa-star text-xs"></i>
+                        <i class="fas fa-star text-xs"></i>
+                        <i class="fas fa-star text-xs"></i>
+                        <i class="fas fa-star text-xs"></i>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed mb-6">"${t.quote}"</p>
+                    <div class="flex items-center gap-3">
+                        <img src="${t.avatar}" alt="${t.name}" class="w-10 h-10 rounded-full object-cover" loading="lazy">
+                        <div>
+                            <p class="text-sm font-semibold">${t.name}</p>
+                            <p class="text-xs text-gray-500">${t.role}</p>
+                        </div>
+                    </div>
+                </article>`
+            ).join("");
+        }
+
+        function renderFooterLinkGroups(groups) {
+            return groups.map(g =>
+                `<div class="space-y-3">
+                    <h4 class="text-sm font-semibold text-gray-200">${g.title}</h4>
+                    <ul class="space-y-2">
+                        ${g.links.map(l => `<li><a href="${l.href}" class="text-sm text-gray-500 hover:text-gray-300 transition-colors">${l.label}</a></li>`).join("")}
+                    </ul>
+                </div>`
+            ).join("");
+        }
+
+        // ============================================================
+        // MOUNT
+        // ============================================================
+
+        // Desktop Nav
+        const desktopNav = document.getElementById("desktop-nav");
+        if (desktopNav) {
+            desktopNav.innerHTML = renderNav(navItems);
+        }
+
+        // Mobile Nav
+        const mobileNav = document.getElementById("mobile-nav");
+        if (mobileNav) {
+            mobileNav.innerHTML = renderMobileNav(navItems);
+        }
+
+        // Cloud Providers
+        const cloudContainer = document.getElementById("cloud-providers");
+        if (cloudContainer) {
+            cloudContainer.innerHTML = renderCloudProviders(cloudProviders);
+        }
+
+        // Features Grid
+        const featuresGrid = document.getElementById("features-grid");
+        if (featuresGrid) {
+            featuresGrid.innerHTML = renderFeatures(features);
+        }
+
+        // Platforms Grid
+        const platformsGrid = document.getElementById("platforms-grid");
+        if (platformsGrid) {
+            platformsGrid.innerHTML = renderPlatforms(platforms);
+        }
+
+        // Testimonials Grid
+        const testimonialsGrid = document.getElementById("testimonials-grid");
+        if (testimonialsGrid) {
+            testimonialsGrid.innerHTML = renderTestimonials(testimonials);
+        }
+
+        // Footer Links
+        const footerLinksContainer = document.getElementById("footer-links-container");
+        if (footerLinksContainer) {
+            footerLinksContainer.innerHTML = renderFooterLinkGroups(footerLinkGroups);
+        }
+
+        // ============================================================
+        // EVENT DELEGATION (single listener)
+        // ============================================================
+
+        document.addEventListener("click", function(e) {
+            // Mobile toggle
+            const toggle = e.target.closest("#mobile-toggle");
+            if (toggle) {
+                e.preventDefault();
+                const menu = document.getElementById("mobile-menu");
+                const icon = toggle.querySelector("i");
+                if (menu.classList.contains("mobile-menu-open")) {
+                    menu.classList.remove("mobile-menu-open");
+                    icon.className = "fas fa-bars text-xl";
+                } else {
+                    menu.classList.add("mobile-menu-open");
+                    icon.className = "fas fa-times text-xl";
+                }
+                return;
+            }
+
+            // All anchor links with href starting with "#"
+            const link = e.target.closest("a[href^='#']");
+            if (!link) return;
+            e.preventDefault();
+
+            const href = link.getAttribute("href");
+            if (href === "#") return;
+
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth" });
+            }
+
+            // Close mobile menu if open
+            const menu = document.getElementById("mobile-menu");
+            if (menu && menu.classList.contains("mobile-menu-open")) {
+                menu.classList.remove("mobile-menu-open");
+                const icon = document.querySelector("#mobile-toggle i");
+                if (icon) icon.className = "fas fa-bars text-xl";
+            }
+        });
+
+        // ============================================================
+        // INTERSECTION OBSERVER for scroll animations
+        // ============================================================
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("animate-slide-up");
+                    entry.target.style.opacity = "1";
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -60px 0px" });
+
+        document.querySelectorAll("#features-grid > article, #testimonials-grid > article, #platforms-grid > div").forEach(el => {
+            el.style.opacity = "0";
+            observer.observe(el);
+        });
+
+        console.log("🎵 Rhythm — Your music, your way.");
+    </script>
+</body>
+</html>
