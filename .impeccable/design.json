@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T22:19:29.331935+00:00",
+  "title": "Design System: Rhythm",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary",
+        "tonalRamp": [
+          "oklch(15% 0.1069 248.51)",
+          "oklch(26% 0.1069 248.51)",
+          "oklch(37% 0.1069 248.51)",
+          "oklch(49% 0.1069 248.51)",
+          "oklch(60% 0.1069 248.51)",
+          "oklch(72% 0.1069 248.51)",
+          "oklch(84% 0.1069 248.51)",
+          "oklch(95% 0.1069 248.51)"
+        ]
+      },
+      "selected": {
+        "role": "primary",
+        "displayName": "Selected",
+        "tonalRamp": [
+          "oklch(15% 0.0700 256.02)",
+          "oklch(26% 0.0700 256.02)",
+          "oklch(37% 0.0700 256.02)",
+          "oklch(49% 0.0700 256.02)",
+          "oklch(60% 0.0700 256.02)",
+          "oklch(72% 0.0700 256.02)",
+          "oklch(84% 0.0700 256.02)",
+          "oklch(95% 0.0700 256.02)"
+        ]
+      },
+      "focus": {
+        "role": "primary",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(15% 0.0880 248.93)",
+          "oklch(26% 0.0880 248.93)",
+          "oklch(37% 0.0880 248.93)",
+          "oklch(49% 0.0880 248.93)",
+          "oklch(60% 0.0880 248.93)",
+          "oklch(72% 0.0880 248.93)",
+          "oklch(84% 0.0880 248.93)",
+          "oklch(95% 0.0880 248.93)"
+        ]
+      },
+      "action": {
+        "role": "primary",
+        "displayName": "Action",
+        "tonalRamp": [
+          "oklch(15% 0.0863 252.59)",
+          "oklch(26% 0.0863 252.59)",
+          "oklch(37% 0.0863 252.59)",
+          "oklch(49% 0.0863 252.59)",
+          "oklch(60% 0.0863 252.59)",
+          "oklch(72% 0.0863 252.59)",
+          "oklch(84% 0.0863 252.59)",
+          "oklch(95% 0.0863 252.59)"
+        ]
+      },
+      "action-hover": {
+        "role": "primary",
+        "displayName": "Action Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0918 252.25)",
+          "oklch(26% 0.0918 252.25)",
+          "oklch(37% 0.0918 252.25)",
+          "oklch(49% 0.0918 252.25)",
+          "oklch(60% 0.0918 252.25)",
+          "oklch(72% 0.0918 252.25)",
+          "oklch(84% 0.0918 252.25)",
+          "oklch(95% 0.0918 252.25)"
+        ]
+      },
+      "range": {
+        "role": "primary",
+        "displayName": "Range",
+        "tonalRamp": [
+          "oklch(15% 0.1361 254.39)",
+          "oklch(26% 0.1361 254.39)",
+          "oklch(37% 0.1361 254.39)",
+          "oklch(49% 0.1361 254.39)",
+          "oklch(60% 0.1361 254.39)",
+          "oklch(72% 0.1361 254.39)",
+          "oklch(84% 0.1361 254.39)",
+          "oklch(95% 0.1361 254.39)"
+        ]
+      },
+      "danger": {
+        "role": "secondary",
+        "displayName": "Danger",
+        "tonalRamp": [
+          "oklch(15% 0.0920 12.84)",
+          "oklch(26% 0.0920 12.84)",
+          "oklch(37% 0.0920 12.84)",
+          "oklch(49% 0.0920 12.84)",
+          "oklch(60% 0.0920 12.84)",
+          "oklch(72% 0.0920 12.84)",
+          "oklch(84% 0.0920 12.84)",
+          "oklch(95% 0.0920 12.84)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Background",
+        "tonalRamp": [
+          "oklch(15% 0.0210 254.94)",
+          "oklch(26% 0.0210 254.94)",
+          "oklch(37% 0.0210 254.94)",
+          "oklch(49% 0.0210 254.94)",
+          "oklch(60% 0.0210 254.94)",
+          "oklch(72% 0.0210 254.94)",
+          "oklch(84% 0.0210 254.94)",
+          "oklch(95% 0.0210 254.94)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Surface",
+        "tonalRamp": [
+          "oklch(15% 0.0233 254.32)",
+          "oklch(26% 0.0233 254.32)",
+          "oklch(37% 0.0233 254.32)",
+          "oklch(49% 0.0233 254.32)",
+          "oklch(60% 0.0233 254.32)",
+          "oklch(72% 0.0233 254.32)",
+          "oklch(84% 0.0233 254.32)",
+          "oklch(95% 0.0233 254.32)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "tonalRamp": [
+          "oklch(15% 0.0247 256.46)",
+          "oklch(26% 0.0247 256.46)",
+          "oklch(37% 0.0247 256.46)",
+          "oklch(49% 0.0247 256.46)",
+          "oklch(60% 0.0247 256.46)",
+          "oklch(72% 0.0247 256.46)",
+          "oklch(84% 0.0247 256.46)",
+          "oklch(95% 0.0247 256.46)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "tonalRamp": [
+          "oklch(15% 0.0045 258.32)",
+          "oklch(26% 0.0045 258.32)",
+          "oklch(37% 0.0045 258.32)",
+          "oklch(49% 0.0045 258.32)",
+          "oklch(60% 0.0045 258.32)",
+          "oklch(72% 0.0045 258.32)",
+          "oklch(84% 0.0045 258.32)",
+          "oklch(95% 0.0045 258.32)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0196 265.95)",
+          "oklch(26% 0.0196 265.95)",
+          "oklch(37% 0.0196 265.95)",
+          "oklch(49% 0.0196 265.95)",
+          "oklch(60% 0.0196 265.95)",
+          "oklch(72% 0.0196 265.95)",
+          "oklch(84% 0.0196 265.95)",
+          "oklch(95% 0.0196 265.95)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(37% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(60% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(37% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(60% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "quiet": {
+        "role": "neutral",
+        "displayName": "Quiet",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(37% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(60% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "quiet-hover": {
+        "role": "neutral",
+        "displayName": "Quiet Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(26% 0.0000 89.88)",
+          "oklch(37% 0.0000 89.88)",
+          "oklch(49% 0.0000 89.88)",
+          "oklch(60% 0.0000 89.88)",
+          "oklch(72% 0.0000 89.88)",
+          "oklch(84% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "modal": {
+        "role": "neutral",
+        "displayName": "Modal",
+        "tonalRamp": [
+          "oklch(15% 0.0307 254.76)",
+          "oklch(26% 0.0307 254.76)",
+          "oklch(37% 0.0307 254.76)",
+          "oklch(49% 0.0307 254.76)",
+          "oklch(60% 0.0307 254.76)",
+          "oklch(72% 0.0307 254.76)",
+          "oklch(84% 0.0307 254.76)",
+          "oklch(95% 0.0307 254.76)"
+        ]
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Field",
+        "tonalRamp": [
+          "oklch(15% 0.0240 251.59)",
+          "oklch(26% 0.0240 251.59)",
+          "oklch(37% 0.0240 251.59)",
+          "oklch(49% 0.0240 251.59)",
+          "oklch(60% 0.0240 251.59)",
+          "oklch(72% 0.0240 251.59)",
+          "oklch(84% 0.0240 251.59)",
+          "oklch(95% 0.0240 251.59)"
+        ]
+      },
+      "notice": {
+        "role": "neutral",
+        "displayName": "Notice",
+        "tonalRamp": [
+          "oklch(15% 0.0457 255.24)",
+          "oklch(26% 0.0457 255.24)",
+          "oklch(37% 0.0457 255.24)",
+          "oklch(49% 0.0457 255.24)",
+          "oklch(60% 0.0457 255.24)",
+          "oklch(72% 0.0457 255.24)",
+          "oklch(84% 0.0457 255.24)",
+          "oklch(95% 0.0457 255.24)"
+        ]
+      },
+      "notice-text": {
+        "role": "neutral",
+        "displayName": "Notice Text",
+        "tonalRamp": [
+          "oklch(15% 0.0511 247.49)",
+          "oklch(26% 0.0511 247.49)",
+          "oklch(37% 0.0511 247.49)",
+          "oklch(49% 0.0511 247.49)",
+          "oklch(60% 0.0511 247.49)",
+          "oklch(72% 0.0511 247.49)",
+          "oklch(84% 0.0511 247.49)",
+          "oklch(95% 0.0511 247.49)"
+        ]
+      },
+      "error": {
+        "role": "secondary",
+        "displayName": "Error",
+        "tonalRamp": [
+          "oklch(15% 0.0334 354.50)",
+          "oklch(26% 0.0334 354.50)",
+          "oklch(37% 0.0334 354.50)",
+          "oklch(49% 0.0334 354.50)",
+          "oklch(60% 0.0334 354.50)",
+          "oklch(72% 0.0334 354.50)",
+          "oklch(84% 0.0334 354.50)",
+          "oklch(95% 0.0334 354.50)"
+        ]
+      },
+      "error-text": {
+        "role": "secondary",
+        "displayName": "Error Text",
+        "tonalRamp": [
+          "oklch(15% 0.0333 22.32)",
+          "oklch(26% 0.0333 22.32)",
+          "oklch(37% 0.0333 22.32)",
+          "oklch(49% 0.0333 22.32)",
+          "oklch(60% 0.0333 22.32)",
+          "oklch(72% 0.0333 22.32)",
+          "oklch(84% 0.0333 22.32)",
+          "oklch(95% 0.0333 22.32)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "First-run and empty-library titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Library, album-detail, and dialog headings."
+      },
+      "section-title": {
+        "displayName": "Section Title",
+        "purpose": "Setup steps and smaller headings."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default interface and navigation text."
+      },
+      "track": {
+        "displayName": "Track",
+        "purpose": "Full track-list titles."
+      },
+      "action": {
+        "displayName": "Action",
+        "purpose": "Text actions."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Album titles and primary compact labels."
+      },
+      "metadata": {
+        "displayName": "Metadata",
+        "purpose": "Artists, durations, and supporting compact copy."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 18px 70px #0008",
+        "purpose": "Modal elevation over the dimmed desktop shell."
+      },
+      {
+        "name": "selected-navigation",
+        "value": "inset 0 0 0 1px #5078a528",
+        "purpose": "Fine edge within selected navigation."
+      },
+      {
+        "name": "transport-play",
+        "value": "inset 0 0 0 1px #7da5d140",
+        "purpose": "Fine edge within the central play control."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "background .14s ease, color .14s ease",
+        "purpose": "Button hover transitions."
+      },
+      {
+        "name": "artwork-reveal",
+        "value": "opacity .15s",
+        "purpose": "Cover hint and cover play action reveal."
+      },
+      {
+        "name": "loading",
+        "value": "spin 1.1s linear infinite",
+        "purpose": "Loading spinner; animations and transitions are disabled by prefers-reduced-motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-desktop",
+        "value": "1250px"
+      },
+      {
+        "name": "small-desktop",
+        "value": "1050px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Compact primary action from setup and dialog workflows.",
+      "html": "<button class=\"ds-button-primary\">Add music</button>",
+      "css": ".ds-button-primary{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:6px;padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:background .14s ease,color .14s ease;background:#365e8b;color:#fff}.ds-button-primary:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}.ds-button-primary:disabled{opacity:.38;cursor:default}.ds-button-primary:hover:not(:disabled){background:#436fa0;color:#fff}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    },
+    {
+      "name": "Quiet action",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Compact quiet action from setup and dialog workflows.",
+      "html": "<button class=\"ds-button-quiet\">Cancel</button>",
+      "css": ".ds-button-quiet{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:6px;padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:background .14s ease,color .14s ease;background:#ffffff07;color:#e0e7f2}.ds-button-quiet:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}.ds-button-quiet:disabled{opacity:.38;cursor:default}.ds-button-quiet:hover:not(:disabled){background:#ffffff0d;color:#fff}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    },
+    {
+      "name": "Destructive action",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Compact destructive action from setup and dialog workflows.",
+      "html": "<button class=\"ds-button-danger\">Delete playlist</button>",
+      "css": ".ds-button-danger{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:6px;padding:10px 14px;font-size:13px;font-weight:500;cursor:pointer;transition:background .14s ease,color .14s ease;background:#85424b;color:#fff}.ds-button-danger:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}.ds-button-danger:disabled{opacity:.38;cursor:default}.ds-button-danger:hover:not(:disabled){color:#fff}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    },
+    {
+      "name": "Icon action",
+      "kind": "button",
+      "refersTo": "button-icon",
+      "description": "Circular line-icon utility action.",
+      "html": "<button class=\"ds-icon\" aria-label=\"See all recently added\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" width=\"19\" height=\"19\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"/></svg></button>",
+      "css": ".ds-icon{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;border:0;border-radius:50%;background:transparent;color:#e4e8ef;cursor:pointer;transition:background .14s ease,color .14s ease}.ds-icon:hover{background:#ffffff0c;color:#fff}.ds-icon:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    },
+    {
+      "name": "Library search",
+      "kind": "input",
+      "refersTo": "input-search",
+      "description": "Compact toolbar search with a leading SVG.",
+      "html": "<label class=\"ds-search\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" width=\"18\" height=\"18\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m16 16 5 5\"/></svg><input type=\"search\" aria-label=\"Search music\" placeholder=\"Search songs, albums, artists…\"/></label>",
+      "css": ".ds-search{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;display:flex;align-items:center;gap:9px;background:#ffffff09;color:var(--muted,#b4bac7);border-radius:9px;height:36px;padding:0 12px;max-width:450px}.ds-search input{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;background:none;border:0;color:var(--text,#f3f5f8);width:100%;min-width:0;font-size:12px;caret-color:var(--accent,#85c3ff)}.ds-search input::placeholder{color:#a5aebb}.ds-search input:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    },
+    {
+      "name": "Selected navigation",
+      "kind": "nav",
+      "refersTo": "nav-item-selected",
+      "description": "Selected sidebar destination with a quiet inset edge.",
+      "html": "<nav class=\"ds-nav\"><button aria-current=\"page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" width=\"19\" height=\"19\" aria-hidden=\"true\"><path d=\"m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z\"/></svg><span>Home</span></button></nav>",
+      "css": ".ds-nav{width:194px}.ds-nav button{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;display:flex;align-items:center;gap:14px;width:100%;min-height:40px;padding:10px 16px;border:0;border-radius:7px;text-align:left;line-height:1.3;font-size:14px;color:#f3f5f8;background:var(--selected,#2a4569);box-shadow:inset 0 0 0 1px #5078a528;cursor:pointer;transition:color .14s ease}.ds-nav svg{color:#b5dcff}.ds-nav button:hover{color:#fff}.ds-nav button:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    },
+    {
+      "name": "Album artwork card",
+      "kind": "card",
+      "refersTo": "album-artwork",
+      "description": "Square artwork and a two-line caption; preview shows the shipped missing-artwork treatment.",
+      "html": "<article class=\"ds-album\"><button class=\"ds-cover\" aria-label=\"Select album\"><span class=\"ds-placeholder\"><svg viewBox=\"0 0 24 24\" width=\"58\" height=\"58\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/><path d=\"M5 12a7 7 0 0 1 7-7m0 14a7 7 0 0 0 7-7\"/></svg></span><span class=\"ds-hint\">Explore album</span></button><div class=\"ds-caption\">Album title<small>Artist name</small></div></article>",
+      "css": ".ds-album{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;width:156px;color:#f3f5f8}.ds-cover{display:block;position:relative;overflow:hidden;border:0;border-radius:5px;padding:0;width:100%;cursor:pointer}.ds-placeholder{display:grid;place-items:center;aspect-ratio:1;background:linear-gradient(135deg,#25354b,#1c2637 65%,#263e51);color:#7493b8}.ds-hint{position:absolute;left:0;right:0;bottom:0;padding:12px 0;background:#0a101bd9;color:#e9f3ff;font-size:12px;opacity:0;transition:opacity .15s}.ds-cover:hover .ds-hint,.ds-cover:focus-visible .ds-hint{opacity:1}.ds-cover:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}.ds-caption{margin-top:10px;font-size:12px;font-weight:500;line-height:1.5}.ds-caption small{display:block;color:var(--muted,#b4bac7);font-size:12px;font-weight:400;line-height:1.6;margin-top:3px}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    },
+    {
+      "name": "Playlist card",
+      "kind": "card",
+      "refersTo": "playlist-card",
+      "description": "Quiet filled card for a named playlist.",
+      "html": "<button class=\"ds-playlist\"><svg viewBox=\"0 0 24 24\" width=\"32\" height=\"32\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M4 5h12M4 9h12M4 13h7m6-1v7m0-7 4-1v7\"/><ellipse cx=\"15\" cy=\"19\" rx=\"2\" ry=\"1.5\"/><ellipse cx=\"19\" cy=\"18\" rx=\"2\" ry=\"1.5\"/></svg><strong>Evening mix</strong><small>12 songs</small></button>",
+      "css": ".ds-playlist{font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;display:flex;flex-direction:column;align-items:flex-start;gap:14px;text-align:left;padding:24px;background:#ffffff04;color:#f3f5f8;border:0;border-radius:8px;min-width:0;cursor:pointer;transition:background .14s ease,color .14s ease}.ds-playlist svg{color:var(--accent,#85c3ff)}.ds-playlist:hover{background:#ffffff08;color:#fff}.ds-playlist small{color:var(--muted,#b4bac7)}.ds-playlist:focus-visible{outline:2px solid var(--focus,#9bcdff);outline-offset:3px}@media(prefers-reduced-motion:reduce){button,input{transition:none!important}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The personal music library",
+    "overview": "Rhythm uses the user-approved desktop prototype as its visual authority: a navy and charcoal workspace in which album artwork leads and controls remain restrained. White titles, muted metadata, thin dividers, and blue state cues keep a dense personal collection readable.\n\nThis record describes the implemented desktop app in src/renderer/style.css and src/renderer/App.tsx. It captures reusable visual behavior rather than extending the identity to future mobile or marketing surfaces.",
+    "keyCharacteristics": [
+      "Artwork leads the library view.",
+      "Persistent navigation, contextual album details or queue, and playback share one desktop shell.",
+      "Blue identifies selection, playback state, focus, and primary actions.",
+      "Compact system typography and tonal separation support everyday library tasks."
+    ],
+    "rules": [
+      {
+        "name": "The State Color Rule",
+        "body": "Use blue for selected navigation, selected artwork, current playback, active controls, and keyboard focus; let the collection supply the broad color variation.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tonal Separation Rule",
+        "body": "Separate the library regions with dark surface tones and thin translucent dividers. Reserve the large cast shadow for modal dialogs.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preserve the approved desktop prototype as the visual authority.",
+      "Do use square album artwork with compact title and artist captions.",
+      "Do retain the persistent player while the library workspace scrolls.",
+      "Do expose hover actions on keyboard focus as well as pointer hover.",
+      "Do honor reduced motion and visible keyboard focus."
+    ],
+    "donts": [
+      "Don't use accent-filled backgrounds as decoration across library content.",
+      "Don't promote the desktop shell measurements into rules for unimplemented mobile surfaces.",
+      "Don't replace real album artwork with a new branded illustration system."
+    ]
+  }
+}

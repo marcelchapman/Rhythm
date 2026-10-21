@@ -1,1 +1,11 @@
 .DS_Store
+node_modules/
+dist/
+release/
+coverage/
+*.tsbuildinfo
+.impeccable/config.local.json
+.impeccable/review/
+test-results/
+*.sqlite*
+.agents/

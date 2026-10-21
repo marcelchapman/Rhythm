@@ -1,0 +1,47 @@
+name: Desktop checks and packages
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            package: dist:mac
+          - os: ubuntu-24.04
+            package: dist:linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Linux desktop prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2t64 libnss3 libgbm1 libgtk-3-0t64 libfuse2t64 xvfb ffmpeg
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Desktop integration on Linux
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:desktop
+      - name: Desktop integration on macOS
+        if: runner.os == 'macOS'
+        run: npm run test:desktop
+      - run: npm run ${{ matrix.package }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Rhythm-${{ matrix.os }}
+          path: |
+            release/*.dmg
+            release/*.zip
+            release/*.AppImage
+            release/*.deb
+          if-no-files-found: error

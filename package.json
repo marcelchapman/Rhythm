@@ -1,0 +1,79 @@
+{
+  "name": "rhythm-desktop",
+  "version": "0.1.0",
+  "description": "A personal music library and player",
+  "private": true,
+  "type": "module",
+  "main": "dist/main/main.js",
+  "author": "Rhythm contributors",
+  "scripts": {
+    "dev": "npm run build && electron .",
+    "start": "electron .",
+    "build": "tsc -p tsconfig.main.json && vite build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
+    "test": "vitest run --root .",
+    "test:desktop": "npm run build && node scripts/smoke.mjs",
+    "test:packaged": "node scripts/smoke.mjs --packaged",
+    "test:codecs": "node scripts/codecs.mjs",
+    "pack": "npm run icons && npm run build && electron-builder --dir",
+    "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip",
+    "dist:linux": "npm run icons && npm run build && electron-builder --linux AppImage deb",
+    "icons": "node scripts/create-icon.mjs",
+    "format": "prettier --write src tests scripts vite.config.ts tsconfig*.json package.json .github/workflows/build.yml",
+    "format:check": "prettier --check src tests scripts vite.config.ts tsconfig*.json package.json .github/workflows/build.yml"
+  },
+  "dependencies": {
+    "lucide-react": "1.60.0",
+    "music-metadata": "12.2.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "electron": "44.9.2",
+    "electron-builder": "26.15.3",
+    "playwright": "1.64.1",
+    "prettier": "3.9.10",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "global-agent": "4.1.3"
+  },
+  "build": {
+    "appId": "org.rhythm.desktop",
+    "productName": "Rhythm",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "asar": true,
+    "mac": {
+      "category": "public.app-category.music",
+      "identity": null,
+      "minimumSystemVersion": "13.0",
+      "icon": "build/rhythm.icns"
+    },
+    "dmg": {
+      "title": "Rhythm 0.1"
+    },
+    "linux": {
+      "category": "AudioVideo;Audio;Player",
+      "maintainer": "Rhythm contributors",
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/rhythm.png",
+      "syncDesktopName": true
+    }
+  },
+  "desktopName": "org.rhythm.desktop.desktop"
+}
