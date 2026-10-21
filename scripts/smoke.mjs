@@ -224,18 +224,61 @@ try {
     return a && !a.paused && a.currentTime > 0;
   });
   assert((await page.locator("audio").evaluate((a) => a.duration)) >= 29);
-  await page.getByRole("slider", { name: "Seek", exact: true }).press("End");
-  // Avoid ending the fixture while checking seeking and pause.
-  await page.getByRole("slider", { name: "Seek", exact: true }).press("Home");
-  for (let n = 0; n < 20; n++)
-    await page
-      .getByRole("slider", { name: "Seek", exact: true })
-      .press("ArrowRight");
+  const playbackSource = await page
+    .locator("audio")
+    .evaluate((a) => a.currentSrc);
+  const playbackTrack = initial.tracks.find((t) => t.title === "Evening light");
+  assert.equal(playbackSource, `rhythm-media://track/${playbackTrack.id}`);
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector("audio").paused);
+  const seek = page.getByRole("slider", { name: "Seek", exact: true });
+  const waitForSeek = (target) =>
+    page.waitForFunction(
+      ({ source, target }) => {
+        const a = document.querySelector("audio");
+        const slider = document.querySelector('input[aria-label="Seek"]');
+        // Paused playback cannot satisfy this check just by letting time pass.
+        // Wait for decoding to settle, not only the requested currentTime value.
+        return (
+          a.currentSrc === source &&
+          a.paused &&
+          !a.ended &&
+          !a.seeking &&
+          a.error === null &&
+          a.readyState >= 2 &&
+          Math.abs(a.currentTime - target) <= 0.05 &&
+          Math.abs(Number(slider.value) - target) <= 0.05
+        );
+      },
+      { source: playbackSource, target },
+      { timeout: 10000 },
+    );
+  // End is not a harmless range reset: it fires ended and advances the queue.
+  // Test the real keyboard control on one paused track, one settled seek at a time.
+  await seek.press("Home");
+  await waitForSeek(0);
+  for (let n = 1; n <= 20; n++) {
+    await seek.press("ArrowRight");
+    await waitForSeek(n / 10);
+  }
   assert((await page.locator("audio").evaluate((a) => a.currentTime)) >= 1.9);
-  if (
-    await page.getByRole("button", { name: "Pause", exact: true }).isVisible()
-  )
-    await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.getByRole("button", { name: "Play", exact: true }).click();
+  await page.waitForFunction(
+    (source) => {
+      const a = document.querySelector("audio");
+      return (
+        a.currentSrc === source &&
+        !a.paused &&
+        !a.seeking &&
+        a.error === null &&
+        a.currentTime > 2.1
+      );
+    },
+    playbackSource,
+    { timeout: 10000 },
+  );
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector("audio").paused);
   await page.getByRole("button", { name: "Dismiss import report" }).click();
   await page.screenshot({ path: path.join(review, "desktop.png") });
   await application.evaluate(({ BrowserWindow }) =>
@@ -381,6 +424,38 @@ try {
       2,
     ),
   );
+} catch (error) {
+  // Preserve the original failure, with enough media state to diagnose CI races.
+  try {
+    const page = application?.windows()[0];
+    if (page) {
+      const transport = await page.locator("audio").evaluate((a) => ({
+        src: a.currentSrc,
+        time: a.currentTime,
+        duration: a.duration,
+        paused: a.paused,
+        ended: a.ended,
+        seeking: a.seeking,
+        readyState: a.readyState,
+        networkState: a.networkState,
+        error: a.error && { code: a.error.code, message: a.error.message },
+        seekable: Array.from({ length: a.seekable.length }, (_, i) => [
+          a.seekable.start(i),
+          a.seekable.end(i),
+        ]),
+        slider: document.querySelector('input[aria-label="Seek"]')?.value,
+      }));
+      await writeFile(
+        path.join(review, "failure.json"),
+        JSON.stringify({ error: String(error), transport }, null, 2),
+      );
+      console.error("SMOKE_FAILURE", JSON.stringify(transport));
+      await page.screenshot({ path: path.join(review, "failure.png") });
+    }
+  } catch (diagnosticError) {
+    console.error("Could not capture smoke diagnostics:", diagnosticError);
+  }
+  throw error;
 } finally {
   await application?.close();
   await rm(fixture, { recursive: true, force: true });

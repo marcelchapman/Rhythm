@@ -32,10 +32,19 @@ jobs:
       - name: Desktop integration on Linux
         if: runner.os == 'Linux'
         run: xvfb-run -a npm run test:desktop
+      - name: Upload Linux desktop failure diagnostics
+        if: failure() && runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Rhythm-ubuntu-24.04-diagnostics
+          path: .impeccable/review/
+          include-hidden-files: true
+          if-no-files-found: ignore
       - name: Desktop integration on macOS
         if: runner.os == 'macOS'
         run: npm run test:desktop
-      - run: npm run ${{ matrix.package }}
+      - name: Build desktop packages without publishing
+        run: npm run ${{ matrix.package }} -- --publish never
       - uses: actions/upload-artifact@v4
         with:
           name: Rhythm-${{ matrix.os }}
