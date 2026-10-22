@@ -1,3 +1,6 @@
+import { SongsTable } from "./SongsTable";
+import { TRACK_DRAG_TYPE, dragTrackIds } from "./song-columns";
+import type { TrackAction } from "../shared/types";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Activity,
@@ -113,6 +116,8 @@ function Modal({
   close: () => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(close);
+  closeRef.current = close;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
     const root = ref.current!;
@@ -121,9 +126,11 @@ function Modal({
         'button:not(:disabled), input, select, [tabindex="0"]',
       ),
     ];
-    (root.querySelector<HTMLElement>("input") ?? elements()[0])?.focus();
+    (
+      root.querySelector<HTMLElement>("input, select") ?? elements()[0]
+    )?.focus();
     const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
+      if (e.key === "Escape") closeRef.current();
       if (e.key === "Tab") {
         const all = elements();
         const first = all[0];
@@ -142,7 +149,7 @@ function Modal({
       root.removeEventListener("keydown", handler);
       previous?.focus();
     };
-  }, [close]);
+  }, []);
   return (
     <div
       className="modal-backdrop"
@@ -170,6 +177,15 @@ function Modal({
 }
 
 export function App() {
+  const [message, setMessage] = useState("");
+  const [pendingPlaylistTracks, setPendingPlaylistTracks] = useState<string[]>(
+    [],
+  );
+  const [detailLimit, setDetailLimit] = useState(200);
+  const [fileDrag, setFileDrag] = useState(false);
+  const [dropPlaylist, setDropPlaylist] = useState<string | null>(null);
+  const dragDepth = useRef(0);
+  const trackActionRef = useRef<(action: TrackAction) => void>(() => {});
   const [data, setData] = useState<Snapshot | null>(null);
   const [state, setState] = useState<PlayerState>(defaultState);
   const [playing, setPlaying] = useState(false);
@@ -232,6 +248,10 @@ export function App() {
   const rightAlbum =
     albums.find((a) => a.id === selectedAlbum) ??
     albums.find((a) => a.id === current?.albumId);
+  useEffect(
+    () => setDetailLimit(200),
+    [selectedAlbum, current?.albumId, showQueue],
+  );
   const activePlaylist = data?.playlists.find(
     (p) => `playlist:${p.id}` === view,
   );
@@ -486,6 +506,9 @@ export function App() {
         else if (command === "import") {
           if (dataRef.current?.libraryPath) void scan();
           else void chooseLibrary();
+        } else if (command === "new-playlist") {
+          if (dataRef.current?.libraryPath) makePlaylist();
+          else setError("Choose a library folder before creating playlists.");
         } else if (command === "choose-library") void chooseLibrary();
       }),
     [],
@@ -526,60 +549,78 @@ export function App() {
     }
   }, [current?.id]);
 
-  let visible = tracks;
-  if (activePlaylist)
-    visible = activePlaylist.trackIds
-      .map((id) => byId.get(id))
-      .filter((t): t is Track => !!t);
-  if (view === "Favourites") visible = visible.filter((t) => t.favorite);
-  if (view === "Artists" && group)
-    visible = visible.filter(
-      (t) => t.artist === group || t.albumArtist === group,
-    );
-  if (view === "Genres" && group)
-    visible = visible.filter((t) => t.genre.split(", ").includes(group));
-  if (genre !== "All Genres")
-    visible = visible.filter((t) => t.genre.split(", ").includes(genre));
-  const q = query.toLocaleLowerCase().trim();
-  if (q)
-    visible = tracks.filter((t) =>
-      [t.title, t.artist, t.album, t.albumArtist, t.genre].some((v) =>
-        v.toLocaleLowerCase().includes(q),
-      ),
-    );
-  visible = [...visible];
-  if (view === "Recently Added" || sort === "recent")
-    visible.sort((a, b) => b.addedAt - a.addedAt);
-  else if (!activePlaylist)
-    visible.sort((a, b) =>
-      sort === "year"
-        ? b.year - a.year || a.album.localeCompare(b.album)
-        : a.album.localeCompare(b.album) ||
-          a.disc - b.disc ||
-          a.track - b.track ||
-          a.title.localeCompare(b.title),
-    );
-  const visibleIds = new Set(visible.map((t) => t.albumId));
-  const visibleAlbums = albums
-    .filter((a) => visibleIds.has(a.id))
-    .sort((a, b) =>
-      sort === "recent" || view === "Recently Added"
-        ? b.added - a.added
-        : sort === "year"
-          ? b.tracks[0].year - a.tracks[0].year
-          : a.name.localeCompare(b.name),
-    );
-  const groups = [
-    ...new Set(
-      tracks.flatMap((t) =>
-        view === "Artists" ? [t.artist] : t.genre.split(", "),
-      ),
-    ),
-  ].sort((a, b) => a.localeCompare(b));
-  const genres = [
-    ...new Set(tracks.flatMap((t) => t.genre.split(", "))),
-  ].sort();
-  const makePlaylist = (p: Playlist | null = null) => {
+  const visible = useMemo(() => {
+    let visible = tracks;
+    if (activePlaylist)
+      visible = activePlaylist.trackIds
+        .map((id) => byId.get(id))
+        .filter((t): t is Track => !!t);
+    if (view === "Favourites") visible = visible.filter((t) => t.favorite);
+    if (view === "Artists" && group)
+      visible = visible.filter(
+        (t) => t.artist === group || t.albumArtist === group,
+      );
+    if (view === "Genres" && group)
+      visible = visible.filter((t) => t.genre.split(", ").includes(group));
+    if (genre !== "All Genres")
+      visible = visible.filter((t) => t.genre.split(", ").includes(genre));
+    const q = query.toLocaleLowerCase().trim();
+    if (q)
+      visible = tracks.filter((t) =>
+        [
+          t.title,
+          t.artist,
+          t.album,
+          t.albumArtist,
+          t.genre,
+          t.comments,
+          t.codec,
+        ].some((v) => v.toLocaleLowerCase().includes(q)),
+      );
+    visible = [...visible];
+    if (view === "Recently Added" || sort === "recent")
+      visible.sort((a, b) => b.addedAt - a.addedAt);
+    else if (!activePlaylist)
+      visible.sort((a, b) =>
+        sort === "year"
+          ? b.year - a.year || a.album.localeCompare(b.album)
+          : a.album.localeCompare(b.album) ||
+            a.disc - b.disc ||
+            a.track - b.track ||
+            a.title.localeCompare(b.title),
+      );
+    return visible;
+  }, [tracks, activePlaylist, view, group, genre, query, sort, byId]);
+  const visibleAlbums = useMemo(() => {
+    const visibleIds = new Set(visible.map((t) => t.albumId));
+    const result = albums
+      .filter((a) => visibleIds.has(a.id))
+      .sort((a, b) =>
+        sort === "recent" || view === "Recently Added"
+          ? b.added - a.added
+          : sort === "year"
+            ? b.tracks[0].year - a.tracks[0].year
+            : a.name.localeCompare(b.name),
+      );
+    return result;
+  }, [visible, albums, sort, view]);
+  const groups = useMemo(
+    () =>
+      [
+        ...new Set(
+          tracks.flatMap((t) =>
+            view === "Artists" ? [t.artist] : t.genre.split(", "),
+          ),
+        ),
+      ].sort((a, b) => a.localeCompare(b)),
+    [tracks, view],
+  );
+  const genres = useMemo(
+    () => [...new Set(tracks.flatMap((t) => t.genre.split(", ")))].sort(),
+    [tracks],
+  );
+  const makePlaylist = (p: Playlist | null = null, trackIds: string[] = []) => {
+    setPendingPlaylistTracks(trackIds);
     setEditPlaylist(p);
     setName(p?.name ?? "");
     setModal("playlist");
@@ -589,18 +630,93 @@ export function App() {
     setTargetPlaylist("");
     setModal("track");
   };
-  const queueTrack = (track: Track, next: boolean) => {
+  const appendToPlaylist = async (id: string, ids: string[]) => {
+    try {
+      await api.addToPlaylist(id, ids);
+      const latest = await refresh();
+      const p = latest.playlists.find((p) => p.id === id);
+      setMessage(`Songs are in “${p?.name ?? "your playlist"}”.`);
+      setModal(null);
+    } catch (e) {
+      fail(e);
+    }
+  };
+  const queueTracks = (items: Track[], next: boolean) => {
     setState((s) => {
-      const queue = s.queue.filter(
-        (id) => id !== track.id || id === s.currentId,
+      const incoming = [
+        ...new Set(
+          items
+            .filter((t) => !t.missing && t.id !== s.currentId)
+            .map((t) => t.id),
+        ),
+      ];
+      const remove = new Set(incoming);
+      const queue = s.queue.filter((id) => !remove.has(id));
+      queue.splice(
+        next ? queue.indexOf(s.currentId ?? "") + 1 : queue.length,
+        0,
+        ...incoming,
       );
-      const index = queue.indexOf(s.currentId ?? "");
-      if (track.id !== s.currentId)
-        queue.splice(next ? index + 1 : queue.length, 0, track.id);
       return { ...s, queue };
     });
     setShowQueue(true);
     setModal(null);
+  };
+  const queueTrack = (track: Track, next: boolean) =>
+    queueTracks([track], next);
+  trackActionRef.current = (action) => {
+    const items = action.trackIds
+      .map((id) => byId.get(id))
+      .filter((t): t is Track => !!t);
+    if (!items.length) return;
+    if (action.command === "play")
+      playTrack(items.find((t) => !t.missing) ?? items[0], items);
+    else if (action.command === "next" || action.command === "queue")
+      queueTracks(items, action.command === "next");
+    else if (action.command === "playlist" && action.playlistId)
+      void appendToPlaylist(action.playlistId, action.trackIds);
+    else if (action.command === "new-playlist")
+      makePlaylist(null, action.trackIds);
+    else if (action.command === "favorite")
+      void (async () => {
+        try {
+          const target = !items.every((t) => t.favorite);
+          for (const t of items)
+            if (t.favorite !== target) await api.favorite(t.id);
+          await refresh();
+        } catch (e) {
+          fail(e);
+        }
+      })();
+  };
+  useEffect(
+    () => api.onTrackAction((action) => trackActionRef.current(action)),
+    [],
+  );
+  const showTrackMenu = (ids: string[]) => {
+    void api.showTrackMenu(ids).catch(fail);
+  };
+  const importDrop = async (files: File[]) => {
+    if (!dataRef.current?.libraryPath) {
+      setError("Choose a library folder before dropping music.");
+      return;
+    }
+    if (busy) {
+      setError("Wait for the current import to finish.");
+      return;
+    }
+    setBusy(true);
+    setProgress("Reading dropped files and folders…");
+    setError("");
+    try {
+      setReport(await api.importDroppedFiles(files));
+      await refresh();
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+      setProgress("");
+    }
   };
   const renderTracks = (items: Track[], compact = false, queueMode = false) => (
     <div
@@ -608,10 +724,25 @@ export function App() {
       role="list"
       aria-label={queueMode ? "Playback queue" : "Tracks"}
     >
-      {items.map((t, i) => (
+      {(compact ? items.slice(0, detailLimit) : items).map((t, i) => (
         <div
           className={`track-row ${t.id === current?.id ? "is-playing" : ""} ${t.missing ? "is-missing" : ""}`}
           role="listitem"
+          draggable
+          onDragStart={(e) => {
+            e.dataTransfer.setData(TRACK_DRAG_TYPE, JSON.stringify([t.id]));
+            e.dataTransfer.effectAllowed = "copy";
+          }}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            showTrackMenu([t.id]);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
+              e.preventDefault();
+              showTrackMenu([t.id]);
+            }
+          }}
           key={`${t.id}-${i}`}
         >
           <button
@@ -679,6 +810,15 @@ export function App() {
           )}
         </div>
       ))}
+      {compact && items.length > detailLimit && (
+        <button
+          className="quiet more-tracks"
+          onClick={() => setDetailLimit((n) => n + 200)}
+        >
+          Show more tracks ({detailLimit.toLocaleString()} of{" "}
+          {items.length.toLocaleString()})
+        </button>
+      )}
     </div>
   );
   const renderAlbums = (items: Album[]) => (
@@ -731,7 +871,49 @@ export function App() {
   );
 
   return (
-    <div className="app-shell">
+    <div
+      className={`app-shell ${fileDrag ? "file-drag-active" : ""}`}
+      onDragEnter={(e) => {
+        if (e.dataTransfer.types.includes("Files")) {
+          e.preventDefault();
+          dragDepth.current++;
+          setFileDrag(true);
+        }
+      }}
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes("Files")) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect =
+            data?.libraryPath && !busy ? "copy" : "none";
+        }
+      }}
+      onDragLeave={(e) => {
+        if (e.dataTransfer.types.includes("Files")) {
+          dragDepth.current = Math.max(0, dragDepth.current - 1);
+          if (!dragDepth.current) setFileDrag(false);
+        }
+      }}
+      onDrop={(e) => {
+        if (e.dataTransfer.types.includes("Files")) {
+          e.preventDefault();
+          e.stopPropagation();
+          dragDepth.current = 0;
+          setFileDrag(false);
+          void importDrop([...e.dataTransfer.files]);
+        }
+      }}
+    >
+      {fileDrag && (
+        <div className="file-drop-cue" role="status">
+          <FolderPlus size={22} />
+          <span>
+            {data?.libraryPath
+              ? "Drop to add music"
+              : "Choose a library folder first"}
+            <small>Your source files stay where they are.</small>
+          </span>
+        </div>
+      )}
       <audio
         ref={audio}
         onPlay={() => setPlaying(true)}
@@ -800,7 +982,27 @@ export function App() {
           {data?.playlists.map((p) => (
             <button
               key={p.id}
-              className={`nav-item ${activePlaylist?.id === p.id ? "selected" : ""}`}
+              className={`nav-item ${activePlaylist?.id === p.id ? "selected" : ""} ${dropPlaylist === p.id ? "drop-target" : ""}`}
+              onDragOver={(e) => {
+                if (e.dataTransfer.types.includes(TRACK_DRAG_TYPE)) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.dataTransfer.dropEffect = "copy";
+                  setDropPlaylist(p.id);
+                }
+              }}
+              onDragLeave={() => setDropPlaylist(null)}
+              onDrop={(e) => {
+                if (e.dataTransfer.types.includes(TRACK_DRAG_TYPE)) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setDropPlaylist(null);
+                  const ids = dragTrackIds(
+                    e.dataTransfer.getData(TRACK_DRAG_TYPE),
+                  );
+                  if (ids.length) void appendToPlaylist(p.id, ids);
+                }
+              }}
               onClick={() => navigate(`playlist:${p.id}`)}
             >
               <Music2 />
@@ -883,6 +1085,15 @@ export function App() {
             </IconButton>
           </div>
         </header>
+        {message && (
+          <div className="notice" role="status">
+            <Check size={18} />
+            <span>{message}</span>
+            <IconButton label="Dismiss message" onClick={() => setMessage("")}>
+              <X />
+            </IconButton>
+          </div>
+        )}
         {error && (
           <div className="notice error" role="alert">
             <AlertCircle size={18} />
@@ -1065,15 +1276,17 @@ export function App() {
                       </>
                     ) : (
                       <>
-                        <select
-                          aria-label="Sort library"
-                          value={sort}
-                          onChange={(e) => setSort(e.target.value)}
-                        >
-                          <option value="az">A – Z</option>
-                          <option value="recent">Newest added</option>
-                          <option value="year">Release year</option>
-                        </select>
+                        {view !== "Songs" && (
+                          <select
+                            aria-label="Sort library"
+                            value={sort}
+                            onChange={(e) => setSort(e.target.value)}
+                          >
+                            <option value="az">A – Z</option>
+                            <option value="recent">Newest added</option>
+                            <option value="year">Release year</option>
+                          </select>
+                        )}
                         <select
                           aria-label="Filter genre"
                           value={genre}
@@ -1174,7 +1387,24 @@ export function App() {
                   activePlaylist ||
                   ["Songs", "Favourites"].includes(view) ||
                   layout === "list" ? (
-                  renderTracks(visible)
+                  view === "Songs" ? (
+                    <SongsTable
+                      resetKey={`${view}\0${query}\0${genre}`}
+                      tracks={visible}
+                      currentId={current?.id}
+                      playing={playing}
+                      onPlay={playTrack}
+                      onContext={showTrackMenu}
+                      onOptions={trackActions}
+                      onSelect={(t) => {
+                        setSelectedAlbum(t.albumId);
+                        setShowQueue(false);
+                      }}
+                      onFavorite={(id) => void favorite(id)}
+                    />
+                  ) : (
+                    renderTracks(visible)
+                  )
                 ) : (
                   renderAlbums(visibleAlbums)
                 )}
@@ -1465,6 +1695,9 @@ export function App() {
                   await api.renamePlaylist(editPlaylist.id, name);
                 else {
                   const p = await api.createPlaylist(name);
+                  if (pendingPlaylistTracks.length)
+                    await api.addToPlaylist(p.id, pendingPlaylistTracks);
+                  setPendingPlaylistTracks([]);
                   navigate(`playlist:${p.id}`);
                 }
                 await refresh();
@@ -1571,26 +1804,17 @@ export function App() {
                 className="primary"
                 disabled={!targetPlaylist}
                 onClick={async () => {
-                  const p = data.playlists.find(
-                    (p) => p.id === targetPlaylist,
-                  )!;
-                  try {
-                    await api.playlistTracks(p.id, [
-                      ...p.trackIds,
-                      actionTrack.id,
-                    ]);
-                    await refresh();
-                    setModal(null);
-                  } catch (e) {
-                    fail(e);
-                  }
+                  await appendToPlaylist(targetPlaylist, [actionTrack.id]);
                 }}
               >
                 Add song
               </button>
             </div>
           ) : (
-            <button className="quiet" onClick={() => makePlaylist()}>
+            <button
+              className="quiet"
+              onClick={() => makePlaylist(null, [actionTrack.id])}
+            >
               Create a playlist first
             </button>
           )}

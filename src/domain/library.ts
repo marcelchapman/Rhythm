@@ -98,7 +98,7 @@ export class Library {
         const version = check.prepare("PRAGMA user_version").get() as {
           user_version: number;
         };
-        if (version.user_version > 1)
+        if (version.user_version > 2)
           throw new Error("This library needs a newer version of Rhythm.");
       } finally {
         check.close();
@@ -122,14 +122,32 @@ export class Library {
         PRIMARY KEY(playlistId, trackId)
       );
       CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-      PRAGMA application_id=1380471885; PRAGMA user_version=1;`);
+      PRAGMA application_id=1380471885;`);
+    // Additive, atomic migration: preserve track IDs, playlists, and all user state.
+    const version = db.prepare("PRAGMA user_version").get()!
+      .user_version as number;
+    if (version < 2) {
+      db.exec("BEGIN IMMEDIATE");
+      try {
+        db.exec(`ALTER TABLE tracks ADD COLUMN bpm REAL;
+          ALTER TABLE tracks ADD COLUMN comments TEXT NOT NULL DEFAULT '';
+          ALTER TABLE tracks ADD COLUMN bitRate REAL;
+          ALTER TABLE tracks ADD COLUMN codec TEXT NOT NULL DEFAULT '';
+          ALTER TABLE tracks ADD COLUMN metadataVersion INTEGER NOT NULL DEFAULT 0;
+          PRAGMA user_version=2; COMMIT;`);
+      } catch (error) {
+        db.exec("ROLLBACK");
+        db.close();
+        throw error;
+      }
+    }
     return new Library(canonical, db);
   }
 
   tracks(): Track[] {
     const rows = this.db
       .prepare(
-        `SELECT id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,favorite,missing,format,artwork IS NOT NULL AS hasArtwork FROM tracks ORDER BY album COLLATE NOCASE, disc, track, title COLLATE NOCASE`,
+        `SELECT id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,favorite,missing,format,bpm,comments,bitRate,codec,artwork IS NOT NULL AS hasArtwork FROM tracks ORDER BY album COLLATE NOCASE, disc, track, title COLLATE NOCASE`,
       )
       .all();
     return rows.map((row) => ({
@@ -235,6 +253,43 @@ export class Library {
       throw error;
     }
   }
+  /** Append against the current database state, never a stale renderer snapshot. */
+  addToPlaylist(id: string, trackIds: string[]) {
+    if (
+      !Array.isArray(trackIds) ||
+      trackIds.length > 50000 ||
+      trackIds.some((t) => typeof t !== "string")
+    )
+      throw new Error("Invalid playlist tracks.");
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      if (!this.db.prepare("SELECT id FROM playlists WHERE id=?").get(id))
+        throw new Error("Playlist no longer exists.");
+      const existing = this.db
+        .prepare("SELECT trackId FROM playlist_tracks WHERE playlistId=?")
+        .all(id);
+      const ids = new Set(existing.map((t) => t.trackId as string));
+      const additions = [...new Set(trackIds)].filter((t) => !ids.has(t));
+      if (ids.size + additions.length > 50000)
+        throw new Error("A playlist can contain at most 50,000 songs.");
+      let position =
+        Number(
+          this.db
+            .prepare(
+              "SELECT COALESCE(MAX(position),-1) AS last FROM playlist_tracks WHERE playlistId=?",
+            )
+            .get(id)!.last,
+        ) + 1;
+      const insert = this.db.prepare(
+        "INSERT INTO playlist_tracks VALUES(?,?,?)",
+      );
+      for (const trackId of additions) insert.run(id, trackId, position++);
+      this.db.exec("COMMIT");
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
+  }
   media(id: string): { path: string; format: string } | undefined {
     return this.db
       .prepare("SELECT path,format FROM tracks WHERE id=?")
@@ -279,9 +334,14 @@ export class Library {
         seen.add(canonical);
         const info = await stat(canonical);
         const old = this.db
-          .prepare("SELECT size,mtime FROM tracks WHERE path=?")
+          .prepare("SELECT size,mtime,metadataVersion FROM tracks WHERE path=?")
           .get(canonical);
-        if (old && old.size === info.size && old.mtime === info.mtimeMs) {
+        if (
+          old &&
+          old.metadataVersion === 2 &&
+          old.size === info.size &&
+          old.mtime === info.mtimeMs
+        ) {
           this.db
             .prepare("UPDATE tracks SET missing=0 WHERE path=?")
             .run(canonical);
@@ -336,14 +396,25 @@ export class Library {
           info.mtimeMs,
           validCover ? Buffer.from(validCover.data) : null,
           validCover?.format ?? null,
+          numeric(c.bpm) || null,
+          clean(
+            c.comment
+              ?.map((comment) => comment.text ?? "")
+              .filter(Boolean)
+              .join("\n"),
+            "",
+          ),
+          numeric(metadata.format.bitrate) || null,
+          clean(metadata.format.codec, clean(metadata.format.container, "")),
+          2,
         ];
         this.db
           .prepare(
-            `INSERT INTO tracks(id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,format,size,mtime,artwork,artworkType)
+            `INSERT INTO tracks(id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,format,size,mtime,artwork,artworkType,bpm,comments,bitRate,codec,metadataVersion)
           VALUES(${values.map(() => "?").join(",")}) ON CONFLICT(path) DO UPDATE SET
           title=excluded.title,artist=excluded.artist,albumArtist=excluded.albumArtist,album=excluded.album,albumId=excluded.albumId,
           genre=excluded.genre,year=excluded.year,disc=excluded.disc,track=excluded.track,duration=excluded.duration,
-          format=excluded.format,size=excluded.size,mtime=excluded.mtime,artwork=excluded.artwork,artworkType=excluded.artworkType,missing=0`,
+          format=excluded.format,size=excluded.size,mtime=excluded.mtime,artwork=excluded.artwork,artworkType=excluded.artworkType,bpm=excluded.bpm,comments=excluded.comments,bitRate=excluded.bitRate,codec=excluded.codec,metadataVersion=excluded.metadataVersion,missing=0`,
           )
           .run(...values);
         if (old) result.updated++;
@@ -381,8 +452,17 @@ export class Library {
         let root: string;
         try {
           root = await realpath(directory);
-          if (!(await stat(root)).isDirectory())
-            throw new Error("Not a folder");
+          const info = await stat(root);
+          if (info.isFile()) {
+            if (AUDIO_EXTENSIONS.has(path.extname(root).toLowerCase())) {
+              this.db
+                .prepare("INSERT OR IGNORE INTO roots VALUES(?)")
+                .run(root);
+              await inspect(root);
+            } else result.skipped++;
+            continue;
+          }
+          if (!info.isDirectory()) throw new Error("Not a file or folder");
         } catch {
           report(`Music folder unavailable: ${directory}`);
           continue;

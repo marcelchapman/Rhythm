@@ -11,7 +11,7 @@ import { readFile, writeFile, mkdir, rename, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Library } from "../domain/library.js";
-import { defaultState } from "../shared/types.js";
+import { defaultState, type TrackAction } from "../shared/types.js";
 import { mediaResponse } from "./media.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -107,6 +107,82 @@ function handlers() {
         throw new Error("Untrusted request.");
       return fn(...args);
     });
+  handle("library:drop", (paths: string[]) => {
+    if (
+      !Array.isArray(paths) ||
+      !paths.length ||
+      paths.length > 1000 ||
+      paths.some((p) => typeof p !== "string" || !path.isAbsolute(p))
+    )
+      throw new Error("Drop valid local music files or folders.");
+    return requireLibrary().scan(paths, (p) =>
+      win?.webContents.send("scan:progress", p),
+    );
+  });
+  handle("playlist:add", (id: string, ids: string[]) =>
+    requireLibrary().addToPlaylist(id, ids),
+  );
+  handle("track:menu", (ids: string[]) => {
+    if (!Array.isArray(ids) || !ids.length || ids.length > 50000)
+      throw new Error("Select tracks first.");
+    const l = requireLibrary();
+    const indexed = new Map(l.tracks().map((t) => [t.id, t]));
+    const tracks = [...new Set(ids)].map((id) => indexed.get(id));
+    if (tracks.some((t) => !t)) throw new Error("Track no longer exists.");
+    const dispatch =
+      (command: TrackAction["command"], playlistId?: string) => () =>
+        win?.webContents.send("track:action", {
+          command,
+          trackIds: [...new Set(ids)],
+          playlistId,
+        } satisfies TrackAction);
+    const playable = tracks.some((t) => !t!.missing);
+    Menu.buildFromTemplate([
+      {
+        id: "track-play",
+        label: "Play",
+        enabled: playable,
+        click: dispatch("play"),
+      },
+      {
+        id: "track-next",
+        label: "Play Next",
+        enabled: playable,
+        click: dispatch("next"),
+      },
+      {
+        id: "track-queue",
+        label: "Add to Queue",
+        enabled: playable,
+        click: dispatch("queue"),
+      },
+      { type: "separator" },
+      {
+        id: "track-playlist",
+        label: "Add to Playlist",
+        submenu: [
+          ...l.playlists().map((p) => ({
+            id: `playlist-${p.id}`,
+            label: p.name.replace(/&/g, "&&"),
+            click: dispatch("playlist", p.id),
+          })),
+          { type: "separator" as const },
+          {
+            id: "track-new-playlist",
+            label: "New Playlist…",
+            click: dispatch("new-playlist"),
+          },
+        ],
+      },
+      {
+        id: "track-favorite",
+        label: tracks.every((t) => t!.favorite)
+          ? "Remove from Favourites"
+          : "Favourite",
+        click: dispatch("favorite"),
+      },
+    ]).popup({ window: win! });
+  });
   handle("library:snapshot", snapshot);
   handle("library:choose", chooseLibrary);
   handle("library:import", importMusic);
@@ -266,6 +342,11 @@ else {
                 label: "Add Music…",
                 accelerator: "CmdOrCtrl+O",
                 click: () => send("import"),
+              },
+              {
+                label: "New Playlist…",
+                accelerator: "CmdOrCtrl+N",
+                click: () => send("new-playlist"),
               },
               { type: "separator" },
               { role: "close" },

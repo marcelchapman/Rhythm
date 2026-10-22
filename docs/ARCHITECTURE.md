@@ -12,9 +12,11 @@ The renderer and shared DTOs contain no filesystem or SQLite access. `src/domain
 
 The user chooses a directory for `rhythm.sqlite`. Source music directories are chosen separately. A small pointer in Electron's application-data directory remembers the library. No library or source directory is supplied by the distribution. Tests override only application data using `RHYTHM_DATA_DIR` and use temporary libraries.
 
-SQLite uses WAL, foreign keys, an application ID, and schema version 1. Unrelated databases and newer schema versions are rejected. The main process owns the database. Scanning asynchronously walks directories and reads metadata using `music-metadata`; database statements are synchronous, so very large libraries can still cause UI latency during snapshot generation. Scans are serialized. Read failures are bounded to 100 reported issues per scan.
+SQLite uses WAL, foreign keys, an application ID, and schema version 2. Unrelated databases and newer schema versions are rejected. The version-1 migration adds nullable BPM/bit rate, comments, codec, and an extraction-version marker in one transaction. No existing rows are replaced. A rescan reparses older extraction versions even when source size/mtime is unchanged, preserving favourites, added dates, IDs, and playlist links. Absent numeric tags remain null and absent strings remain empty. The main process owns the database. Scanning asynchronously walks directories and reads metadata using `music-metadata`; database statements are synchronous, so very large libraries can still cause UI latency during snapshot generation. Scans are serialized. Read failures are bounded to 100 reported issues per scan.
 
 Source files are never written, copied, renamed, or deleted. Symlinks and hidden entries are skipped. Canonical paths prevent duplicate indexing of the same path. File size and modification time avoid repeated metadata parsing. Track identity is the canonical path hash, so a moved file becomes a new record; missing records and playlist references are retained, not silently discarded. Matching files by content after moves is deferred.
+
+External file/folder drops use Electron's `webUtils.getPathForFile` inside the sandboxed preload. Only a bounded list of absolute disk paths reaches the existing scanner; unsupported files are skipped. Individual files and folders are retained as rescan sources. Internal drags carry validated track IDs, not arbitrary file-operation instructions. Playlist append checks current database contents in a transaction, preserves order, and deduplicates additions; it never overwrites a playlist from a stale renderer snapshot.
 
 Albums group by album artist, title, and album directory. Compilation tags use Various Artists when no album artist is present. `CD1`/`Disc 1` folders normalize to their parent. Different directory editions with identical metadata remain distinct. Artwork is cached in SQLite only for supported raster formats up to 10 MB per track. External cover files are not currently searched.
 
@@ -27,6 +29,10 @@ The persistent player records queue, current track, position, volume, shuffle, r
 ## Desktop boundary
 
 The renderer is sandboxed, uses context isolation, and has no Node integration. A narrow preload bridge exposes library actions. IPC checks the requesting frame URL. Custom protocols serve bundled files and indexed media; networking, popups, navigation away from the app, and runtime permission requests are denied. All fonts and UI assets are local. Music metadata renders as React text, not HTML. No telemetry, cloud requests, or source-artifact reuse is implemented.
+
+Track context menus are native Electron menus built in the main process from indexed IDs. A typed action event dispatches existing renderer transport and playlist commands; no filesystem mutation commands are present. File → New Playlist uses the same creation form as the sidebar. The shared modal installs its focus trap once per mount and reads the current close callback through a ref, avoiding focus resets while typing or selecting a playlist.
+
+The Songs table renders only its visible rows plus overscan, with stable row height, a sticky title column/header, and horizontal metadata scrolling. Sorting/filtering is memoized separately from playback progress. Album/queue detail lists initially render 200 entries and extend on demand. This bounds DOM work but does not make snapshot transfer or in-memory sorting independent of total library size.
 
 ## Packaging
 

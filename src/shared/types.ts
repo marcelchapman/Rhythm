@@ -16,6 +16,10 @@ export interface Track {
   missing: boolean;
   hasArtwork: boolean;
   format: string;
+  bpm: number | null;
+  comments: string;
+  bitRate: number | null;
+  codec: string;
 }
 export interface Playlist {
   id: string;
@@ -49,11 +53,20 @@ export interface ScanProgress {
   scanned: number;
   current: string;
 }
+export type TrackAction = {
+  command: "play" | "next" | "queue" | "playlist" | "favorite" | "new-playlist";
+  trackIds: string[];
+  playlistId?: string;
+};
 export interface RhythmAPI {
   snapshot(): Promise<Snapshot>;
   chooseLibrary(): Promise<Snapshot | null>;
   importMusic(): Promise<ScanResult | null>;
   rescan(): Promise<ScanResult>;
+  importDroppedFiles(files: File[]): Promise<ScanResult>;
+  addToPlaylist(id: string, trackIds: string[]): Promise<void>;
+  showTrackMenu(trackIds: string[]): Promise<void>;
+  onTrackAction(callback: (action: TrackAction) => void): () => void;
   favorite(id: string): Promise<void>;
   createPlaylist(name: string): Promise<Playlist>;
   renamePlaylist(id: string, name: string): Promise<void>;

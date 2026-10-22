@@ -1,5 +1,7 @@
 # Rhythm 0.1 — implementation and validation
 
+Historical initial-checkpoint record. Current feature-iteration results and migration notes are in [ITERATION-1.md](ITERATION-1.md). The user subsequently confirmed the checkpoint's macOS and Ubuntu GitHub Actions jobs passed after the CI fixes.
+
 Validated on 2026-10-20, on Intel macOS 15.8.1. Runtime: Electron 44.9.2. Development host: Node.js 26.12.0.
 
 ## Delivered application

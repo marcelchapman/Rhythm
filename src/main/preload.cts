@@ -1,6 +1,28 @@
-import { contextBridge, ipcRenderer } from "electron";
-import type { PlayerState, ScanProgress, RhythmAPI } from "../shared/types.js";
+import { contextBridge, ipcRenderer, webUtils } from "electron";
+import type {
+  PlayerState,
+  ScanProgress,
+  RhythmAPI,
+  TrackAction,
+} from "../shared/types.js";
 const api: RhythmAPI = {
+  importDroppedFiles: (files: File[]) => {
+    const paths = files
+      .map((file) => webUtils.getPathForFile(file))
+      .filter(Boolean);
+    if (!paths.length)
+      return Promise.reject(
+        new Error("Drop files or folders from your file manager."),
+      );
+    return ipcRenderer.invoke("library:drop", paths);
+  },
+  addToPlaylist: (id, ids) => ipcRenderer.invoke("playlist:add", id, ids),
+  showTrackMenu: (ids) => ipcRenderer.invoke("track:menu", ids),
+  onTrackAction: (callback: (action: TrackAction) => void) => {
+    const listener = (_: unknown, action: TrackAction) => callback(action);
+    ipcRenderer.on("track:action", listener);
+    return () => ipcRenderer.removeListener("track:action", listener);
+  },
   snapshot: () => ipcRenderer.invoke("library:snapshot"),
   chooseLibrary: () => ipcRenderer.invoke("library:choose"),
   importMusic: () => ipcRenderer.invoke("library:import"),

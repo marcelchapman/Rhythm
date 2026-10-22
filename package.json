@@ -12,15 +12,16 @@
     "build": "tsc -p tsconfig.main.json && vite build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "test": "vitest run --root .",
-    "test:desktop": "npm run build && node scripts/smoke.mjs",
-    "test:packaged": "node scripts/smoke.mjs --packaged",
+    "test:desktop": "npm run build && node scripts/smoke.mjs && node scripts/features.mjs",
+    "test:packaged": "node scripts/smoke.mjs --packaged && node scripts/features.mjs --packaged",
     "test:codecs": "node scripts/codecs.mjs",
     "pack": "npm run icons && npm run build && electron-builder --dir",
     "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip",
     "dist:linux": "npm run icons && npm run build && electron-builder --linux AppImage deb",
     "icons": "node scripts/create-icon.mjs",
     "format": "prettier --write src tests scripts vite.config.ts tsconfig*.json package.json .github/workflows/build.yml",
-    "format:check": "prettier --check src tests scripts vite.config.ts tsconfig*.json package.json .github/workflows/build.yml"
+    "format:check": "prettier --check src tests scripts vite.config.ts tsconfig*.json package.json .github/workflows/build.yml",
+    "test:features": "npm run build && node scripts/features.mjs"
   },
   "dependencies": {
     "lucide-react": "1.60.0",
