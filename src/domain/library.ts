@@ -207,14 +207,42 @@ export class Library {
       )
       .run(JSON.stringify(valid));
   }
+  legacyViewPreferences(): unknown {
+    const row = this.db
+      .prepare("SELECT value FROM settings WHERE key='views'")
+      .get();
+    try {
+      return row ? JSON.parse(row.value as string) : undefined;
+    } catch {
+      return undefined;
+    }
+  }
   favorite(id: string) {
     this.db.prepare("UPDATE tracks SET favorite=1-favorite WHERE id=?").run(id);
   }
-  createPlaylist(name: string): Playlist {
+  createPlaylist(name: string, trackIds: string[] = []): Playlist {
     name = this.playlistName(name);
+    if (
+      !Array.isArray(trackIds) ||
+      trackIds.length > 50000 ||
+      trackIds.some((id) => typeof id !== "string")
+    )
+      throw new Error("Invalid playlist tracks.");
     const id = randomUUID();
-    this.db.prepare("INSERT INTO playlists VALUES(?,?)").run(id, name);
-    return { id, name, trackIds: [] };
+    const ids = [...new Set(trackIds)];
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      this.db.prepare("INSERT INTO playlists VALUES(?,?)").run(id, name);
+      const insert = this.db.prepare(
+        "INSERT INTO playlist_tracks VALUES(?,?,?)",
+      );
+      ids.forEach((trackId, position) => insert.run(id, trackId, position));
+      this.db.exec("COMMIT");
+    } catch (e) {
+      this.db.exec("ROLLBACK");
+      throw e;
+    }
+    return { id, name, trackIds: ids };
   }
   private playlistName(name: string) {
     if (typeof name !== "string" || !name.trim() || name.trim().length > 120)

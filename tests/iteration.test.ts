@@ -13,7 +13,7 @@ import path from "node:path";
 import { Library } from "../src/domain/library";
 import { defaultState } from "../src/shared/types";
 import { wavFixture } from "./fixtures";
-import { sortSongs, dragTrackIds } from "../src/renderer/song-columns";
+import { sortTracks, dragTrackIds } from "../src/renderer/track-columns";
 let root: string;
 let l: Library | undefined;
 beforeEach(async () => {
@@ -141,24 +141,24 @@ test("column sorting is numeric, stable, and puts absent metadata last in either
     await l.scan([f]);
   }
   const tracks = l.tracks();
-  expect(sortSongs(tracks, "bpm", 1).map((t) => t.bpm)).toEqual([
+  expect(sortTracks(tracks, "bpm", 1).map((t) => t.bpm)).toEqual([
     90,
     130,
     null,
   ]);
-  expect(sortSongs(tracks, "bpm", -1).map((t) => t.bpm)).toEqual([
+  expect(sortTracks(tracks, "bpm", -1).map((t) => t.bpm)).toEqual([
     130,
     90,
     null,
   ]);
-  expect(sortSongs(tracks, "title", 1)[0].title).toBe("Song 2");
+  expect(sortTracks(tracks, "title", 1)[0].title).toBe("Song 2");
   expect(tracks.map((t) => t.title)).toEqual(["Song 10", "Song 2", "Unknown"]);
   const large = Array.from({ length: 20000 }, (_, i) => ({
     ...tracks[0],
     id: String(i),
     title: `Song ${20000 - i}`,
   }));
-  expect(sortSongs(large, "title", 1)[0].title).toBe("Song 1");
+  expect(sortTracks(large, "title", 1)[0].title).toBe("Song 1");
 });
 test("internal drag IDs reject malformed and non-library payloads", () => {
   const id = "a".repeat(64);

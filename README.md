@@ -9,13 +9,14 @@ Rhythm’s long-term scope includes macOS, Windows, Linux, Android, iOS, and clo
 - First-run library setup with a folder you explicitly choose; no preconfigured music or sample database.
 - Recursive, read-only music indexing with metadata and embedded artwork.
 - Persistent Albums, Artists, Songs, Genres, Recently Added, Favourites, and Playlists views.
-- Dense, virtualized Songs table with sortable title, duration, artist, album, genre, BPM, bit rate, format, disc, track, and comments columns; horizontal scrolling and multi-selection.
+- Shared virtualized Track List in Songs, playlist contents, Artist/Genre track views, Favourites, search, and library list mode. Sortable metadata includes title, duration, artist, album, genre, BPM, bit rate, format, disc, track, comments, and year. Column order, widths, and visibility are global and persistent.
 - Search across title, artist, album, album artist, genre, comments, and codec; album sorting and genre filtering.
 - Album details and track list; play/pause, previous/next, seeking, time, volume/mute, shuffle, and repeat.
 - Queue inspection, play-next, add/remove queue entries, and persistent listening state.
 - Create, rename, delete, and add/remove songs from playlists.
 - Native track context menus for playback, queue, playlists, and favourites; File → New Playlist (Command/Ctrl+N).
-- Drop local audio files/folders to index them in place; drag library tracks onto sidebar playlists.
+- File → Import Playlist accepts UTF-8 M3U/M3U8 and safely indexes new local audio; File → Export Playlist writes M3U8 in playlist order.
+- Drop local audio files/folders to index them in place; drop M3U/M3U8 playlists to import them; drag library tracks onto sidebar playlists. macOS Open With/Dock playlist opens queue safely through startup or library setup.
 - Manual folder rescanning, import reports, missing-file indication, and playback errors.
 - Native folder dialogs, application menus, media-session integration, keyboard focus, and desktop window resizing.
 
@@ -34,10 +35,12 @@ npm run dev
 
 1. Select **Choose library folder**. Create or select an ordinary folder for Rhythm’s database. It can be separate from your music. Select an existing Rhythm folder to reopen that library.
 2. Select **Add music folders** and choose one or more music directories. Rhythm indexes them in place.
-3. Select an album for its track list, or use its play button. In Songs, click to select, Shift-click for a range, Command/Ctrl-click to toggle, and double-click to play. Right-click a track for actions. Scroll the table horizontally for additional metadata; the title stays visible.
+3. Select an album for its track list, or use its play button. In Songs, click to select, Shift-click for a range, Command/Ctrl-click to toggle, and double-click to play. Right-click a track for actions. Drag headers to rearrange metadata columns; click a header to sort. Drag column boundaries to resize; use Library Settings → Track List columns to show/hide metadata. Presentation is shared globally; playlist order and each view's sort/selection remain independent. The first column stays visible when it fits, and horizontal scrolling exposes the rest.
 4. Use **Library settings** to add music, rescan folders, or switch libraries. A rescan is required after external file changes.
 
 Rhythm never writes to your source audio files. It does not move, rename, delete, consolidate, or edit embedded tags. Deleting a playlist only deletes its database records.
+
+To exchange playlists, use **File → Import Playlist…** or **File → Export Playlist…**. M3U/M3U8 can also be dropped into the app or opened with Rhythm from Finder. On a first launch without a library, file-open requests wait until one is chosen. Export uses the current playlist; from another view it asks which playlist to export. Relative import paths resolve beside the playlist file. Export uses relative paths for audio inside the export folder's tree and absolute paths for external locations. Spaces/Unicode and local `file:` URLs are supported; streaming URLs are reported and skipped. Missing or invalid entries produce a report while available songs retain their order. Existing playlist names receive a numeric suffix; repeated references use Rhythm's existing unique-membership rule. Audio remains in place. Legacy non-UTF-8 M3U files must be resaved as UTF-8 before import.
 
 ## Formats and artwork
 
@@ -48,6 +51,8 @@ Embedded JPEG, PNG, and WebP artwork up to 10 MB is cached. Missing artwork gets
 ## Data storage and safety
 
 The folder you select contains `rhythm.sqlite` plus SQLite WAL/SHM sidecars while open. It holds tracks, source paths, cached artwork, playlists, favourites, and player settings. Close Rhythm before backing up or copying the library folder. The database contains absolute paths and is not a portable synchronization format.
+
+Global Track List settings are stored in `view-preferences.json` beside the application-data pointer. Existing library-scoped Songs order migrates once when no global layout exists.
 
 A `library.json` pointer is stored in Electron’s user-data directory: normally `~/Library/Application Support/Rhythm` on macOS and `$XDG_CONFIG_HOME/Rhythm` (usually `~/.config/Rhythm`) on Linux. `RHYTHM_DATA_DIR` overrides only the pointer/application-data location for isolated development and testing; it does not preconfigure a music library.
 
@@ -74,6 +79,8 @@ Unit tests cover empty/reopened libraries, database ownership, schema migration,
 `test:desktop` launches real Electron windows against temporary synthetic audio and temporary application data. It tests setup, indexing, playback/seek, search, playlist/favourites/queue, genre/artist views, rescan, and restart persistence. Folder-dialog responses are automated with temporary paths; native picker interaction remains a manual check. It produces screenshots in `.impeccable/review/` and removes its temporary library afterward. FFmpeg is optional: when available, it generates FLAC with embedded synthetic artwork; otherwise the test uses WAV. On headless Linux, use `xvfb-run -a npm run test:desktop`.
 
 The same command also runs the feature suite: playlist focus, native menu callbacks, table selection/sorting, real disk-file/folder drops through preload, multi-track playlist drops, restart, source hashes, and a 10,014-track rendering benchmark. Run just that suite with `npm run test:features`. Native menus are exercised through their actual commands with popup display intercepted in the isolated test process; Finder/Linux file-manager gestures and menu appearance still need manual evaluation.
+
+It also runs `scripts/interchange.mjs`: pointer header dragging, column-order restart, sorting/keyboard playback after reordering, File-menu import/export, missing-entry reports, Unicode/space paths, newly indexed audio, export/import round trips, dialog cancellation, and source hashes. `npm run test:interchange` runs that suite alone. `scripts/acceptance.mjs` adds pointer resizing, visibility/restoration, legacy migration, shared cross-view presentation, independent playlist ordering, mixed playlist/audio/folder drops, queued startup/running file opens, alias deduplication, and first-run deferral. `npm run test:acceptance` runs it alone. `test:packaged` exercises all four suites against the built application. See [ITERATION-2.md](docs/ITERATION-2.md) for implementation and current validation details.
 
 The test audio is silence, so automated playback verifies decoding, transport, time advancement, and seeking, not audible output quality. Evaluate sound and your audio device manually.
 
@@ -117,13 +124,14 @@ rhythm-desktop
 
 AppImage requires FUSE on some distributions; with a compatible runtime, `--appimage-extract-and-run` is an alternative. Do not run Rhythm as root or disable Chromium’s sandbox. Electron’s sandbox may require appropriate distribution user-namespace settings. `.github/workflows/build.yml` runs checks and packaging natively on macOS and Ubuntu when triggered; it does not publish releases.
 
-This iteration was developed and run on macOS. The user reports the preceding 0.1 checkpoint passed macOS and Ubuntu CI; the new feature suite must now pass there too. See [ITERATION-1.md](docs/ITERATION-1.md) for current results and [VALIDATION.md](docs/VALIDATION.md) for the original checkpoint.
+This iteration was developed and run on macOS. The user reports the preceding checkpoint passed macOS and Ubuntu CI; the new suites must now pass there too. See [ITERATION-2.md](docs/ITERATION-2.md) for current results and [VALIDATION.md](docs/VALIDATION.md) for the original checkpoint. macOS is the active Phase 1 development target; the existing Ubuntu workflow remains a portability canary.
 
 ## Current limitations
 
 - No cloud sync, mobile clients, Windows release, metadata editing, or automatic filesystem watching in 0.1.
 - No gapless/crossfade, ReplayGain, equalizer, audio-device picker, or bit-perfect output guarantee. Volume uses the operating system’s default output device.
-- No playlist reordering/import/export or managed-media copying/organisation. A queue contains unique tracks and supports basic next/add/remove operations.
+- No playlist track-reorder UI or managed-media copying/organisation. A queue contains unique tracks and supports basic next/add/remove operations. Playlist interchange is local-file UTF-8 M3U/M3U8 only; repeated song references collapse to their first occurrence.
+- Track List presentation is application/profile-global. Sort/selection/scroll are local mounted-view state and reset to the view's defaults when re-entered. Side-panel queue/album rows remain compact contextual lists.
 - Metadata is cached by file size, modification time, and extraction version; a migration may require one rescan to backfill new fields. Only embedded artwork is used.
 - SQLite artwork caching can grow the database for large collections. No cache-size UI or automated pruning yet.
 - Songs rendering was checked with 10,014 synthetic records, not a full large-collection import benchmark. Snapshots and sorting still process the full collection; synchronous SQLite writes can cause latency and scans have no cancel control. The right panel initially shows 200 tracks with a Show more control.

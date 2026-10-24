@@ -12,8 +12,8 @@
     "build": "tsc -p tsconfig.main.json && vite build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "test": "vitest run --root .",
-    "test:desktop": "npm run build && node scripts/smoke.mjs && node scripts/features.mjs",
-    "test:packaged": "node scripts/smoke.mjs --packaged && node scripts/features.mjs --packaged",
+    "test:desktop": "npm run build && node scripts/smoke.mjs && node scripts/features.mjs && node scripts/interchange.mjs && node scripts/acceptance.mjs",
+    "test:packaged": "node scripts/smoke.mjs --packaged && node scripts/features.mjs --packaged && node scripts/interchange.mjs --packaged && node scripts/acceptance.mjs --packaged",
     "test:codecs": "node scripts/codecs.mjs",
     "pack": "npm run icons && npm run build && electron-builder --dir",
     "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip",
@@ -21,7 +21,9 @@
     "icons": "node scripts/create-icon.mjs",
     "format": "prettier --write src tests scripts vite.config.ts tsconfig*.json package.json .github/workflows/build.yml",
     "format:check": "prettier --check src tests scripts vite.config.ts tsconfig*.json package.json .github/workflows/build.yml",
-    "test:features": "npm run build && node scripts/features.mjs"
+    "test:features": "npm run build && node scripts/features.mjs",
+    "test:interchange": "npm run build && node scripts/interchange.mjs",
+    "test:acceptance": "npm run build && node scripts/acceptance.mjs"
   },
   "dependencies": {
     "lucide-react": "1.60.0",
@@ -60,7 +62,18 @@
       "category": "public.app-category.music",
       "identity": null,
       "minimumSystemVersion": "13.0",
-      "icon": "build/rhythm.icns"
+      "icon": "build/rhythm.icns",
+      "fileAssociations": [
+        {
+          "ext": [
+            "m3u",
+            "m3u8"
+          ],
+          "name": "M3U Playlist",
+          "role": "Viewer",
+          "rank": "Alternate"
+        }
+      ]
     },
     "dmg": {
       "title": "Rhythm 0.1"

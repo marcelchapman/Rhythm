@@ -1,5 +1,7 @@
 # First feature iteration after Rhythm 0.1
 
+Historical iteration record. The next bounded iteration is documented in [ITERATION-2.md](ITERATION-2.md).
+
 Validated locally on 2026-10-21 on Intel macOS with Electron 44.9.2. This extends the existing desktop architecture and approved visual direction. No commit or push was made. The original checkpoint's CI was green on macOS and Ubuntu according to the user; this iteration has not been run in GitHub Actions.
 
 ## Behaviour and causes

@@ -1,5 +1,12 @@
-import { SongsTable } from "./SongsTable";
-import { TRACK_DRAG_TYPE, dragTrackIds } from "./song-columns";
+import { TrackList } from "./TrackList";
+import { TRACK_COLUMNS } from "./track-columns";
+import {
+  patchTrackListPreferences,
+  type TrackListPatch,
+} from "../shared/preferences";
+import type { DesktopPlaylistEvent } from "../shared/types";
+import type { PlaylistImportResult } from "../shared/types";
+import { TRACK_DRAG_TYPE, dragTrackIds } from "./track-columns";
 import type { TrackAction } from "../shared/types";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
@@ -123,11 +130,13 @@ function Modal({
     const root = ref.current!;
     const elements = () => [
       ...root.querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input, select, [tabindex="0"]',
+        'button:not(:disabled), input:not(:disabled), select:not(:disabled), [tabindex="0"]',
       ),
     ];
     (
-      root.querySelector<HTMLElement>("input, select") ?? elements()[0]
+      root.querySelector<HTMLElement>(
+        "input:not(:disabled), select:not(:disabled)",
+      ) ?? elements()[0]
     )?.focus();
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeRef.current();
@@ -177,6 +186,15 @@ function Modal({
 }
 
 export function App() {
+  const preferenceRequest = useRef(0);
+  const desktopEventRef = useRef<(event: DesktopPlaylistEvent) => void>(
+    () => {},
+  );
+  const playlistCommandRef = useRef<(command: string) => void>(() => {});
+  const [playlistReport, setPlaylistReport] = useState<PlaylistImportResult[]>(
+    [],
+  );
+  const [exportPlaylistId, setExportPlaylistId] = useState("");
   const [message, setMessage] = useState("");
   const [pendingPlaylistTracks, setPendingPlaylistTracks] = useState<string[]>(
     [],
@@ -206,7 +224,7 @@ export function App() {
   const [error, setError] = useState("");
   const [report, setReport] = useState<ScanResult | null>(null);
   const [modal, setModal] = useState<
-    "settings" | "playlist" | "track" | "delete" | null
+    "settings" | "playlist" | "track" | "delete" | "export-playlist" | null
   >(null);
   const [editPlaylist, setEditPlaylist] = useState<Playlist | null>(null);
   const [name, setName] = useState("");
@@ -294,10 +312,15 @@ export function App() {
     setGroup(null);
     setQuery("");
     setShowQueue(false);
+    void api.desktopReady().catch(fail);
     setTimeout(() => {
       suppressSave.current = false;
     }, 100);
   };
+  useEffect(
+    () => api.onDesktopPlaylist((event) => desktopEventRef.current(event)),
+    [],
+  );
   useEffect(() => {
     api.snapshot().then(load).catch(fail);
     return api.onProgress((p) =>
@@ -509,6 +532,11 @@ export function App() {
         } else if (command === "new-playlist") {
           if (dataRef.current?.libraryPath) makePlaylist();
           else setError("Choose a library folder before creating playlists.");
+        } else if (
+          command === "import-playlist" ||
+          command === "export-playlist"
+        ) {
+          playlistCommandRef.current(command);
         } else if (command === "choose-library") void chooseLibrary();
       }),
     [],
@@ -578,7 +606,7 @@ export function App() {
         ].some((v) => v.toLocaleLowerCase().includes(q)),
       );
     visible = [...visible];
-    if (view === "Recently Added" || sort === "recent")
+    if (!activePlaylist && (view === "Recently Added" || sort === "recent"))
       visible.sort((a, b) => b.addedAt - a.addedAt);
     else if (!activePlaylist)
       visible.sort((a, b) =>
@@ -709,7 +737,20 @@ export function App() {
     setProgress("Reading dropped files and folders…");
     setError("");
     try {
-      setReport(await api.importDroppedFiles(files));
+      const result = await api.importDroppedFiles(files);
+      setReport(
+        result.playlists.length
+          ? result.added || result.updated || result.errors.length
+            ? result
+            : null
+          : result,
+      );
+      if (result.playlists.length) {
+        setPlaylistReport(result.playlists);
+        navigate(`playlist:${result.playlists.at(-1)!.playlist.id}`);
+      }
+      if (result.playlistErrors.length)
+        setError(result.playlistErrors.join(" · "));
       await refresh();
     } catch (e) {
       fail(e);
@@ -717,6 +758,106 @@ export function App() {
       setBusy(false);
       setProgress("");
     }
+  };
+  const savePresentation = (patch: TrackListPatch) => {
+    const request = ++preferenceRequest.current;
+    setData((previous) =>
+      previous
+        ? {
+            ...previous,
+            preferences: patchTrackListPreferences(previous.preferences, patch),
+          }
+        : previous,
+    );
+    void api
+      .saveTrackListPreferences(patch)
+      .then((preferences) => {
+        if (request === preferenceRequest.current)
+          setData((previous) =>
+            previous ? { ...previous, preferences } : previous,
+          );
+      })
+      .catch((e) => {
+        fail(e);
+        void refresh();
+      });
+  };
+  desktopEventRef.current = (event) => {
+    if ("waiting" in event) {
+      setMessage(
+        `${event.waiting} playlist${event.waiting === 1 ? " is" : "s are"} waiting. Choose a library folder to import.`,
+      );
+      return;
+    }
+    if ("error" in event) {
+      setError(event.error);
+      return;
+    }
+    void refresh()
+      .then(() => {
+        setPlaylistReport((previous) => [...previous, event.result]);
+        setMessage("");
+        navigate(`playlist:${event.result.playlist.id}`);
+      })
+      .catch(fail);
+  };
+  const exportPlaylist = async (id: string) => {
+    if (busy) return;
+    setBusy(true);
+    setProgress("Choose where to export your playlist…");
+    setError("");
+    try {
+      const result = await api.exportPlaylist(id);
+      if (result) {
+        setModal(null);
+        setMessage(
+          `Exported ${result.count} songs as M3U8.${result.unavailable ? ` ${result.unavailable} references are currently unavailable.` : ""}`,
+        );
+      }
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+      setProgress("");
+    }
+  };
+  playlistCommandRef.current = (command) => {
+    if (!data?.libraryPath) {
+      setError(
+        "Choose a library folder before importing or exporting playlists.",
+      );
+      return;
+    }
+    if (busy) {
+      setError("Wait for the current import/export to finish.");
+      return;
+    }
+    if (command === "export-playlist") {
+      if (activePlaylist) void exportPlaylist(activePlaylist.id);
+      else if (data.playlists.length) {
+        setExportPlaylistId(data.playlists[0].id);
+        setModal("export-playlist");
+      } else setError("Create or import a playlist before exporting.");
+      return;
+    }
+    void (async () => {
+      setBusy(true);
+      setProgress("Choose an M3U or M3U8 playlist…");
+      setError("");
+      try {
+        const result = await api.importPlaylist();
+        if (result) {
+          await refresh();
+          setPlaylistReport([result]);
+          navigate(`playlist:${result.playlist.id}`);
+        }
+      } catch (e) {
+        fail(e);
+      } finally {
+        setBusy(false);
+        setProgress("");
+      }
+    })();
   };
   const renderTracks = (items: Track[], compact = false, queueMode = false) => (
     <div
@@ -908,7 +1049,7 @@ export function App() {
           <FolderPlus size={22} />
           <span>
             {data?.libraryPath
-              ? "Drop to add music"
+              ? "Drop to add music or playlists"
               : "Choose a library folder first"}
             <small>Your source files stay where they are.</small>
           </span>
@@ -1090,6 +1231,46 @@ export function App() {
             <Check size={18} />
             <span>{message}</span>
             <IconButton label="Dismiss message" onClick={() => setMessage("")}>
+              <X />
+            </IconButton>
+          </div>
+        )}
+        {playlistReport.length > 0 && (
+          <div className="notice" role="status">
+            <Check size={18} />
+            <span>
+              Imported{" "}
+              {playlistReport.length === 1
+                ? `“${playlistReport[0].playlist.name}”`
+                : `${playlistReport.length} playlists`}{" "}
+              · {playlistReport.reduce((n, p) => n + p.count, 0)} songs ·{" "}
+              {playlistReport.reduce((n, p) => n + p.added, 0)} newly indexed
+              {playlistReport.some((p) => p.issueCount) &&
+                ` · ${playlistReport.reduce((n, p) => n + p.issueCount, 0)} ${playlistReport.reduce((n, p) => n + p.issueCount, 0) === 1 ? "issue" : "issues"}`}
+              {playlistReport.some((p) => p.issues.length) && (
+                <details>
+                  <summary>View playlist issues</summary>
+                  <ul>
+                    {playlistReport
+                      .flatMap((p) =>
+                        p.issues.map((issue) =>
+                          playlistReport.length > 1
+                            ? `${p.playlist.name}: ${issue}`
+                            : issue,
+                        ),
+                      )
+                      .slice(0, 100)
+                      .map((issue, i) => (
+                        <li key={i}>{issue}</li>
+                      ))}
+                  </ul>
+                </details>
+              )}
+            </span>
+            <IconButton
+              label="Dismiss playlist report"
+              onClick={() => setPlaylistReport([])}
+            >
               <X />
             </IconButton>
           </div>
@@ -1276,17 +1457,19 @@ export function App() {
                       </>
                     ) : (
                       <>
-                        {view !== "Songs" && (
-                          <select
-                            aria-label="Sort library"
-                            value={sort}
-                            onChange={(e) => setSort(e.target.value)}
-                          >
-                            <option value="az">A – Z</option>
-                            <option value="recent">Newest added</option>
-                            <option value="year">Release year</option>
-                          </select>
-                        )}
+                        {!["Songs", "Favourites"].includes(view) &&
+                          !group &&
+                          layout !== "list" && (
+                            <select
+                              aria-label="Sort library"
+                              value={sort}
+                              onChange={(e) => setSort(e.target.value)}
+                            >
+                              <option value="az">A – Z</option>
+                              <option value="recent">Newest added</option>
+                              <option value="year">Release year</option>
+                            </select>
+                          )}
                         <select
                           aria-label="Filter genre"
                           value={genre}
@@ -1371,7 +1554,7 @@ export function App() {
                       {query
                         ? "Try another title, artist, or album."
                         : activePlaylist
-                          ? "Open the options beside a song to add it to this playlist."
+                          ? "Right-click a song to add it to this playlist."
                           : "Favourite a song using its heart, or adjust the genre filter."}
                     </p>
                     {genre !== "All Genres" && (
@@ -1386,25 +1569,30 @@ export function App() {
                 ) : query ||
                   activePlaylist ||
                   ["Songs", "Favourites"].includes(view) ||
+                  ((view === "Artists" || view === "Genres") && !!group) ||
                   layout === "list" ? (
-                  view === "Songs" ? (
-                    <SongsTable
-                      resetKey={`${view}\0${query}\0${genre}`}
-                      tracks={visible}
-                      currentId={current?.id}
-                      playing={playing}
-                      onPlay={playTrack}
-                      onContext={showTrackMenu}
-                      onOptions={trackActions}
-                      onSelect={(t) => {
-                        setSelectedAlbum(t.albumId);
-                        setShowQueue(false);
-                      }}
-                      onFavorite={(id) => void favorite(id)}
-                    />
-                  ) : (
-                    renderTracks(visible)
-                  )
+                  <TrackList
+                    key={`${view}\0${group}\0${query ? "search" : "browse"}`}
+                    label={
+                      query
+                        ? "Search results"
+                        : (activePlaylist?.name ?? group ?? view)
+                    }
+                    ordered={!!activePlaylist && !query}
+                    presentation={data.preferences.trackList.columns}
+                    onPresentationChange={savePresentation}
+                    resetKey={`${view}\0${query}\0${genre}`}
+                    tracks={visible}
+                    currentId={current?.id}
+                    playing={playing}
+                    onPlay={playTrack}
+                    onContext={showTrackMenu}
+                    onSelect={(t) => {
+                      setSelectedAlbum(t.albumId);
+                      setShowQueue(false);
+                    }}
+                    onFavorite={(id) => void favorite(id)}
+                  />
                 ) : (
                   renderAlbums(visibleAlbums)
                 )}
@@ -1640,6 +1828,40 @@ export function App() {
             <FolderOpen size={17} />
             Choose or switch library…
           </button>
+          <h3>Track List columns</h3>
+          <p className="muted">
+            Shared across Songs, playlists and other Track Lists. Title stays
+            visible.
+          </p>
+          <div
+            className="column-settings"
+            role="group"
+            aria-label="Track List columns"
+          >
+            {TRACK_COLUMNS.map((column) => (
+              <label key={column.key}>
+                <input
+                  type="checkbox"
+                  checked={
+                    !data?.preferences.trackList.columns.hidden.includes(
+                      column.key,
+                    )
+                  }
+                  disabled={column.key === "title"}
+                  onChange={(e) => {
+                    const hidden =
+                      data?.preferences.trackList.columns.hidden ?? [];
+                    savePresentation({
+                      hidden: e.target.checked
+                        ? hidden.filter((id) => id !== column.key)
+                        : [...hidden, column.key],
+                    });
+                  }}
+                />
+                {column.label}
+              </label>
+            ))}
+          </div>
           <h3>Music folders</h3>
           {data?.roots.length ? (
             <ul className="root-list">
@@ -1680,6 +1902,36 @@ export function App() {
             Music files are read only. Rhythm does not move, rename, delete, or
             edit them. Cloud sync and mobile clients are outside version 0.1.
           </p>
+        </Modal>
+      )}
+      {modal === "export-playlist" && (
+        <Modal title="Export playlist" close={() => setModal(null)}>
+          <div className="form-label">
+            <label htmlFor="export-playlist">Playlist to export</label>
+            <select
+              id="export-playlist"
+              value={exportPlaylistId}
+              onChange={(e) => setExportPlaylistId(e.target.value)}
+            >
+              {data?.playlists.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <p className="muted">
+            Save an M3U8 playlist. Your audio files stay where they are.
+          </p>
+          <div className="dialog-actions">
+            <button
+              className="primary"
+              disabled={busy || !exportPlaylistId}
+              onClick={() => void exportPlaylist(exportPlaylistId)}
+            >
+              Export…
+            </button>
+          </div>
         </Modal>
       )}
       {modal === "playlist" && (

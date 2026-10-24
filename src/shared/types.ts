@@ -1,3 +1,4 @@
+import type { ViewPreferences, TrackListPatch } from "./preferences.js";
 export interface Track {
   id: string;
   path: string;
@@ -41,6 +42,14 @@ export interface Snapshot {
   playlists: Playlist[];
   roots: string[];
   state: PlayerState;
+  preferences: ViewPreferences;
+}
+export interface PlaylistImportResult {
+  playlist: Playlist;
+  added: number;
+  count: number;
+  issueCount: number;
+  issues: string[];
 }
 export interface ScanResult {
   added: number;
@@ -49,6 +58,12 @@ export interface ScanResult {
   errors: string[];
   skipped: number;
 }
+export interface DropImportResult extends ScanResult {
+  playlists: PlaylistImportResult[];
+  playlistErrors: string[];
+}
+export type DesktopPlaylistEvent =
+  { result: PlaylistImportResult } | { error: string } | { waiting: number };
 export interface ScanProgress {
   scanned: number;
   current: string;
@@ -59,11 +74,20 @@ export type TrackAction = {
   playlistId?: string;
 };
 export interface RhythmAPI {
+  saveTrackListPreferences(patch: TrackListPatch): Promise<ViewPreferences>;
+  desktopReady(): Promise<void>;
+  onDesktopPlaylist(
+    callback: (event: DesktopPlaylistEvent) => void,
+  ): () => void;
+  importPlaylist(): Promise<PlaylistImportResult | null>;
+  exportPlaylist(
+    id: string,
+  ): Promise<{ count: number; unavailable: number } | null>;
   snapshot(): Promise<Snapshot>;
   chooseLibrary(): Promise<Snapshot | null>;
   importMusic(): Promise<ScanResult | null>;
   rescan(): Promise<ScanResult>;
-  importDroppedFiles(files: File[]): Promise<ScanResult>;
+  importDroppedFiles(files: File[]): Promise<DropImportResult>;
   addToPlaylist(id: string, trackIds: string[]): Promise<void>;
   showTrackMenu(trackIds: string[]): Promise<void>;
   onTrackAction(callback: (action: TrackAction) => void): () => void;

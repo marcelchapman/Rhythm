@@ -1003,7 +1003,8 @@ input[type="range"]:disabled {
   gap: 10px;
   font-size: 13px;
 }
-.form-label input {
+.form-label input,
+.form-label select {
   border: 1px solid #ffffff25;
   background: #101923;
   border-radius: 6px;
@@ -1176,6 +1177,7 @@ input[type="range"]:disabled {
   box-shadow: 0 1px 0 #ffffff12;
 }
 .songs-header > div {
+  position: relative;
   height: 100%;
   min-width: 0;
 }
@@ -1193,6 +1195,57 @@ input[type="range"]:disabled {
 .songs-header button:hover {
   background: #ffffff08;
 }
+.songs-header [draggable] {
+  cursor: grab;
+}
+.songs-header [draggable] button {
+  cursor: inherit;
+}
+.songs-header .column-dragging {
+  opacity: 0.5;
+}
+.songs-header .column-drop-before {
+  box-shadow: inset 1px 0 var(--accent);
+}
+.songs-header .column-drop-after {
+  box-shadow: inset -1px 0 var(--accent);
+}
+.column-resize {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+  z-index: 4;
+}
+.column-resize:hover,
+.column-resize:focus-visible,
+.column-resize.resizing {
+  box-shadow: inset -1px 0 var(--accent);
+}
+.column-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 24px;
+  margin: 18px 0 24px;
+}
+.column-settings label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.column-settings input {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+}
+.restore-order {
+  color: var(--accent);
+  margin-right: 12px;
+}
 .sticky-title {
   position: sticky;
   left: 0;
@@ -1200,6 +1253,7 @@ input[type="range"]:disabled {
   background: #101720;
 }
 .songs-header .sticky-title {
+  position: sticky;
   background: #192331;
 }
 .song-row {
@@ -1279,16 +1333,6 @@ input[type="range"]:disabled {
 .song-row:hover .song-heart,
 .song-row.selected .song-heart,
 .song-heart:focus-visible {
-  opacity: 1;
-}
-.song-row .song-options {
-  width: 24px;
-  height: 28px;
-  opacity: 0;
-}
-.song-row:hover .song-options,
-.song-row.selected .song-options,
-.song-options:focus-visible {
   opacity: 1;
 }
 .song-row .numeric {

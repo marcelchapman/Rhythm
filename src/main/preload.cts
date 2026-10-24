@@ -6,6 +6,19 @@ import type {
   TrackAction,
 } from "../shared/types.js";
 const api: RhythmAPI = {
+  saveTrackListPreferences: (patch) =>
+    ipcRenderer.invoke("views:track-list", patch),
+  desktopReady: () => ipcRenderer.invoke("desktop:ready"),
+  onDesktopPlaylist: (callback) => {
+    const listener = (
+      _: unknown,
+      event: import("../shared/types.js").DesktopPlaylistEvent,
+    ) => callback(event);
+    ipcRenderer.on("playlist:desktop", listener);
+    return () => ipcRenderer.removeListener("playlist:desktop", listener);
+  },
+  importPlaylist: () => ipcRenderer.invoke("playlist:import-file"),
+  exportPlaylist: (id) => ipcRenderer.invoke("playlist:export-file", id),
   importDroppedFiles: (files: File[]) => {
     const paths = files
       .map((file) => webUtils.getPathForFile(file))

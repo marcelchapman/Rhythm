@@ -1,5 +1,5 @@
 import type { Track } from "../shared/types";
-export const SONG_COLUMNS = [
+export const TRACK_COLUMNS = [
   { key: "title", label: "Title", width: 230 },
   { key: "duration", label: "Time", width: 68 },
   { key: "artist", label: "Artist", width: 150 },
@@ -11,22 +11,24 @@ export const SONG_COLUMNS = [
   { key: "disc", label: "Disc", width: 52 },
   { key: "track", label: "Track", width: 55 },
   { key: "comments", label: "Comments", width: 260 },
+  { key: "year", label: "Year", width: 68 },
 ] as const;
-export type SongSortKey = (typeof SONG_COLUMNS)[number]["key"];
-const numeric = new Set<SongSortKey>([
+export type TrackSortKey = (typeof TRACK_COLUMNS)[number]["key"];
+const numeric = new Set<TrackSortKey>([
   "duration",
   "bpm",
   "bitRate",
   "disc",
   "track",
+  "year",
 ]);
 const collator = new Intl.Collator(undefined, {
   numeric: true,
   sensitivity: "base",
 });
-export function sortSongs(
+export function sortTracks(
   tracks: Track[],
-  key: SongSortKey,
+  key: TrackSortKey,
   direction: 1 | -1,
 ): Track[] {
   return [...tracks].sort((a, b) => {

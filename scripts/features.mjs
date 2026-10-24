@@ -111,6 +111,11 @@ try {
       .click(),
   );
   await createPlaylist(page, "First mix");
+  await page
+    .getByText("Right-click a song to add it to this playlist.", {
+      exact: true,
+    })
+    .waitFor();
   await page.getByRole("button", { name: "Songs", exact: true }).click();
   const table = page.getByRole("table", { name: "Songs", exact: true });
   await table.waitFor();
@@ -161,6 +166,7 @@ try {
   }, first.id);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await page
+    .locator(".detail-panel")
     .getByRole("button", { name: `Options for ${first.title}`, exact: true })
     .first()
     .click();
@@ -247,6 +253,48 @@ try {
   await page
     .locator(`[data-track-id="${second.id}"]`)
     .click({ modifiers: ["Shift"] });
+  assert.equal(
+    await page.locator('.song-row[aria-selected="true"]').count(),
+    2,
+  );
+  // Right-clicking within the selection targets the whole group, not just that row.
+  await page
+    .locator(`[data-track-id="${second.id}"]`)
+    .click({ button: "right" });
+  assert.equal(
+    await page.locator('.song-row[aria-selected="true"]').count(),
+    2,
+  );
+  await menuClick(`playlist-${firstMix.id}`);
+  await waitSnapshot(page, (s) => {
+    const ids = s.playlists.find((p) => p.id === firstMix.id)?.trackIds;
+    return (
+      ids?.length === 2 && ids.includes(first.id) && ids.includes(second.id)
+    );
+  });
+  // A right-click outside that group replaces selection and acts on the clicked track.
+  const third = initial.tracks.find((t) => t.title === "Recording 03");
+  await page
+    .locator(`[data-track-id="${third.id}"]`)
+    .click({ button: "right" });
+  assert.deepEqual(
+    await page
+      .locator('.song-row[aria-selected="true"]')
+      .evaluateAll((els) => els.map((el) => el.dataset.trackId)),
+    [third.id],
+  );
+  await menuClick("track-favorite");
+  await waitSnapshot(
+    page,
+    (s) => s.tracks.find((t) => t.id === third.id)?.favorite,
+  );
+  await row().click();
+  await page
+    .locator(`[data-track-id="${second.id}"]`)
+    .click({ modifiers: ["Shift"] });
+  // The existing keyboard context-menu shortcut remains usable without an action cell.
+  await page.locator(".songs-viewport").press("Shift+F10");
+  await menuClick(`playlist-${firstMix.id}`);
   assert.equal(
     await page.locator('.song-row[aria-selected="true"]').count(),
     2,
@@ -403,6 +451,17 @@ try {
       .getAttribute("aria-rowcount"),
     "10015",
   );
+  await page
+    .locator('[data-column-id="artist"]')
+    .dragTo(page.locator('[data-column-id="title"]'), {
+      targetPosition: { x: 5, y: 12 },
+    });
+  await page.waitForFunction(
+    () =>
+      document
+        .querySelector(".songs-header [data-column-id]")
+        ?.getAttribute("data-column-id") === "artist",
+  );
   assert((await page.locator(".song-row").count()) < 80);
   await page
     .locator(".songs-viewport")
@@ -433,6 +492,7 @@ try {
           "playlist picker focus",
           "atomic duplicate-safe append",
           "native context commands",
+          "right-click selection and keyboard context menu",
           "File > New Playlist",
           "row selection and activation",
           "sortable metadata",

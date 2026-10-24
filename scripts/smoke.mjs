@@ -297,7 +297,7 @@ try {
   const search = page.getByRole("searchbox", { name: "Search library" });
   await search.fill("Evening light");
   await page.getByRole("heading", { name: "Search results" }).waitFor();
-  assert.equal(await page.locator(".workspace .track-row").count(), 1);
+  assert.equal(await page.locator(".workspace .song-row").count(), 1);
   await search.fill("no-such-track");
   await page.getByRole("heading", { name: "No matching music" }).waitFor();
   await page.screenshot({ path: path.join(review, "search-empty.png") });
@@ -316,23 +316,34 @@ try {
   await page
     .getByRole("button", { name: "Favourite Evening light", exact: true })
     .click();
+  // Exercise the native context commands without automating the OS menu surface.
+  await application.evaluate(({ Menu }) => {
+    Menu.prototype.popup = function () {
+      globalThis.__rhythmSmokeMenu = this;
+    };
+  });
+  const contextCommand = (id) =>
+    application.evaluate((_electron, id) => {
+      const item = globalThis.__rhythmSmokeMenu?.getMenuItemById(id);
+      if (!item) throw Error(`Context command ${id} missing`);
+      item.click();
+    }, id);
+  const smokePlaylist = (await snapshot(page)).playlists.find(
+    (p) => p.name === "Smoke mix",
+  );
   await page
-    .getByRole("button", { name: "Options for Evening light", exact: true })
-    .first()
-    .click();
-  await page
-    .getByRole("combobox", { name: "Choose playlist" })
-    .selectOption({ label: "Smoke mix" });
-  await page.getByRole("button", { name: "Add song", exact: true }).click();
+    .locator(`[data-track-id="${playbackTrack.id}"]`)
+    .click({ button: "right" });
+  await contextCommand(`playlist-${smokePlaylist.id}`);
   await page.waitForFunction(
     async () =>
       (await window.rhythm.snapshot()).playlists[0]?.trackIds.length === 1,
   );
+  const blueHour = initial.tracks.find((t) => t.title === "Blue hour");
   await page
-    .getByRole("button", { name: "Options for Blue hour", exact: true })
-    .first()
-    .click();
-  await page.getByRole("button", { name: "Add to queue", exact: true }).click();
+    .locator(`[data-track-id="${blueHour.id}"]`)
+    .click({ button: "right" });
+  await contextCommand("track-queue");
   assert(
     await page.getByRole("heading", { name: "Queue", exact: true }).isVisible(),
   );
@@ -350,7 +361,7 @@ try {
   await page.screenshot({ path: path.join(review, "playlist-queue.png") });
   await search.fill("Blue hour");
   await page.getByRole("heading", { name: "Search results" }).waitFor();
-  assert.equal(await page.locator(".workspace .track-row").count(), 1);
+  assert.equal(await page.locator(".workspace .song-row").count(), 1);
   await search.fill("");
   await page.getByRole("button", { name: "Artists", exact: true }).click();
   assert((await page.locator(".group-list button").count()) === 4);

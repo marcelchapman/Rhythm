@@ -3,6 +3,7 @@ export function wavFixture({
   title = "Evening light",
   artist = "Test artist",
   album = "Test album",
+  genre = "Ambient",
   seconds = 2,
   bpm,
   comments = "",
@@ -10,6 +11,7 @@ export function wavFixture({
   title?: string;
   artist?: string;
   album?: string;
+  genre?: string;
   seconds?: number;
   bpm?: number;
   comments?: string;
@@ -37,7 +39,7 @@ export function wavFixture({
       INAM: title,
       IART: artist,
       IPRD: album,
-      IGNR: "Ambient",
+      IGNR: genre,
       ICRD: "2026",
     }).map(([id, value]) => chunk(id, Buffer.from(`${value}\0`))),
   ]);

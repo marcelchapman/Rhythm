@@ -1,6 +1,8 @@
 # Rhythm 0.1 — implementation and validation
 
-Historical initial-checkpoint record. Current feature-iteration results and migration notes are in [ITERATION-1.md](ITERATION-1.md). The user subsequently confirmed the checkpoint's macOS and Ubuntu GitHub Actions jobs passed after the CI fixes.
+Historical initial-checkpoint record. Current feature-iteration results are in [ITERATION-2.md](ITERATION-2.md); schema-2 migration notes are in [ITERATION-1.md](ITERATION-1.md). The user subsequently confirmed the checkpoint's macOS and Ubuntu GitHub Actions jobs passed after the CI fixes.
+
+The current Iteration 2 acceptance correction adds one shared Track List and application-level `view-preferences.json`, plus playlist drops and queued macOS document-open handling. All four packaged integration suites pass locally; actual Finder/LaunchServices dispatch and the new target-OS CI run remain to be verified. See the current report for exact tests, artifacts, and manual acceptance items; the historical counts and limitations below describe the initial checkpoint only.
 
 Validated on 2026-10-20, on Intel macOS 15.8.1. Runtime: Electron 44.9.2. Development host: Node.js 26.12.0.
 
