@@ -95,6 +95,20 @@ No dependency/lockfile, prototype assets, product/design-system records, or CI w
 
 ## Validation
 
+### macOS CI queue-transition correction after 399a9f4
+
+The worktree was clean at `399a9f4 — Add shared track list and playlist interchange` before this correction. CI failed at the immediate `assert(await page.getByRole("heading", { name: "Queue", exact: true }).isVisible())` in `scripts/smoke.mjs` (original line 347), after the native Add to Queue callback. This was a Queue-panel assertion, not a playback assertion.
+
+The callback sends `track:action` IPC and returns before the renderer handler and React update necessarily finish. The test raced the Queue render. A test-process-only experiment delayed that delivery by 250ms: the original immediate check returned false, then Queue appeared with Blue hour, while media remained paused at 2.13 seconds throughout. This reproduces the CI symptom without changing application code or audio behavior. CI's exact scheduling delay was not measured.
+
+Paused playback is intentional here: after proving resumed playback advances beyond 2.1 seconds, the smoke test explicitly clicks Pause and waits for `audio.paused` (original lines 280–281). Add to Queue does not start playback. The diagnostic's settled, error-free paused media is therefore expected, not evidence of an audio-device or decoder failure.
+
+The fix waits up to ten seconds for the visible Queue heading, retains the visibility assertion, and additionally requires the requested Blue hour track to appear in the Playback queue list. No sleep, retry of the command, playback workaround, or production-code change was added. Earlier real-playback, paused-seek, deliberate EOF-avoidance and resumed-playback checks are byte-for-byte unchanged. Only `scripts/smoke.mjs` and this report change; workflow, publishing settings, source media and Iteration 2 functionality are untouched.
+
+Post-fix validation: type checking, all 30 unit tests, formatting and whitespace checks passed. `npm run test:desktop` and `npm run test:packaged` each passed all four suites (smoke, features, interchange, acceptance), with unchanged source audio/input playlist hashes. The existing macOS app's main/domain/preferences/renderer outputs were verified identical to the current production build before packaged validation. The fixed smoke also passed with the same injected 250ms queue-command latency; suppressing that command instead correctly timed out at the Queue wait. These fault injections ran only in disposable test processes, not production source. Hosted macOS/Ubuntu Actions still need rerunning; local reproduction establishes the scheduling race but does not measure the hosted runner's exact event timing.
+
+### Iteration validation record
+
 | Check | Result |
 |---|---|
 | Type checking / production build | Passed |

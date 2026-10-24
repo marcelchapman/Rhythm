@@ -344,9 +344,17 @@ try {
     .locator(`[data-track-id="${blueHour.id}"]`)
     .click({ button: "right" });
   await contextCommand("track-queue");
+  // The native callback sends IPC; it does not await React's queue update.
+  await page
+    .getByRole("heading", { name: "Queue", exact: true })
+    .waitFor({ state: "visible", timeout: 10000 });
   assert(
     await page.getByRole("heading", { name: "Queue", exact: true }).isVisible(),
   );
+  await page
+    .getByRole("list", { name: "Playback queue", exact: true })
+    .getByRole("button", { name: blueHour.title, exact: true })
+    .waitFor({ state: "visible", timeout: 10000 });
   await page.getByRole("button", { name: "Next track", exact: true }).click();
   await page.waitForFunction(
     async () => (await window.rhythm.snapshot()).state.currentId !== null,
