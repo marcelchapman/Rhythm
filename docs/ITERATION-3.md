@@ -153,7 +153,7 @@ Validated on Intel x64 macOS 15.8.1 with Node 26.12.0 and Electron 44.9.2:
 | Dependency audit | Earlier foundation check: 0 vulnerabilities; dependencies unchanged by this correction |
 | Lockfile resolution | Earlier foundation check: `npm ci --dry-run --ignore-scripts --offline` passed; lockfile unchanged |
 
-No test uses the user's music or library. No Linux runtime/build was exercised for this iteration locally; the unchanged macOS/Ubuntu workflow must be rerun with these changes. It already runs the full desktop command, now including managed imports, recovery/consolidation, Track Info and first-Play playback recovery, and packages with publishing disabled. Remote CI has not been triggered here. Apple Silicon is not locally verified.
+No test uses the user's music or library. Ubuntu 24.04 GitHub Actions passed the complete desktop suite, packaging and artifact upload at `ea19bc1`; no Linux runtime/build was exercised locally. In the same run, macOS passed typechecking, all unit tests, the renderer build and playback smoke before failing the drag-highlight assertion described below. The unchanged workflow runs the full desktop command and packages with publishing disabled. The corrected test still needs a GitHub Actions rerun. Apple Silicon is not locally verified.
 
 Final ignored artifacts: `release/mac/Rhythm.app`, `release/Rhythm-0.1.0.dmg`, `release/Rhythm-0.1.0-mac.zip`. Generated silence proves decoding, seeking and time advancement; audible quality/output devices need manual acceptance. Real native picker appearance and Finder delivery are not replaced by intercepted automated callbacks.
 
@@ -225,3 +225,13 @@ No dependencies, lockfile, workflow, Track List metadata columns/preferences, ex
 ## Playback-lifecycle correction changed files
 
 This narrow continuation changes only `src/renderer/App.tsx`, new `src/renderer/media-source.ts`, new `tests/media-source.test.ts`, new `scripts/playback-recovery.mjs`, `package.json`, `docs/ITERATION-3.md` and `docs/VALIDATION.md`. The other Iteration 3 changes predate this mission and are retained. The existing smoke assertions, domain Locate/copy/consolidation implementation, Track Info, Track List, CSS, dependencies, lockfile and workflow remain unchanged by this continuation. Nothing is staged, committed or pushed.
+
+## macOS CI drag-highlight synchronization
+
+[Actions run 40151367314](https://github.com/marcelchapman/Rhythm/actions/runs/40151367314) checked commit `ea19bc1`. Ubuntu completed successfully. The macOS-15 job failed at `scripts/features.mjs:310`, immediately after synthetic `dragover`, while asserting that the First mix playlist had the `drop-target` class. Playback smoke had already passed; packaging was skipped because this later integration check failed.
+
+The playlist handler accepts the track payload and calls React `setDropPlaylist`. Returning from event dispatch does not guarantee that React has committed the updated class. An isolated local reproduction recorded `accepted=true`, the expected `application/x-rhythm-track-ids` type, immediate class `nav-item`, then committed class `nav-item drop-target`. The immediate DOM read races that render.
+
+The correction waits for that exact playlist button to match `.drop-target` (bounded at five seconds) before retaining the original class assertion. Both existing drop deliveries and duplicate-safe playlist membership assertions remain intact. There is no sleep, test skip or application/drag behavior change. macOS backupd XPC warnings precede the successful smoke run; the fatal diagnostic is the highlight assertion.
+
+Only `scripts/features.mjs` and this report change in this follow-up. Local validation passed: 73 unit tests, typechecking, formatting, all eight source suites and all eight packaged suites. The existing macOS bundle still matches all 15 compiled application files; no application rebuild was necessary for this test-only correction. GitHub Actions must be rerun with the patch to confirm the macOS runner and reach its packaging step. No files are staged, committed or pushed.

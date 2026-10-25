@@ -307,6 +307,8 @@ try {
     .getByRole("navigation", { name: "Playlists", exact: true })
     .getByRole("button", { name: "First mix", exact: true });
   await target.dispatchEvent("dragover", { dataTransfer });
+  // Dragover schedules a React render; event delivery does not await its commit.
+  await target.and(page.locator(".drop-target")).waitFor({ timeout: 5000 });
   assert((await target.getAttribute("class")).includes("drop-target"));
   await target.dispatchEvent("drop", { dataTransfer });
   await waitSnapshot(
