@@ -95,6 +95,8 @@ export type TrackAction = {
     | "new-playlist"
     | "locate"
     | "consolidate"
+    | "remove-from-playlist"
+    | "delete-from-library"
     | "info";
   trackIds: string[];
   playlistId?: string;
@@ -124,7 +126,13 @@ export interface RhythmAPI {
   rescan(): Promise<ScanResult>;
   importDroppedFiles(files: File[]): Promise<DropImportResult>;
   addToPlaylist(id: string, trackIds: string[]): Promise<void>;
-  showTrackMenu(trackIds: string[], contextTrackId?: string): Promise<void>;
+  showTrackMenu(
+    trackIds: string[],
+    contextTrackId?: string,
+    playlistId?: string,
+  ): Promise<void>;
+  removeFromPlaylist(playlistId: string, trackId: string): Promise<void>;
+  deleteTrack(id: string): Promise<boolean>;
   onTrackAction(callback: (action: TrackAction) => void): () => void;
   favorite(id: string): Promise<void>;
   createPlaylist(name: string): Promise<Playlist>;

@@ -25,7 +25,7 @@ jobs:
           cache: npm
       - name: Linux desktop prerequisites
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libasound2t64 libnss3 libgbm1 libgtk-3-0t64 libfuse2t64 xvfb ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y libasound2t64 libnss3 libgbm1 libgtk-3-0t64 libglib2.0-bin libfuse2t64 xvfb ffmpeg
       - run: npm ci
       - run: npm run typecheck
       - run: npm test

@@ -92,6 +92,14 @@ export function TrackList({
   );
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const anchor = useRef(0);
+  useEffect(() => {
+    const available = new Set(items.map((track) => track.id));
+    setSelected((previous) => {
+      const next = new Set([...previous].filter((id) => available.has(id)));
+      return next.size === previous.size ? previous : next;
+    });
+    anchor.current = Math.min(anchor.current, Math.max(0, items.length - 1));
+  }, [items]);
   const [scrollTop, setScrollTop] = useState(0);
   const [height, setHeight] = useState(500);
   const [viewportWidth, setViewportWidth] = useState(1000);

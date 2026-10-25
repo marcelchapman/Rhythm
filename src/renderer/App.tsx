@@ -711,7 +711,8 @@ export function App() {
       const { missing } = await api.checkTrack(track.id);
       if (
         request !== playRequest.current ||
-        dataRef.current?.libraryPath !== libraryPath
+        dataRef.current?.libraryPath !== libraryPath ||
+        !dataRef.current?.tracks.some((t) => t.id === track.id)
       )
         return;
       const ids = queue
@@ -908,6 +909,16 @@ export function App() {
     return () => window.removeEventListener("keydown", handler);
   }, [modal]);
   useEffect(() => {
+    if ("mediaSession" in navigator && !current) {
+      navigator.mediaSession.metadata = null;
+      for (const action of [
+        "play",
+        "pause",
+        "nexttrack",
+        "previoustrack",
+      ] as const)
+        navigator.mediaSession.setActionHandler(action, null);
+    }
     if ("mediaSession" in navigator && current) {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: current.title,
@@ -1043,6 +1054,76 @@ export function App() {
   };
   const queueTrack = (track: Track, next: boolean) =>
     queueTracks([track], next);
+  const removeTrack = async (id: string, playlistId?: string) => {
+    if (busy) return;
+    setBusy(true);
+    setProgress(
+      playlistId ? "Removing track from playlist…" : "Reviewing track removal…",
+    );
+    setError("");
+    setMessage("");
+    try {
+      if (playlistId) {
+        await api.removeFromPlaylist(playlistId, id);
+        await refresh();
+        setMessage("Track removed from playlist. It remains in your library.");
+      } else if (await api.deleteTrack(id)) {
+        const previous = stateRef.current;
+        const wasCurrent = previous.currentId === id;
+        if (wasCurrent) {
+          pausePlayback();
+          mediaSource.current?.clear();
+          loadedTrackId.current = null;
+          resume.current = 0;
+          lastPlaybackPosition.current = 0;
+          pendingPlay.current = null;
+          setPlaying(false);
+          setPosition(0);
+          setDuration(0);
+        }
+        const next = {
+          ...previous,
+          queue: previous.queue.filter((queued) => queued !== id),
+          currentId: wasCurrent ? null : previous.currentId,
+          position: wasCurrent ? 0 : previous.position,
+        };
+        // Update refs immediately, so pending Play checks and periodic saves
+        // cannot revive a removed track before React commits this render.
+        stateRef.current = next;
+        setState(next);
+        if (dataRef.current) {
+          dataRef.current = {
+            ...dataRef.current,
+            tracks: dataRef.current.tracks.filter((t) => t.id !== id),
+            playlists: dataRef.current.playlists.map((p) => ({
+              ...p,
+              trackIds: p.trackIds.filter((trackId) => trackId !== id),
+            })),
+          };
+          setData(dataRef.current);
+        }
+        setPendingPlaylistTracks((ids) =>
+          ids.filter((trackId) => trackId !== id),
+        );
+        setRecoveryId((currentId) => (currentId === id ? null : currentId));
+        if (actionTrack?.id === id) {
+          setActionTrack(null);
+          setModal(null);
+        }
+        await refresh();
+        setMessage("Track removed from your library.");
+      }
+    } catch (e) {
+      // Trash may have succeeded before a database failure. Stop buffered audio
+      // and refresh the retained, recoverable identity instead of claiming success.
+      if (!playlistId && stateRef.current.currentId === id) pausePlayback();
+      await refresh().catch(() => {});
+      fail(e);
+    } finally {
+      setBusy(false);
+      setProgress("");
+    }
+  };
   trackActionRef.current = (action) => {
     const items = action.trackIds
       .map((id) => byId.get(id))
@@ -1059,6 +1140,10 @@ export function App() {
     else if (action.command === "locate") void locateTrack(items[0].id);
     else if (action.command === "consolidate")
       void consolidate(action.trackIds);
+    else if (action.command === "remove-from-playlist" && action.playlistId)
+      void removeTrack(action.trackIds[0], action.playlistId);
+    else if (action.command === "delete-from-library")
+      void removeTrack(action.trackIds[0]);
     else if (action.command === "info")
       void (async () => {
         try {
@@ -1088,8 +1173,12 @@ export function App() {
     () => api.onTrackAction((action) => trackActionRef.current(action)),
     [],
   );
-  const showTrackMenu = (ids: string[], contextId?: string) => {
-    void api.showTrackMenu(ids, contextId).catch(fail);
+  const showTrackMenu = (
+    ids: string[],
+    contextId?: string,
+    playlistId?: string,
+  ) => {
+    void api.showTrackMenu(ids, contextId, playlistId).catch(fail);
   };
   const importDrop = async (files: File[]) => {
     if (!dataRef.current?.libraryPath) {
@@ -2023,7 +2112,13 @@ export function App() {
                     currentId={current?.id}
                     playing={playing}
                     onPlay={playTrack}
-                    onContext={showTrackMenu}
+                    onContext={(ids, contextId) =>
+                      showTrackMenu(
+                        ids,
+                        contextId,
+                        !query ? activePlaylist?.id : undefined,
+                      )
+                    }
                     onSelect={(t) => {
                       setSelectedAlbum(t.albumId);
                       setShowQueue(false);

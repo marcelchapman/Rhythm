@@ -19,7 +19,7 @@ Rhythm’s long-term scope includes macOS, Windows, Linux, Android, iOS, and clo
 - Album details and track list; play/pause, previous/next, seeking, time, volume/mute, shuffle, and repeat.
 - Queue inspection, play-next, add/remove queue entries, and persistent listening state.
 - Create, rename, delete, and add/remove songs from playlists.
-- Native track context menus for playback, queue, playlists, favourites and read-only Track Info; File → New Playlist (Command/Ctrl+N).
+- Native track context menus for playback, queue, playlists, favourites, read-only Track Info and confirmed single-track library removal; File → New Playlist (Command/Ctrl+N).
 - File → Import Playlist accepts UTF-8 M3U/M3U8 and safely indexes new local audio; File → Export Playlist writes M3U8 in playlist order.
 - Drop local audio files/folders to add them using the selected reference/copy policy; drop M3U/M3U8 playlists to import them; drag library tracks onto sidebar playlists. macOS Open With/Dock playlist opens queue safely through startup or library setup.
 - Manual folder rescanning, import reports, missing-file indication, and playback errors.
@@ -45,7 +45,7 @@ Quit any running Rhythm application before launching a source build, including a
 3. Select an album for its track list, or use its play button. In Songs, click to select, Shift-click for a range, Command/Ctrl-click to toggle, and double-click to play. Right-click a track for actions. Drag headers to rearrange metadata columns; click a header to sort. Drag column boundaries to resize; use Library Settings → Track List columns to show/hide metadata. Presentation is shared globally; playlist order and each view's sort/selection remain independent. The first column stays visible when it fits, and horizontal scrolling exposes the rest.
 4. Use **Library settings** to add music, rescan folders, or switch libraries. Rescan after external changes, or use Locate File for a missing track.
 
-Rhythm never writes to, moves, renames or deletes your external source audio files. Copying is opt-in; no tag editing, existing-file reorganization or audio deletion is implemented. Deleting a playlist only deletes its database records.
+Rhythm never writes to, moves, renames or deletes your external source audio files. Copying is opt-in. Confirmed Delete from Library removes a referenced track from Rhythm only; a verified managed copy moves to the OS Trash. No permanent audio deletion, tag editing or existing-file reorganization is implemented. Deleting a playlist only deletes its database records.
 
 To exchange playlists, use **File → Import Playlist…** or **File → Export Playlist…**. M3U/M3U8 can also be dropped into the app or opened with Rhythm from Finder. On a first launch without a library, file-open requests wait until one is chosen. Export uses the current playlist; from another view it asks which playlist to export. Relative import paths resolve beside the playlist file. Export uses relative paths for audio inside the export folder's tree and absolute paths for external locations. Spaces/Unicode and local `file:` URLs are supported; streaming URLs are reported and skipped. Missing or invalid entries produce a report while available songs retain their order. Existing playlist names receive a numeric suffix; repeated references use Rhythm's existing unique-membership rule. Audio remains in place. Legacy non-UTF-8 M3U files must be resaved as UTF-8 before import.
 
@@ -70,6 +70,14 @@ Rhythm's management authority ends at its configured media environment. External
 Right-click a track and choose **Track Info…** to inspect stored metadata, file path, referenced/managed ownership and availability. In a multi-selection it shows the clicked row while preserving the selection; keyboard context activation uses the existing selected-row target. This works across the shared Track List views. There is no trailing action column and no metadata editing/tag writing. Composer, track/disc totals and play count are omitted because the current model does not store them.
 
 Locate updates the existing referenced track, including when copy-on-add is enabled. If the selected file already belongs to a different existing track, recovery rejects it and leaves both identities intact; it never silently merges or removes records.
+
+## Removing tracks
+
+Right-click a track in a playlist for **Remove from Playlist** (membership only) or **Delete from Library…** (complete Rhythm identity). Other track contexts offer only Delete from Library. These commands act on the clicked track, including within a multi-selection; bulk deletion is not implemented.
+
+Delete from Library always asks for confirmation. Referenced audio stays at its original location. A managed copy is moved to the operating system Trash only after root/path, file identity and import-receipt validation; a database pathname alone grants no Trash authority. All playlist memberships, favourite state and queue references are removed. Deleting the current track stops playback and clears the player. Cancellation changes nothing; a Trash failure retains the identity. A database failure after Trash explicitly reports the partial outcome and retains the entry for recovery using Trash or Locate File. Missing, replaced or unverifiable managed copies are retained with an error rather than silently removed.
+
+Only dedicated sacrificial media should be used for initial manual acceptance. See [TRACK-REMOVAL.md](docs/TRACK-REMOVAL.md) for tests, recovery limits and the acceptance checklist. Explicit rescanning of a retained source folder may index a previously removed referenced file again; this feature does not create exclusion rules.
 
 ## Formats and artwork
 
@@ -159,7 +167,7 @@ This iteration was developed and run on macOS. The user reports the preceding ch
 
 - No cloud sync, mobile clients, Windows release, metadata editing, or automatic filesystem watching in 0.1.
 - No gapless/crossfade, ReplayGain, equalizer, audio-device picker, or bit-perfect output guarantee. Volume uses the operating system’s default output device.
-- No playlist track-reorder UI, tag writing, automatic reorganization of existing files, Remove from Library, Move to Trash or CD import. A queue contains unique tracks and supports basic next/add/remove operations. Playlist interchange is local-file UTF-8 M3U/M3U8 only; repeated song references collapse to their first occurrence.
+- No playlist track-reorder UI, tag writing, automatic reorganization of existing files, bulk track deletion or CD import. A queue contains unique tracks and supports basic next/add/remove operations. Playlist interchange is local-file UTF-8 M3U/M3U8 only; repeated song references collapse to their first occurrence.
 - Track List presentation is application/profile-global. Sort/selection/scroll are local mounted-view state and reset to the view's defaults when re-entered. Side-panel queue/album rows remain compact contextual lists.
 - Metadata is cached by file size, modification time, and extraction version; a migration may require one rescan to backfill new fields. Only embedded artwork is used.
 - SQLite artwork caching can grow the database for large collections. No cache-size UI or automated pruning yet.

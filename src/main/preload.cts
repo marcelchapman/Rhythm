@@ -36,8 +36,11 @@ const api: RhythmAPI = {
     return ipcRenderer.invoke("library:drop", paths);
   },
   addToPlaylist: (id, ids) => ipcRenderer.invoke("playlist:add", id, ids),
-  showTrackMenu: (ids, contextId) =>
-    ipcRenderer.invoke("track:menu", ids, contextId),
+  showTrackMenu: (ids, contextId, playlistId) =>
+    ipcRenderer.invoke("track:menu", ids, contextId, playlistId),
+  removeFromPlaylist: (playlistId, trackId) =>
+    ipcRenderer.invoke("playlist:remove-track", playlistId, trackId),
+  deleteTrack: (id) => ipcRenderer.invoke("track:delete", id),
   onTrackAction: (callback: (action: TrackAction) => void) => {
     const listener = (_: unknown, action: TrackAction) => callback(action);
     ipcRenderer.on("track:action", listener);

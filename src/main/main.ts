@@ -6,6 +6,7 @@ import {
   Menu,
   protocol,
   session,
+  shell,
 } from "electron";
 import {
   readFile,
@@ -252,6 +253,43 @@ function handlers() {
     }),
   );
   handle("track:check", (id: string) => requireLibrary().checkTrack(id));
+  handle("track:delete", (id: string) =>
+    playlistOperation(async (l) => {
+      if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
+        throw new Error("Choose a valid track to remove.");
+      const track = l.tracks(id)[0];
+      if (!track) throw new Error("Track no longer exists.");
+      const managed = track.locationKind === "managed";
+      const result = await dialog.showMessageBox(win!, {
+        type: managed ? "warning" : "question",
+        title: "Delete from Library",
+        message: managed
+          ? "Delete this track from your library?"
+          : "Remove this track from your library?",
+        detail: managed
+          ? `“${track.title}” will be removed from Rhythm and its managed audio file moved to the Trash.\n\n${track.path}`
+          : `“${track.title}” will be removed from Rhythm, but remains at its original location.\n\n${track.path}`,
+        buttons: ["Cancel", managed ? "Move to Trash" : "Remove from Library"],
+        defaultId: 0,
+        cancelId: 0,
+        noLink: true,
+      });
+      if (result.response !== 1) return false;
+      const current = l.tracks(id)[0];
+      if (
+        !current ||
+        current.path !== track.path ||
+        current.locationKind !== track.locationKind ||
+        current.mediaRootId !== track.mediaRootId ||
+        current.mediaRelativePath !== track.mediaRelativePath
+      )
+        throw new Error(
+          "The track location changed. Choose Delete from Library again to review it.",
+        );
+      await l.deleteTrack(id, (filename) => shell.trashItem(filename));
+      return true;
+    }),
+  );
   handle("track:locate", (id: string) =>
     playlistOperation(async (l) => {
       const track = l.tracks(id)[0];
@@ -372,13 +410,19 @@ function handlers() {
   handle("playlist:add", (id: string, ids: string[]) =>
     requireLibrary().addToPlaylist(id, ids),
   );
-  handle("track:menu", (ids: string[], contextId?: string) =>
-    showTrackMenu(ids, false, contextId),
+  handle("playlist:remove-track", (playlistId: string, id: string) =>
+    playlistOperation(async (l) => l.removeFromPlaylist(playlistId, id)),
+  );
+  handle(
+    "track:menu",
+    (ids: string[], contextId?: string, playlistId?: string) =>
+      showTrackMenu(ids, false, contextId, playlistId),
   );
   async function showTrackMenu(
     ids: string[],
     album = false,
     contextId = ids[0],
+    playlistId?: string,
   ) {
     if (!Array.isArray(ids) || !ids.length || ids.length > 50000)
       throw new Error("Select tracks first.");
@@ -389,6 +433,14 @@ function handlers() {
     if (tracks.some((t) => !t)) throw new Error("Track no longer exists.");
     if (!ids.includes(contextId))
       throw new Error("Select the track to inspect.");
+    if (
+      playlistId &&
+      !l
+        .playlists()
+        .find((p) => p.id === playlistId)
+        ?.trackIds.includes(contextId)
+    )
+      throw new Error("This track is no longer in that playlist.");
     const dispatch =
       (command: TrackAction["command"], playlistId?: string) => () =>
         win?.webContents.send("track:action", {
@@ -472,6 +524,32 @@ function handlers() {
               click: () =>
                 win?.webContents.send("track:action", {
                   command: "info",
+                  trackIds: [contextId],
+                } satisfies TrackAction),
+            },
+            { type: "separator" as const },
+            ...(playlistId
+              ? [
+                  {
+                    id: "track-remove-playlist",
+                    label: "Remove from Playlist",
+                    enabled: !playlistIO && !l.scanning,
+                    click: () =>
+                      win?.webContents.send("track:action", {
+                        command: "remove-from-playlist",
+                        trackIds: [contextId],
+                        playlistId,
+                      } satisfies TrackAction),
+                  },
+                ]
+              : []),
+            {
+              id: "track-delete",
+              label: "Delete from Library…",
+              enabled: !playlistIO && !l.scanning,
+              click: () =>
+                win?.webContents.send("track:action", {
+                  command: "delete-from-library",
                   trackIds: [contextId],
                 } satisfies TrackAction),
             },

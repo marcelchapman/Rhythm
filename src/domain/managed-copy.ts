@@ -127,6 +127,52 @@ export async function validateManagedLocation(
   await fileDigest(canonical);
   return canonical;
 }
+/** Destructive authority requires a published copy receipt, not merely an indexed path. */
+export async function validateManagedTrash(
+  db: DatabaseSync,
+  root: MediaRoot,
+  trackId: string,
+  filename: string,
+  relative: string,
+) {
+  const target = await validateManagedLocation(root, relative);
+  const info = await lstat(target);
+  const receipt = db
+    .prepare(
+      "SELECT digest,stageDevice,stageInode FROM managed_imports WHERE trackId=? AND rootId=? AND relative=? AND status='done'",
+    )
+    .all(trackId, root.id, relative)
+    .find(
+      (r) =>
+        r.stageDevice === String(info.dev) && r.stageInode === String(info.ino),
+    );
+  if (
+    filename !== target ||
+    !info.isFile() ||
+    info.isSymbolicLink() ||
+    !receipt ||
+    receipt.digest !== (await fileDigest(target))
+  )
+    throw new Error(
+      "This file no longer matches Rhythm's managed copy receipt. It has not been moved to Trash.",
+    );
+  // Recheck the root, parents and leaf after hashing, immediately before handoff.
+  await directories(root, relative, false);
+  const latest = await lstat(target);
+  if (
+    (await realpath(target)) !== target ||
+    latest.dev !== info.dev ||
+    latest.ino !== info.ino ||
+    latest.size !== info.size ||
+    latest.mtimeMs !== info.mtimeMs ||
+    latest.ctimeMs !== info.ctimeMs ||
+    latest.isSymbolicLink()
+  )
+    throw new Error(
+      "The managed file location changed. It has not been moved to Trash.",
+    );
+  return target;
+}
 const getJob = (db: DatabaseSync, id: string) =>
   db
     .prepare("SELECT * FROM managed_imports WHERE id=?")

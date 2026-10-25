@@ -16,6 +16,7 @@ import {
   prepareManagedCopy,
   finishManagedCopy,
   validateManagedLocation,
+  validateManagedTrash,
   type ManagedLocation,
   type MediaRoot,
 } from "./managed-copy.js";
@@ -62,7 +63,8 @@ export function normalizeState(
     queue,
     currentId:
       value.currentId && ids.has(value.currentId) ? value.currentId : null,
-    position: numeric(value.position),
+    position:
+      value.currentId && ids.has(value.currentId) ? numeric(value.position) : 0,
     volume: Math.max(
       0,
       Math.min(
@@ -546,6 +548,94 @@ export class Library {
   }
   deletePlaylist(id: string) {
     this.db.prepare("DELETE FROM playlists WHERE id=?").run(id);
+  }
+  /** Remove one relationship against current database state, preserving the remaining order. */
+  removeFromPlaylist(playlistId: string, trackId: string) {
+    if (!this.db.prepare("SELECT id FROM playlists WHERE id=?").get(playlistId))
+      throw new Error("Playlist no longer exists.");
+    this.db
+      .prepare("DELETE FROM playlist_tracks WHERE playlistId=? AND trackId=?")
+      .run(playlistId, trackId);
+  }
+  /** Called only after native confirmation. The shell adapter can only trash a validated copy. */
+  async deleteTrack(id: string, trash: (filename: string) => Promise<void>) {
+    if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
+      throw new Error("Choose a valid track to remove.");
+    if (this.scanning)
+      throw new Error("Wait for the current media operation to finish.");
+    this.scanning = true;
+    let trashed = false;
+    try {
+      const track = this.tracks(id)[0];
+      if (!track) throw new Error("Track no longer exists.");
+      let managedPath: string | undefined;
+      if (track.locationKind === "managed") {
+        const root = this.db
+          .prepare(
+            "SELECT rootId AS id,path,device,inode FROM media_root_locations WHERE rootId=?",
+          )
+          .get(track.mediaRootId!) as unknown as MediaRoot | undefined;
+        if (!root || !track.mediaRelativePath)
+          throw new Error(
+            "The managed-media authority is unavailable. The track has not been removed.",
+          );
+        managedPath = await validateManagedTrash(
+          this.db,
+          root,
+          id,
+          track.path,
+          track.mediaRelativePath,
+        );
+      }
+      // Preflight database writability before touching the filesystem. Never hold
+      // a transaction across async shell work (player saves share this connection).
+      // Filesystem and SQLite are not atomic: a later database failure retains
+      // the identity and explicitly reports that the file is in Trash.
+      this.db.exec("BEGIN IMMEDIATE");
+      this.db.exec("COMMIT");
+      if (managedPath) {
+        await trash(managedPath);
+        trashed = true;
+      }
+      this.db.exec("BEGIN IMMEDIATE");
+      try {
+        const state = this.state();
+        const sources = this.db
+          .prepare("SELECT source FROM managed_imports WHERE trackId=?")
+          .all(id);
+        for (const filename of [
+          track.path,
+          ...sources.map((s) => String(s.source)),
+        ])
+          this.db
+            .prepare(
+              "DELETE FROM roots WHERE path=? AND NOT EXISTS (SELECT 1 FROM tracks WHERE path=? AND id!=?)",
+            )
+            .run(filename, filename, id);
+        this.db.prepare("DELETE FROM managed_imports WHERE trackId=?").run(id);
+        this.db.prepare("DELETE FROM tracks WHERE id=?").run(id);
+        this.saveState({
+          ...state,
+          queue: state.queue.filter((queued) => queued !== id),
+          currentId: state.currentId === id ? null : state.currentId,
+          position: state.currentId === id ? 0 : state.position,
+        });
+        this.db.exec("COMMIT");
+      } catch (error) {
+        this.db.exec("ROLLBACK");
+        throw error;
+      }
+    } catch (error) {
+      if (trashed) {
+        await this.checkTrack(id).catch(() => {});
+        throw new Error(
+          `The file was moved to the Trash, but its library entry could not be removed. Restore it from Trash or use Locate File to recover it. ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      throw error;
+    } finally {
+      this.scanning = false;
+    }
   }
   playlistTracks(id: string, trackIds: string[]) {
     if (!this.db.prepare("SELECT id FROM playlists WHERE id=?").get(id))
