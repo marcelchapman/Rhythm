@@ -67,7 +67,14 @@ try {
   // A second npm start cannot replace the menu of the process owning this profile.
   // It must explicitly fail instead of claiming to have started the current build.
   const blocked = await new Promise((resolve, reject) => {
-    const child = spawn("npm", ["start"], { cwd, env, detached: true });
+    // Playwright adds --no-sandbox to its Linux Electron launches above and in
+    // the other desktop suites. Match that test-only strategy for this raw child
+    // so runner sandbox setup cannot abort Electron before Rhythm's lock check.
+    const args =
+      process.platform === "linux"
+        ? ["start", "--", "--no-sandbox"]
+        : ["start"];
+    const child = spawn("npm", args, { cwd, env, detached: true });
     let output = "";
     const timeout = setTimeout(() => {
       process.kill(-child.pid, "SIGTERM");
