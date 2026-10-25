@@ -97,12 +97,14 @@ export type TrackAction = {
     | "consolidate"
     | "remove-from-playlist"
     | "delete-from-library"
+    | "reveal"
     | "info";
   trackIds: string[];
   playlistId?: string;
 };
 export interface RhythmAPI {
   checkTrack(id: string): Promise<{ missing: boolean }>;
+  revealTrack(id: string): Promise<void>;
   locateTrack(id: string): Promise<boolean>;
   consolidateTracks(ids?: string[]): Promise<ConsolidationResult | null>;
   showAlbumMenu(albumId: string): Promise<void>;

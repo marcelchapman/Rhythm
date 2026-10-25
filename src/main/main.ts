@@ -253,6 +253,26 @@ function handlers() {
     }),
   );
   handle("track:check", (id: string) => requireLibrary().checkTrack(id));
+  handle("track:reveal", async (id: string) => {
+    if (process.platform !== "darwin")
+      throw new Error("Show in Finder is only available on macOS.");
+    if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
+      throw new Error("Choose a valid track to reveal.");
+    const l = requireLibrary();
+    // Use the same resolved location as playback, for references and managed copies.
+    const track = l.media(id);
+    if (!track) throw new Error("Track no longer exists.");
+    const file = await stat(track.path).catch(() => null);
+    if (!file?.isFile())
+      throw new Error(
+        "Rhythm can't find this audio file at its recorded location. Use Locate File to reconnect this track.",
+      );
+    if (l !== library || l.media(id)?.path !== track.path)
+      throw new Error(
+        "The track location changed. Choose Show in Finder again.",
+      );
+    shell.showItemInFolder(track.path);
+  });
   handle("track:delete", (id: string) =>
     playlistOperation(async (l) => {
       if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
@@ -527,6 +547,19 @@ function handlers() {
                   trackIds: [contextId],
                 } satisfies TrackAction),
             },
+            ...(process.platform === "darwin"
+              ? [
+                  {
+                    id: "track-reveal",
+                    label: "Show in Finder",
+                    click: () =>
+                      win?.webContents.send("track:action", {
+                        command: "reveal",
+                        trackIds: [contextId],
+                      } satisfies TrackAction),
+                  },
+                ]
+              : []),
             { type: "separator" as const },
             ...(playlistId
               ? [

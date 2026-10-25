@@ -7,6 +7,7 @@ import type {
 } from "../shared/types.js";
 const api: RhythmAPI = {
   checkTrack: (id) => ipcRenderer.invoke("track:check", id),
+  revealTrack: (id) => ipcRenderer.invoke("track:reveal", id),
   locateTrack: (id) => ipcRenderer.invoke("track:locate", id),
   consolidateTracks: (ids) => ipcRenderer.invoke("media:consolidate", ids),
   showAlbumMenu: (id) => ipcRenderer.invoke("album:menu", id),

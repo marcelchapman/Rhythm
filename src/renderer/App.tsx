@@ -1144,6 +1144,8 @@ export function App() {
       void removeTrack(action.trackIds[0], action.playlistId);
     else if (action.command === "delete-from-library")
       void removeTrack(action.trackIds[0]);
+    else if (action.command === "reveal")
+      void api.revealTrack(action.trackIds[0]).catch(fail);
     else if (action.command === "info")
       void (async () => {
         try {

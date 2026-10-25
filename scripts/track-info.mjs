@@ -10,6 +10,7 @@ import {
   realpath,
   readdir,
   stat,
+  rmdir,
 } from "node:fs/promises";
 import path from "node:path";
 import { tmpdir } from "node:os";
@@ -73,10 +74,13 @@ async function launch() {
   });
   const page = await app.firstWindow();
   await page.waitForSelector("h1");
-  await app.evaluate(({ Menu }) => {
+  await app.evaluate(({ Menu, shell }) => {
     Menu.prototype.popup = function () {
       globalThis.rhythmInfoMenu = this;
     };
+    // Observe the real main-process API handoff without opening Finder during tests.
+    globalThis.rhythmReveals = [];
+    shell.showItemInFolder = (file) => globalThis.rhythmReveals.push(file);
   });
   return page;
 }
@@ -100,7 +104,19 @@ async function nativeMenu(p, target) {
   });
   await target.click({ button: "right" });
   for (let n = 0; n < 50; n++) {
-    if (await app.evaluate(() => !!globalThis.rhythmInfoMenu)) return;
+    if (await app.evaluate(() => !!globalThis.rhythmInfoMenu)) {
+      const reveal = await app.evaluate(() => {
+        const item = globalThis.rhythmInfoMenu.getMenuItemById("track-reveal");
+        return item ? { label: item.label, enabled: item.enabled } : null;
+      });
+      assert.deepEqual(
+        reveal,
+        process.platform === "darwin"
+          ? { label: "Show in Finder", enabled: true }
+          : null,
+      );
+      return;
+    }
     await p.waitForTimeout(50);
   }
   throw Error("Native menu did not open");
@@ -112,6 +128,66 @@ async function menuClick(id) {
     item.click(undefined, undefined, {});
   }, id);
 }
+async function revealFromMenu(p, id, expected) {
+  if (process.platform !== "darwin") return;
+  const before = await snapshot(p);
+  const track = before.tracks.find((t) => t.id === id);
+  const file = expected ?? track.path;
+  const bytes = sha(await readFile(file)),
+    mtime = (await stat(file)).mtimeMs;
+  const audio = await p.locator("audio").evaluate((a) => ({
+    src: a.getAttribute("src"),
+    paused: a.paused,
+    volume: a.volume,
+  }));
+  const count = await app.evaluate(() => globalThis.rhythmReveals.length);
+  await menuClick("track-reveal");
+  for (let n = 0; n < 100; n++) {
+    if (
+      await app.evaluate(
+        (count) => globalThis.rhythmReveals.length > count,
+        count,
+      )
+    )
+      break;
+    await p.waitForTimeout(50);
+  }
+  const reveals = await app.evaluate(() => globalThis.rhythmReveals);
+  assert.equal(reveals.length, count + 1);
+  assert.equal(reveals.at(-1), file);
+  assert.equal(sha(await readFile(file)), bytes);
+  assert.equal((await stat(file)).mtimeMs, mtime);
+  const after = await snapshot(p);
+  assert.deepEqual(after.tracks, before.tracks);
+  assert.deepEqual(after.playlists, before.playlists);
+  assert.deepEqual(
+    await p.locator("audio").evaluate((a) => ({
+      src: a.getAttribute("src"),
+      paused: a.paused,
+      volume: a.volume,
+    })),
+    audio,
+  );
+}
+async function unavailableReveal(p, id) {
+  if (process.platform !== "darwin") return;
+  const dismiss = p.getByRole("button", { name: "Dismiss error", exact: true });
+  if (await dismiss.count()) await dismiss.click();
+  await nativeMenu(p, row(p, id));
+  const count = await app.evaluate(() => globalThis.rhythmReveals.length);
+  await menuClick("track-reveal");
+  await p
+    .getByRole("alert")
+    .filter({
+      hasText:
+        "Rhythm can't find this audio file at its recorded location. Use Locate File to reconnect this track.",
+    })
+    .waitFor();
+  assert.equal(
+    await app.evaluate(() => globalThis.rhythmReveals.length),
+    count,
+  );
+}
 const info = (p) => p.getByRole("dialog", { name: "Track Info", exact: true });
 const field = (p, label) =>
   info(p)
@@ -120,6 +196,8 @@ const field = (p, label) =>
     .locator("dd");
 async function inspect(p, id, title) {
   await nativeMenu(p, row(p, id));
+  if (!(await snapshot(p)).tracks.find((t) => t.id === id).missing)
+    await revealFromMenu(p, id);
   await menuClick("track-info");
   await info(p).waitFor();
   assert.equal(await field(p, "Title").innerText(), title);
@@ -225,10 +303,26 @@ try {
   await settled(p, (s) => s.mediaSettings.copyOnAdd);
   await p.getByRole("button", { name: "Close dialog", exact: true }).click();
   await p.getByRole("button", { name: "Songs", exact: true }).click();
+  await nativeMenu(p, row(p, a.id));
+  await revealFromMenu(p, a.id, first);
+  const revealCount = await app.evaluate(() => globalThis.rhythmReveals.length);
+  for (const invalid of ["", "/tmp/not-a-track.wav", "f".repeat(64)])
+    await assert.rejects(
+      p.evaluate((id) => window.rhythm.revealTrack(id), invalid),
+    );
+  assert.equal(
+    await app.evaluate(() => globalThis.rhythmReveals.length),
+    revealCount,
+  );
   await play(p, a);
   const relocated = path.join(incoming, "relocated.wav");
   await move(first, relocated);
   await missing(p, a.id);
+  await unavailableReveal(p, a.id);
+  // A directory replacing the missing audio pathname must not be revealed either.
+  await mkdir(first);
+  await unavailableReveal(p, a.id);
+  await rmdir(first);
   await select(relocated);
   await p.getByRole("button", { name: "Locate File…", exact: true }).click();
   await settled(
@@ -410,6 +504,14 @@ try {
   );
   await p.screenshot({ path: path.join(review, "track-info-managed.png") });
   await done(p);
+  const managedTrack = (await snapshot(p)).tracks.find((t) => t.id === a.id);
+  await protect(managedTrack.path);
+  const parked = path.join(root, "parked-managed-copy.wav");
+  await move(managedTrack.path, parked);
+  await unavailableReveal(p, a.id);
+  await move(parked, managedTrack.path);
+  await nativeMenu(p, row(p, a.id));
+  await revealFromMenu(p, a.id, managedTrack.path);
   for (const [f, beforeHash] of hashes) {
     assert.equal(sha(await readFile(f)), beforeHash.hash, f);
     assert.equal((await stat(f)).mtimeMs, beforeHash.mtime, f);
@@ -428,6 +530,9 @@ try {
           "Songs/playlist/Artist/Genre/Favourites/search/list view integration",
           "compact focus/Escape/long comments/path",
           "referenced/missing/managed ownership information",
+          "macOS-only Show in Finder uses current reference/relinked/managed path and clicked selection target",
+          "missing/non-file reveal shows an error without a native folder handoff",
+          "reveal preserves file bytes/mtimes and library/player relationships",
           "no external source bytes or mtimes changed",
         ],
       },

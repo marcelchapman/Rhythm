@@ -69,6 +69,8 @@ Rhythm's management authority ends at its configured media environment. External
 
 Right-click a track and choose **Track Info…** to inspect stored metadata, file path, referenced/managed ownership and availability. In a multi-selection it shows the clicked row while preserving the selection; keyboard context activation uses the existing selected-row target. This works across the shared Track List views. There is no trailing action column and no metadata editing/tag writing. Composer, track/disc totals and play count are omitted because the current model does not store them.
 
+On macOS, **Show in Finder** reveals the clicked track's currently resolved audio file, for both references and managed copies. It only navigates; it does not change the file or ownership. A missing/unavailable audio file produces an error with a Locate File suggestion, without opening a fallback folder.
+
 Locate updates the existing referenced track, including when copy-on-add is enabled. If the selected file already belongs to a different existing track, recovery rejects it and leaves both identities intact; it never silently merges or removes records.
 
 ## Removing tracks
