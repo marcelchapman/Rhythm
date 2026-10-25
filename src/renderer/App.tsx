@@ -886,6 +886,7 @@ export function App() {
         ) {
           playlistCommandRef.current(command);
         } else if (command === "choose-library") void chooseLibrary();
+        else if (command === "settings") setModal("settings");
         else if (command === "consolidate-library") setModal("consolidate");
       }),
     [],

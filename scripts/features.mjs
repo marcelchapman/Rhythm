@@ -87,6 +87,71 @@ async function menuClick(id) {
 }
 try {
   let page = await launch();
+  if (process.platform === "darwin") {
+    const items = await app.evaluate(({ Menu }) =>
+      Menu.getApplicationMenu().items[0].submenu.items.map((item) => ({
+        id: item.id,
+        role: item.role?.toLowerCase(),
+        type: item.type,
+        label: item.label,
+        accelerator: item.accelerator,
+      })),
+    );
+    assert.deepEqual(
+      items.map((i) => (i.type === "separator" ? i.type : i.role || i.id)),
+      [
+        "about",
+        "app-settings",
+        "separator",
+        "hide",
+        "hideothers",
+        "unhide",
+        "separator",
+        "quit",
+      ],
+    );
+    const settingsItem = items.find((i) => i.id === "app-settings");
+    assert.equal(settingsItem.label, "Settings…");
+    assert.equal(settingsItem.accelerator, "Cmd+,");
+    const openSettings = () =>
+      app.evaluate(({ Menu }) =>
+        Menu.getApplicationMenu().getMenuItemById("app-settings").click(),
+      );
+    const settingsDialog = () =>
+      page.getByRole("dialog", { name: "Library settings", exact: true });
+    await openSettings();
+    await settingsDialog().waitFor();
+    assert.equal(await settingsDialog().count(), 1);
+    await settingsDialog()
+      .getByText("No library configured", { exact: true })
+      .waitFor();
+    await openSettings();
+    assert.equal(await settingsDialog().count(), 1);
+    await page
+      .getByRole("button", { name: "Close dialog", exact: true })
+      .click();
+    // The macOS application menu remains usable after closing the main window.
+    const closed = page.waitForEvent("close");
+    await app.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0].close(),
+    );
+    await closed;
+    const reopened = app.waitForEvent("window");
+    await openSettings();
+    page = await reopened;
+    await settingsDialog().waitFor();
+    await page
+      .getByRole("button", { name: "Close dialog", exact: true })
+      .click();
+  } else {
+    assert.equal(
+      await app.evaluate(
+        ({ Menu }) =>
+          !!Menu.getApplicationMenu().getMenuItemById("app-settings"),
+      ),
+      false,
+    );
+  }
   await selectFolder(library);
   await page
     .getByRole("button", { name: "Choose library folder", exact: true })
@@ -491,6 +556,9 @@ try {
       {
         passed: true,
         checks: [
+          ...(process.platform === "darwin"
+            ? ["native Settings menu, existing modal and closed-window reopen"]
+            : ["macOS Settings menu absent on this platform"]),
           "playlist picker focus",
           "atomic duplicate-safe append",
           "native context commands",

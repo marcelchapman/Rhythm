@@ -61,6 +61,7 @@ let playlistIO = false;
 let choosingLibrary = false;
 let preferences: ViewPreferenceStore;
 let rendererReady = false;
+let pendingSettings = false;
 let desktopInitialized = false;
 const playlistInbox = new PlaylistOpenInbox();
 const notifyPlaylist = (event: DesktopPlaylistEvent) =>
@@ -146,6 +147,18 @@ function requireLibrary() {
 }
 function send(command: string) {
   win?.webContents.send("player:command", command);
+}
+async function openSettings() {
+  pendingSettings = true;
+  await createWindow();
+  if (!win || win.isDestroyed()) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+  if (rendererReady && pendingSettings) {
+    pendingSettings = false;
+    send("settings");
+  }
 }
 
 async function chooseLibrary() {
@@ -289,6 +302,10 @@ function handlers() {
   });
   handle("desktop:ready", () => {
     rendererReady = true;
+    if (pendingSettings) {
+      pendingSettings = false;
+      send("settings");
+    }
   });
   handle("playlist:import-file", () =>
     playlistOperation(async (l) => {
@@ -521,8 +538,15 @@ async function createWindow() {
     startupError = null;
   }
 }
-if (!app.requestSingleInstanceLock()) app.quit();
-else {
+if (!app.requestSingleInstanceLock()) {
+  if (app.isPackaged) app.quit();
+  else {
+    console.error(
+      `Rhythm source build did not start: another Rhythm instance owns the profile ${app.getPath("userData")}. Quit the running Rhythm application, then run npm start again.`,
+    );
+    app.exit(1);
+  }
+} else {
   app.on("second-instance", (_event, argv) => {
     for (const filename of argv)
       if (path.isAbsolute(filename) && isPlaylistFile(filename))
@@ -621,8 +645,23 @@ else {
                   label: "Rhythm",
                   submenu: [
                     { role: "about" as const },
+                    {
+                      id: "app-settings",
+                      label: "Settings…",
+                      accelerator: "Cmd+,",
+                      click: () =>
+                        void openSettings().catch((error) =>
+                          dialog.showErrorBox(
+                            "Settings unavailable",
+                            String(error),
+                          ),
+                        ),
+                    },
                     { type: "separator" as const },
                     { role: "hide" as const },
+                    { role: "hideOthers" as const },
+                    { role: "unhide" as const },
+                    { type: "separator" as const },
                     { role: "quit" as const },
                   ],
                 },

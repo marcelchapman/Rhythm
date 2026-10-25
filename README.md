@@ -36,6 +36,8 @@ npm run dev
 
 `dev` makes a production build and launches it. It does not run a hot-reload server. After editing, rerun it. `npm start` launches the last build. Nothing is committed or pushed by these commands.
 
+Quit any running Rhythm application before launching a source build, including an installed copy in Applications. Closing its window on macOS does not quit it. Source and installed builds share the default profile and single-instance lock; a blocked source launch now exits with an explanatory error rather than silently leaving you in the older running app. For manual verification after edits, run `npm run build` and then `npm start`; confirm that the terminal stays attached to the new app. `RHYTHM_DATA_DIR` may select a separate disposable profile for isolated testing.
+
 ## First launch
 
 1. Select **Choose library folder**. Create or select an ordinary folder for Rhythm’s database. It can be separate from your music. Select an existing Rhythm folder to reopen that library.
