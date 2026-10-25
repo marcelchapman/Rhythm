@@ -54,10 +54,9 @@ export async function importPlaylistFile(
     }
   }
   const scan = await library.scan(candidates, progress);
-  const indexed = new Map(library.tracks().map((t) => [t.path, t.id]));
   const ids: string[] = [];
   for (const file of candidates) {
-    const id = indexed.get(file);
+    const id = (await library.trackForFile(file))?.id;
     if (id) ids.push(id);
     else issue(`Could not index: ${file}`);
   }

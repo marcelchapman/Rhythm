@@ -6,6 +6,12 @@ import type {
   TrackAction,
 } from "../shared/types.js";
 const api: RhythmAPI = {
+  checkTrack: (id) => ipcRenderer.invoke("track:check", id),
+  locateTrack: (id) => ipcRenderer.invoke("track:locate", id),
+  consolidateTracks: (ids) => ipcRenderer.invoke("media:consolidate", ids),
+  showAlbumMenu: (id) => ipcRenderer.invoke("album:menu", id),
+  chooseMediaRoot: () => ipcRenderer.invoke("media:choose-root"),
+  saveMediaSettings: (patch) => ipcRenderer.invoke("media:settings", patch),
   saveTrackListPreferences: (patch) =>
     ipcRenderer.invoke("views:track-list", patch),
   desktopReady: () => ipcRenderer.invoke("desktop:ready"),
@@ -30,7 +36,8 @@ const api: RhythmAPI = {
     return ipcRenderer.invoke("library:drop", paths);
   },
   addToPlaylist: (id, ids) => ipcRenderer.invoke("playlist:add", id, ids),
-  showTrackMenu: (ids) => ipcRenderer.invoke("track:menu", ids),
+  showTrackMenu: (ids, contextId) =>
+    ipcRenderer.invoke("track:menu", ids, contextId),
   onTrackAction: (callback: (action: TrackAction) => void) => {
     const listener = (_: unknown, action: TrackAction) => callback(action);
     ipcRenderer.on("track:action", listener);

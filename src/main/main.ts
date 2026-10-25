@@ -133,6 +133,12 @@ const snapshot = () => ({
   roots: library?.roots() ?? [],
   state: library?.state() ?? defaultState(),
   preferences: preferences?.get() ?? normalizeViewPreferences(),
+  mediaSettings: library?.mediaSettings() ?? {
+    root: null,
+    copyOnAdd: false,
+    keepOrganized: true,
+    pendingImports: 0,
+  },
 });
 function requireLibrary() {
   if (!library) throw new Error("Set up your Rhythm library first.");
@@ -187,18 +193,19 @@ async function importMusic() {
     throw new Error("Wait for the current import/export to finish.");
   const current = requireLibrary();
   const result = await dialog.showOpenDialog(win!, {
-    title: "Add music folders",
+    title: "Add music",
     buttonLabel: "Add music",
-    properties: ["openDirectory", "multiSelections"],
-    message:
-      "Files stay where they are. Rhythm only reads and indexes your music.",
+    properties: ["openFile", "openDirectory", "multiSelections"],
+    message: current.mediaSettings().copyOnAdd
+      ? "Rhythm copies new music into your Rhythm Media folder. Originals stay unchanged."
+      : "Files stay where they are. Rhythm only reads and indexes your music.",
   });
   if (result.canceled) return null;
   if (playlistIO || current !== library)
     throw new Error(
       "The library changed or another import/export is running. Try again.",
     );
-  return current.scan(result.filePaths, (p) =>
+  return current.add(result.filePaths, (p) =>
     win?.webContents.send("scan:progress", p),
   );
 }
@@ -214,6 +221,72 @@ function handlers() {
   handle("views:track-list", (patch: TrackListPatch) =>
     preferences.update(patch),
   );
+  handle("media:settings", (patch) => {
+    if (playlistIO || choosingLibrary)
+      throw new Error("Wait for the current operation to finish.");
+    return requireLibrary().saveMediaSettings(patch);
+  });
+  handle("media:choose-root", () =>
+    playlistOperation(async (l) => {
+      const result = await dialog.showOpenDialog(win!, {
+        title: "Choose a Rhythm Media folder",
+        buttonLabel: "Use this folder",
+        properties: ["openDirectory", "createDirectory"],
+        message:
+          "New managed imports will be copied here. Existing files will stay where they are.",
+      });
+      return result.canceled ? null : l.chooseMediaRoot(result.filePaths[0]);
+    }),
+  );
+  handle("track:check", (id: string) => requireLibrary().checkTrack(id));
+  handle("track:locate", (id: string) =>
+    playlistOperation(async (l) => {
+      const track = l.tracks(id)[0];
+      if (!track) throw new Error("Track no longer exists.");
+      const result = await dialog.showOpenDialog(win!, {
+        title: "Locate File",
+        buttonLabel: "Locate File",
+        properties: ["openFile"],
+        filters: [
+          {
+            name: "Audio",
+            extensions: [
+              "mp3",
+              "flac",
+              "m4a",
+              "aac",
+              "ogg",
+              "opus",
+              "wav",
+              "aif",
+              "aiff",
+            ],
+          },
+        ],
+        message:
+          track.locationKind === "managed"
+            ? "Rhythm will restore a copy into Rhythm Media. The selected original stays unchanged."
+            : "Relink this track to the selected file. It stays in place and is not copied.",
+      });
+      if (result.canceled) return false;
+      await l.locateTrack(id, result.filePaths[0], (p) =>
+        win?.webContents.send("scan:progress", p),
+      );
+      return true;
+    }),
+  );
+  handle("media:consolidate", (ids?: string[]) =>
+    playlistOperation((l) =>
+      l.consolidate(ids, (p) => win?.webContents.send("scan:progress", p)),
+    ),
+  );
+  handle("album:menu", (id: string) => {
+    const ids = requireLibrary()
+      .tracks()
+      .filter((t) => t.albumId === id)
+      .map((t) => t.id);
+    return showTrackMenu(ids, true);
+  });
   handle("desktop:ready", () => {
     rendererReady = true;
   });
@@ -257,7 +330,7 @@ function handlers() {
       )
         throw new Error("Drop valid local music files, folders or playlists.");
       const unique = [...new Set(paths)];
-      const scan = await l.scan(
+      const scan = await l.add(
         unique.filter((p) => !isPlaylistFile(p)),
         (p) => win?.webContents.send("scan:progress", p),
       );
@@ -282,13 +355,23 @@ function handlers() {
   handle("playlist:add", (id: string, ids: string[]) =>
     requireLibrary().addToPlaylist(id, ids),
   );
-  handle("track:menu", (ids: string[]) => {
+  handle("track:menu", (ids: string[], contextId?: string) =>
+    showTrackMenu(ids, false, contextId),
+  );
+  async function showTrackMenu(
+    ids: string[],
+    album = false,
+    contextId = ids[0],
+  ) {
     if (!Array.isArray(ids) || !ids.length || ids.length > 50000)
       throw new Error("Select tracks first.");
     const l = requireLibrary();
+    if (ids.length === 1) await l.checkTrack(ids[0]);
     const indexed = new Map(l.tracks().map((t) => [t.id, t]));
     const tracks = [...new Set(ids)].map((id) => indexed.get(id));
     if (tracks.some((t) => !t)) throw new Error("Track no longer exists.");
+    if (!ids.includes(contextId))
+      throw new Error("Select the track to inspect.");
     const dispatch =
       (command: TrackAction["command"], playlistId?: string) => () =>
         win?.webContents.send("track:action", {
@@ -341,8 +424,44 @@ function handlers() {
           : "Favourite",
         click: dispatch("favorite"),
       },
+      ...(tracks.length === 1 && tracks[0]!.missing
+        ? [
+            {
+              id: "track-locate",
+              label: "Locate File…",
+              enabled: !playlistIO && !l.scanning,
+              click: dispatch("locate"),
+            },
+          ]
+        : []),
+      ...(tracks.some((t) => t!.locationKind === "referenced")
+        ? [
+            {
+              id: "track-consolidate",
+              label: album
+                ? "Consolidate Album to Rhythm Media"
+                : "Consolidate to Rhythm Media",
+              enabled: !!l.mediaSettings().root && !playlistIO && !l.scanning,
+              click: dispatch("consolidate"),
+            },
+          ]
+        : []),
+      ...(!album
+        ? [
+            { type: "separator" as const },
+            {
+              id: "track-info",
+              label: "Track Info…",
+              click: () =>
+                win?.webContents.send("track:action", {
+                  command: "info",
+                  trackIds: [contextId],
+                } satisfies TrackAction),
+            },
+          ]
+        : []),
     ]).popup({ window: win! });
-  });
+  }
   handle("library:snapshot", snapshot);
   handle("library:choose", chooseLibrary);
   handle("library:import", importMusic);
@@ -459,7 +578,7 @@ else {
           return new Response(null, { status: 404 });
         }
       });
-      protocol.handle("rhythm-media", (request) => {
+      protocol.handle("rhythm-media", async (request) => {
         const url = new URL(request.url);
         const id = url.pathname.slice(1);
         if (!/^[a-f0-9]{64}$/.test(id))
@@ -476,9 +595,12 @@ else {
             : new Response(null, { status: 404 });
         }
         const track = url.hostname === "track" ? library?.media(id) : undefined;
-        return track
-          ? mediaResponse(track.path, track.format, request)
-          : new Response(null, { status: 404 });
+        if (!track) return new Response(null, { status: 404 });
+        const owner = library!;
+        const response = await mediaResponse(track.path, track.format, request);
+        if (response.status === 404 && owner === library)
+          await owner.checkTrack(id);
+        return response;
       });
       session.defaultSession.setPermissionRequestHandler(
         (_wc, _permission, callback) => callback(false),
@@ -527,6 +649,10 @@ else {
               {
                 label: "Export Playlist…",
                 click: () => send("export-playlist"),
+              },
+              {
+                label: "Consolidate Library…",
+                click: () => send("consolidate-library"),
               },
               { type: "separator" },
               { role: "close" },

@@ -21,6 +21,15 @@ export interface Track {
   comments: string;
   bitRate: number | null;
   codec: string;
+  locationKind: "referenced" | "managed";
+  mediaRootId: string | null;
+  mediaRelativePath: string | null;
+}
+export interface MediaSettings {
+  root: { id: string; path: string } | null;
+  copyOnAdd: boolean;
+  keepOrganized: boolean;
+  pendingImports: number;
 }
 export interface Playlist {
   id: string;
@@ -43,6 +52,7 @@ export interface Snapshot {
   roots: string[];
   state: PlayerState;
   preferences: ViewPreferences;
+  mediaSettings: MediaSettings;
 }
 export interface PlaylistImportResult {
   playlist: Playlist;
@@ -57,10 +67,17 @@ export interface ScanResult {
   unchanged: number;
   errors: string[];
   skipped: number;
+  copied?: number;
 }
 export interface DropImportResult extends ScanResult {
   playlists: PlaylistImportResult[];
   playlistErrors: string[];
+}
+export interface ConsolidationResult {
+  consolidated: number;
+  alreadyManaged: number;
+  failed: number;
+  errors: string[];
 }
 export type DesktopPlaylistEvent =
   { result: PlaylistImportResult } | { error: string } | { waiting: number };
@@ -69,11 +86,29 @@ export interface ScanProgress {
   current: string;
 }
 export type TrackAction = {
-  command: "play" | "next" | "queue" | "playlist" | "favorite" | "new-playlist";
+  command:
+    | "play"
+    | "next"
+    | "queue"
+    | "playlist"
+    | "favorite"
+    | "new-playlist"
+    | "locate"
+    | "consolidate"
+    | "info";
   trackIds: string[];
   playlistId?: string;
 };
 export interface RhythmAPI {
+  checkTrack(id: string): Promise<{ missing: boolean }>;
+  locateTrack(id: string): Promise<boolean>;
+  consolidateTracks(ids?: string[]): Promise<ConsolidationResult | null>;
+  showAlbumMenu(albumId: string): Promise<void>;
+  chooseMediaRoot(): Promise<MediaSettings | null>;
+  saveMediaSettings(patch: {
+    copyOnAdd?: boolean;
+    keepOrganized?: boolean;
+  }): Promise<MediaSettings>;
   saveTrackListPreferences(patch: TrackListPatch): Promise<ViewPreferences>;
   desktopReady(): Promise<void>;
   onDesktopPlaylist(
@@ -89,7 +124,7 @@ export interface RhythmAPI {
   rescan(): Promise<ScanResult>;
   importDroppedFiles(files: File[]): Promise<DropImportResult>;
   addToPlaylist(id: string, trackIds: string[]): Promise<void>;
-  showTrackMenu(trackIds: string[]): Promise<void>;
+  showTrackMenu(trackIds: string[], contextTrackId?: string): Promise<void>;
   onTrackAction(callback: (action: TrackAction) => void): () => void;
   favorite(id: string): Promise<void>;
   createPlaylist(name: string): Promise<Playlist>;

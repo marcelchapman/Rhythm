@@ -1,3 +1,4 @@
+import { MediaSource } from "./media-source";
 import { TrackList } from "./TrackList";
 import { TRACK_COLUMNS } from "./track-columns";
 import {
@@ -7,7 +8,7 @@ import {
 import type { DesktopPlaylistEvent } from "../shared/types";
 import type { PlaylistImportResult } from "../shared/types";
 import { TRACK_DRAG_TYPE, dragTrackIds } from "./track-columns";
-import type { TrackAction } from "../shared/types";
+import type { TrackAction, ConsolidationResult } from "../shared/types";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Activity,
@@ -222,15 +223,35 @@ export function App() {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
+  const [mediaError, setMediaError] = useState("");
+  const [recoveryId, setRecoveryId] = useState<string | null>(null);
+  const [consolidationReport, setConsolidationReport] =
+    useState<ConsolidationResult | null>(null);
   const [report, setReport] = useState<ScanResult | null>(null);
   const [modal, setModal] = useState<
-    "settings" | "playlist" | "track" | "delete" | "export-playlist" | null
+    | "settings"
+    | "playlist"
+    | "track"
+    | "delete"
+    | "export-playlist"
+    | "consolidate"
+    | "info"
+    | null
   >(null);
   const [editPlaylist, setEditPlaylist] = useState<Playlist | null>(null);
   const [name, setName] = useState("");
   const [actionTrack, setActionTrack] = useState<Track | null>(null);
   const [targetPlaylist, setTargetPlaylist] = useState("");
   const audio = useRef<HTMLAudioElement>(null);
+  const mediaSource = useRef<MediaSource | null>(null);
+  const playRequest = useRef(0);
+  const pendingPlay = useRef<{ key: string; promise: Promise<void> } | null>(
+    null,
+  );
+  const reportedPlaybackError = useRef("");
+  const playbackMounted = useRef(true);
+  const loadedTrackId = useRef<string | null>(null);
+  const lastPlaybackPosition = useRef(0);
   const stateRef = useRef(state);
   const dataRef = useRef(data);
   const playingRef = useRef(false);
@@ -296,9 +317,254 @@ export function App() {
     setData(snapshot);
     return snapshot;
   };
+  const prepareMedia = (track: Track, position = 0, force = false) => {
+    const loader = (mediaSource.current ??= new MediaSource(audio.current!));
+    return loader.ensure(
+      `${dataRef.current?.libraryPath}\0${track.id}\0${track.path}`,
+      media(track),
+      position,
+      force,
+    );
+  };
+  const unavailable = (track: Track) => {
+    desiredPlay.current = false;
+    audio.current?.pause();
+    setPlaying(false);
+    setData((previous) =>
+      previous
+        ? {
+            ...previous,
+            tracks: previous.tracks.map((t) =>
+              t.id === track.id ? { ...t, missing: true } : t,
+            ),
+          }
+        : previous,
+    );
+    setRecoveryId(track.id);
+    setError(
+      `Rhythm can't find “${track.title}” at its recorded location. Locate the file to reconnect this track.`,
+    );
+  };
+  const playbackFailure = async (
+    cause: unknown,
+    id: string,
+    generation: number,
+    request: number,
+  ) => {
+    const name = cause instanceof Error ? cause.name : "Error";
+    const stale =
+      request !== playRequest.current ||
+      generation !== mediaSource.current?.generation ||
+      !playbackMounted.current;
+    if (stale || (name === "AbortError" && !desiredPlay.current)) {
+      console.debug("Rhythm playback superseded", {
+        id,
+        generation,
+        request,
+        name,
+      });
+      return;
+    }
+    const key = `${generation}/${request}`;
+    if (reportedPlaybackError.current === key) return;
+    reportedPlaybackError.current = key;
+    console.warn("Rhythm playback failed", { id, generation, request, cause });
+    try {
+      const result = await api.checkTrack(id);
+      if (
+        request !== playRequest.current ||
+        generation !== mediaSource.current?.generation ||
+        !playbackMounted.current
+      )
+        return;
+      const track = dataRef.current?.tracks.find((t) => t.id === id);
+      if (!track) return;
+      if (result.missing) unavailable(track);
+      else {
+        desiredPlay.current = false;
+        setPlaying(false);
+        setRecoveryId(null);
+        setError(
+          name === "AbortError"
+            ? "Playback was interrupted. Press Play to try again."
+            : "This track could not be played. The file may be damaged or use an unsupported codec. Try another track.",
+        );
+      }
+    } catch (e) {
+      console.warn("Rhythm playback availability check failed", {
+        id,
+        cause: e,
+      });
+      if (
+        request === playRequest.current &&
+        generation === mediaSource.current?.generation &&
+        playbackMounted.current
+      )
+        setError(
+          "Rhythm could not check this file. Try Play again or check its drive.",
+        );
+    }
+  };
+  const playPrepared = (id: string, request: number) => {
+    const generation = mediaSource.current!.generation;
+    if (
+      request !== playRequest.current ||
+      !desiredPlay.current ||
+      !audio.current!.paused
+    )
+      return Promise.resolve();
+    const key = `${generation}/${request}`;
+    if (pendingPlay.current?.key === key) return pendingPlay.current.promise;
+    const promise = audio
+      .current!.play()
+      .catch((e) => playbackFailure(e, id, generation, request));
+    pendingPlay.current = { key, promise };
+    return promise;
+  };
+  const locateTrack = async (id: string) => {
+    if (busy) return;
+    const libraryPath = dataRef.current?.libraryPath;
+    if (stateRef.current.currentId === id) {
+      playRequest.current++;
+      desiredPlay.current = false;
+      audio.current?.pause();
+    }
+    setRecoveryId(id);
+    setMessage("");
+    setBusy(true);
+    setProgress("Choose a file to recover this track…");
+    let located = false;
+    try {
+      if (await api.locateTrack(id)) {
+        located = true;
+        const latest = await api.snapshot();
+        const track = latest.tracks.find((t) => t.id === id);
+        if (!track) throw new Error("The recovered track is unavailable.");
+        // Start the one forced recovery load before React observes the new location.
+        // The normal source effect will reuse this same readiness promise.
+        const ready =
+          stateRef.current.currentId === id
+            ? prepareMedia(
+                track,
+                lastPlaybackPosition.current || stateRef.current.position,
+                true,
+              )
+            : Promise.resolve();
+        setData(latest);
+        setError("");
+        setRecoveryId(null);
+        setProgress("Preparing the recovered track…");
+        await ready;
+        if (dataRef.current?.libraryPath !== libraryPath) return;
+        setRecoveryId(null);
+        setError("");
+        setMessage(
+          stateRef.current.currentId === id
+            ? "File located. The track is ready to play; its original stays unchanged."
+            : "File located. Its original stays unchanged.",
+        );
+        setModal(null);
+      } else await refresh();
+    } catch (e) {
+      if (located) {
+        console.warn("Rhythm recovery playback preparation", { id, cause: e });
+        if (e instanceof Error && e.name === "AbortError") {
+          if (dataRef.current?.libraryPath === libraryPath)
+            setMessage("File located. Its original stays unchanged.");
+        } else {
+          setRecoveryId(null);
+          setError(
+            "The file was located, but playback could not be prepared. Check its format and try Play again.",
+          );
+        }
+      } else fail(e);
+    } finally {
+      setBusy(false);
+      setProgress("");
+    }
+  };
+  const consolidate = async (ids?: string[]) => {
+    if (busy) return;
+    setBusy(true);
+    setProgress("Copying referenced tracks to Rhythm Media…");
+    setError("");
+    setModal(null);
+    try {
+      const result = await api.consolidateTracks(ids);
+      if (result) setConsolidationReport(result);
+      await refresh();
+      // The track URL uses stable identity, even when its local file changed.
+      // Path changes reload the decoder; also reset an errored same-path decoder.
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+      setProgress("");
+    }
+  };
+  const playbackError = () => {
+    const a = audio.current;
+    const id = stateRef.current.currentId;
+    if (!id || !a?.error || !a.src || new URL(a.src).pathname.slice(1) !== id)
+      return;
+    void playbackFailure(
+      new Error(`Media decoder error ${a.error.code}`),
+      id,
+      mediaSource.current?.generation ?? 0,
+      playRequest.current,
+    );
+  };
+  const changeMedia = async (patch?: {
+    copyOnAdd?: boolean;
+    keepOrganized?: boolean;
+  }) => {
+    if (busy) return;
+    const previousSettings = dataRef.current?.mediaSettings;
+    if (patch)
+      setData((previous) =>
+        previous
+          ? {
+              ...previous,
+              mediaSettings: { ...previous.mediaSettings, ...patch },
+            }
+          : previous,
+      );
+    setBusy(true);
+    setMediaError("");
+    try {
+      const mediaSettings = patch
+        ? await api.saveMediaSettings(patch)
+        : await api.chooseMediaRoot();
+      if (mediaSettings)
+        setData((previous) =>
+          previous ? { ...previous, mediaSettings } : previous,
+        );
+    } catch (e) {
+      if (previousSettings)
+        setData((previous) =>
+          previous
+            ? { ...previous, mediaSettings: previousSettings }
+            : previous,
+        );
+      const message = e instanceof Error ? e.message : String(e);
+      setMediaError(
+        message.replace(
+          /^Error invoking remote method '[^']+': (?:Error: )?/,
+          "",
+        ),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
   const load = (snapshot: Snapshot) => {
     suppressSave.current = true;
     desiredPlay.current = false;
+    playRequest.current++;
+    mediaSource.current?.clear();
+    loadedTrackId.current = null;
+    setRecoveryId(null);
+    setConsolidationReport(null);
     audio.current?.pause();
     setPlaying(false);
     setData(snapshot);
@@ -339,32 +605,43 @@ export function App() {
     a.volume = state.volume;
   }, [state.volume]);
   useEffect(() => {
+    playbackMounted.current = true;
+    return () => {
+      playbackMounted.current = false;
+      playRequest.current++;
+      mediaSource.current?.cancel();
+    };
+  }, []);
+  useEffect(() => {
     const a = audio.current!;
     if (!current) {
-      a.removeAttribute("src");
-      a.load();
+      mediaSource.current?.clear();
       setPlaying(false);
       setDuration(0);
       return;
     }
-    a.src = media(current);
-    a.load();
+    if (current.missing) {
+      mediaSource.current?.clear();
+      setPlaying(false);
+      return;
+    }
+    const savedPosition =
+      loadedTrackId.current === current.id
+        ? a.error
+          ? lastPlaybackPosition.current
+          : a.currentTime || resume.current
+        : resume.current;
+    loadedTrackId.current = current.id;
+    lastPlaybackPosition.current = savedPosition;
+    resume.current = 0;
     setDuration(current.duration);
-    const ready = () => {
-      if (resume.current) {
-        a.currentTime = Math.min(
-          resume.current,
-          Number.isFinite(a.duration) ? a.duration : resume.current,
-        );
-        resume.current = 0;
-      }
-      if (desiredPlay.current) void a.play().catch(fail);
-    };
-    a.addEventListener("loadedmetadata", ready, { once: true });
-    return () => {
-      a.removeEventListener("loadedmetadata", ready);
-    };
-  }, [current?.id, data?.libraryPath]);
+    const request = playRequest.current;
+    const ready = prepareMedia(current, savedPosition);
+    const generation = mediaSource.current!.generation;
+    void ready
+      .then(() => playPrepared(current.id, request))
+      .catch((e) => playbackFailure(e, current.id, generation, request));
+  }, [current?.id, current?.path, current?.missing, data?.libraryPath]);
   useEffect(() => {
     const timer = setInterval(() => {
       if (
@@ -375,7 +652,13 @@ export function App() {
         void api
           .saveState({
             ...stateRef.current,
-            position: audio.current.currentTime || 0,
+            position:
+              audio.current.error ||
+              dataRef.current?.tracks.find(
+                (t) => t.id === stateRef.current.currentId,
+              )?.missing
+                ? lastPlaybackPosition.current
+                : audio.current.currentTime || 0,
           })
           .catch(fail);
     }, 4000);
@@ -384,7 +667,13 @@ export function App() {
         void api
           .saveState({
             ...stateRef.current,
-            position: audio.current?.currentTime || 0,
+            position:
+              audio.current?.error ||
+              dataRef.current?.tracks.find(
+                (t) => t.id === stateRef.current.currentId,
+              )?.missing
+                ? lastPlaybackPosition.current
+                : audio.current?.currentTime || 0,
           })
           .catch(() => {});
     };
@@ -408,40 +697,104 @@ export function App() {
     setQuery("");
     setGroup(null);
   };
+  const requestPlayback = async (
+    track: Track,
+    queue?: Track[],
+    restart = true,
+    autoplay = true,
+  ) => {
+    const request = ++playRequest.current;
+    const libraryPath = dataRef.current?.libraryPath;
+    reportedPlaybackError.current = "";
+    setMessage("");
+    try {
+      const { missing } = await api.checkTrack(track.id);
+      if (
+        request !== playRequest.current ||
+        dataRef.current?.libraryPath !== libraryPath
+      )
+        return;
+      const ids = queue
+        ?.filter((t) => !t.missing || t.id === track.id)
+        .map((t) => t.id);
+      if (missing) {
+        if (stateRef.current.currentId !== track.id)
+          lastPlaybackPosition.current = 0;
+        unavailable(track);
+        setState((s) => ({
+          ...s,
+          currentId: track.id,
+          ...(ids ? { queue: ids } : {}),
+        }));
+        return;
+      }
+      desiredPlay.current = autoplay;
+      if (track.missing)
+        setData((previous) =>
+          previous
+            ? {
+                ...previous,
+                tracks: previous.tracks.map((t) =>
+                  t.id === track.id ? { ...t, missing: false } : t,
+                ),
+              }
+            : previous,
+        );
+      setRecoveryId(null);
+      setError("");
+      const savedPosition = restart ? 0 : lastPlaybackPosition.current;
+      resume.current = savedPosition;
+      if (restart) {
+        lastPlaybackPosition.current = 0;
+        setPosition(0);
+      }
+      setState((s) => ({
+        ...s,
+        currentId: track.id,
+        position: savedPosition,
+        ...(ids ? { queue: ids } : {}),
+      }));
+      const ready = prepareMedia(track, savedPosition);
+      const generation = mediaSource.current!.generation;
+      try {
+        await ready;
+        if (request !== playRequest.current) return;
+        if (restart) audio.current!.currentTime = 0;
+        if (autoplay) await playPrepared(track.id, request);
+      } catch (e) {
+        await playbackFailure(e, track.id, generation, request);
+      }
+    } catch (e) {
+      console.warn("Rhythm Play request failed", { id: track.id, cause: e });
+      if (request === playRequest.current)
+        setError(
+          "Rhythm could not check this file. Try Play again or check its drive.",
+        );
+    }
+  };
   const playTrack = (track: Track, queue?: Track[]) => {
-    if (track.missing) {
-      setError(
-        "This music file is unavailable. Reconnect its drive or restore the file, then rescan.",
-      );
-      return;
-    }
-    desiredPlay.current = true;
-    resume.current = 0;
-    setPosition(0);
-    const ids = (queue ?? [track]).filter((t) => !t.missing).map((t) => t.id);
-    if (track.id === stateRef.current.currentId) {
-      audio.current!.currentTime = 0;
-      void audio.current!.play().catch(fail);
-    }
-    setState((s) => ({ ...s, currentId: track.id, position: 0, queue: ids }));
+    void requestPlayback(track, queue ?? [track]);
+  };
+  const pausePlayback = () => {
+    playRequest.current++;
+    desiredPlay.current = false;
+    audio.current?.pause();
   };
   const toggle = () => {
-    if (!stateRef.current.currentId) {
+    const s = stateRef.current;
+    if (!s.currentId) {
       const available = dataRef.current?.tracks ?? [];
-      const queued = stateRef.current.queue
+      const queued = s.queue
         .map((id) => available.find((t) => t.id === id))
-        .filter((t): t is Track => !!t && !t.missing);
+        .filter((t): t is Track => !!t);
       const items = queued.length ? queued : available;
-      const t = items.find((t) => !t.missing);
-      if (t) playTrack(t, items);
+      if (items[0]) playTrack(items[0], items);
       return;
     }
-    if (audio.current!.paused) {
-      desiredPlay.current = true;
-      void audio.current!.play().catch(fail);
-    } else {
-      desiredPlay.current = false;
-      audio.current!.pause();
+    if (!audio.current!.paused) pausePlayback();
+    else {
+      const track = dataRef.current?.tracks.find((t) => t.id === s.currentId);
+      if (track) void requestPlayback(track, undefined, false);
     }
   };
   const advance = (direction: number, ended = false) => {
@@ -452,8 +805,8 @@ export function App() {
       return;
     }
     if (ended && s.repeat === "one") {
-      a.currentTime = 0;
-      void a.play().catch(fail);
+      const track = dataRef.current?.tracks.find((t) => t.id === s.currentId);
+      if (track) void requestPlayback(track, undefined, true);
       return;
     }
     const valid = s.queue.filter((id) => {
@@ -480,14 +833,9 @@ export function App() {
       }
     }
     const id = valid[next];
-    desiredPlay.current = ended || playingRef.current;
-    resume.current = 0;
-    if (id === s.currentId) {
-      a.currentTime = 0;
-      if (desiredPlay.current) void a.play().catch(fail);
-    }
-    setPosition(0);
-    setState((prev) => ({ ...prev, currentId: id, position: 0 }));
+    const track = dataRef.current?.tracks.find((t) => t.id === id);
+    if (track)
+      void requestPlayback(track, undefined, true, ended || playingRef.current);
   };
   const chooseLibrary = async () => {
     try {
@@ -538,6 +886,7 @@ export function App() {
         ) {
           playlistCommandRef.current(command);
         } else if (command === "choose-library") void chooseLibrary();
+        else if (command === "consolidate-library") setModal("consolidate");
       }),
     [],
   );
@@ -565,11 +914,12 @@ export function App() {
         album: current.album,
       });
       navigator.mediaSession.setActionHandler("play", () => {
-        void audio.current!.play().catch(fail);
+        const track = dataRef.current?.tracks.find(
+          (t) => t.id === stateRef.current.currentId,
+        );
+        if (track) void requestPlayback(track, undefined, false);
       });
-      navigator.mediaSession.setActionHandler("pause", () =>
-        audio.current!.pause(),
-      );
+      navigator.mediaSession.setActionHandler("pause", pausePlayback);
       navigator.mediaSession.setActionHandler("nexttrack", () => advance(1));
       navigator.mediaSession.setActionHandler("previoustrack", () =>
         advance(-1),
@@ -705,6 +1055,22 @@ export function App() {
       void appendToPlaylist(action.playlistId, action.trackIds);
     else if (action.command === "new-playlist")
       makePlaylist(null, action.trackIds);
+    else if (action.command === "locate") void locateTrack(items[0].id);
+    else if (action.command === "consolidate")
+      void consolidate(action.trackIds);
+    else if (action.command === "info")
+      void (async () => {
+        try {
+          await api.checkTrack(action.trackIds[0]);
+          const latest = await refresh();
+          const track = latest.tracks.find((t) => t.id === action.trackIds[0]);
+          if (!track) throw new Error("Track no longer exists.");
+          setActionTrack(track);
+          setModal("info");
+        } catch (e) {
+          fail(e);
+        }
+      })();
     else if (action.command === "favorite")
       void (async () => {
         try {
@@ -721,8 +1087,8 @@ export function App() {
     () => api.onTrackAction((action) => trackActionRef.current(action)),
     [],
   );
-  const showTrackMenu = (ids: string[]) => {
-    void api.showTrackMenu(ids).catch(fail);
+  const showTrackMenu = (ids: string[], contextId?: string) => {
+    void api.showTrackMenu(ids, contextId).catch(fail);
   };
   const importDrop = async (files: File[]) => {
     if (!dataRef.current?.libraryPath) {
@@ -968,6 +1334,16 @@ export function App() {
         <article
           className={`album-card ${a.id === selectedAlbum ? "selected" : ""}`}
           key={a.id}
+          onContextMenu={(e) => {
+            e.preventDefault();
+            void api.showAlbumMenu(a.id).catch(fail);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
+              e.preventDefault();
+              void api.showAlbumMenu(a.id).catch(fail);
+            }
+          }}
         >
           <button
             className="album-cover"
@@ -1066,15 +1442,14 @@ export function App() {
               : (current?.duration ?? 0),
           )
         }
-        onTimeUpdate={() => setPosition(audio.current!.currentTime)}
-        onEnded={() => advance(1, true)}
-        onError={() => {
-          desiredPlay.current = false;
-          setPlaying(false);
-          setError(
-            "This track could not be played. The file may be unavailable, damaged, or use an unsupported codec. Try another track or rescan its folder.",
-          );
+        onTimeUpdate={() => {
+          const a = audio.current!;
+          if (!a.error && a.readyState >= 1)
+            lastPlaybackPosition.current = a.currentTime;
+          setPosition(a.currentTime);
         }}
+        onEnded={() => advance(1, true)}
+        onError={() => void playbackError()}
       />
       <aside className="sidebar">
         <div className="window-drag" />
@@ -1278,7 +1653,35 @@ export function App() {
         {error && (
           <div className="notice error" role="alert">
             <AlertCircle size={18} />
-            <span>{error}</span>
+            <span>
+              {recoveryId && (
+                <>
+                  <strong>Track unavailable</strong>
+                  <br />
+                </>
+              )}
+              {error}
+            </span>
+            {recoveryId && (
+              <button
+                className="quiet"
+                disabled={busy}
+                onClick={() => void locateTrack(recoveryId)}
+              >
+                Locate File…
+              </button>
+            )}
+            {recoveryId && (
+              <button
+                className="quiet"
+                onClick={() => {
+                  setError("");
+                  setRecoveryId(null);
+                }}
+              >
+                Cancel
+              </button>
+            )}
             <IconButton label="Dismiss error" onClick={() => setError("")}>
               <X />
             </IconButton>
@@ -1296,6 +1699,7 @@ export function App() {
             <span>
               {report.added} added · {report.updated} updated ·{" "}
               {report.unchanged} unchanged
+              {!!report.copied && ` · ${report.copied} copied to Rhythm Media`}
               {report.errors.length > 0 && ` · ${report.errors.length} issues`}
               {report.errors.length > 0 && (
                 <details>
@@ -1311,6 +1715,38 @@ export function App() {
             <IconButton
               label="Dismiss import report"
               onClick={() => setReport(null)}
+            >
+              <X />
+            </IconButton>
+          </div>
+        )}
+        {consolidationReport && !busy && (
+          <div className="notice" role="status">
+            <Check size={18} />
+            <span>
+              <strong>Library consolidation complete</strong>
+              <br />
+              {consolidationReport.consolidated} tracks consolidated ·{" "}
+              {consolidationReport.alreadyManaged} already managed ·{" "}
+              {consolidationReport.failed} could not be consolidated
+              {!!consolidationReport.errors.length && (
+                <details>
+                  <summary>View consolidation issues</summary>
+                  <p>
+                    Failed tracks remain referenced. Locate missing files, then
+                    consolidate again to retry.
+                  </p>
+                  <ul>
+                    {consolidationReport.errors.map((e, i) => (
+                      <li key={i}>{e}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </span>
+            <IconButton
+              label="Dismiss consolidation report"
+              onClick={() => setConsolidationReport(null)}
             >
               <X />
             </IconButton>
@@ -1828,6 +2264,89 @@ export function App() {
             <FolderOpen size={17} />
             Choose or switch library…
           </button>
+          <section
+            className="media-settings"
+            aria-labelledby="media-settings-title"
+          >
+            <h3 id="media-settings-title">Rhythm Media folder</h3>
+            <p className="path">
+              {data?.mediaSettings.root?.path ?? "No folder chosen"}
+            </p>
+            <button
+              className="quiet"
+              disabled={busy || !data?.libraryPath}
+              onClick={() => void changeMedia()}
+            >
+              <FolderOpen size={17} />
+              {data?.mediaSettings.root
+                ? "Change Rhythm Media folder…"
+                : "Choose Rhythm Media folder…"}
+            </button>
+            <label className="media-option">
+              <input
+                type="checkbox"
+                checked={data?.mediaSettings.copyOnAdd ?? false}
+                disabled={busy || !data?.mediaSettings.root}
+                onChange={(e) =>
+                  void changeMedia({ copyOnAdd: e.target.checked })
+                }
+                aria-describedby="media-copy-help"
+              />
+              <span>
+                Copy files to Rhythm Media folder when adding to library
+              </span>
+            </label>
+            <p id="media-copy-help" className="muted">
+              {!data?.mediaSettings.root
+                ? "Choose a folder to enable copying. "
+                : ""}
+              When on, Add Music and audio drops copy new music here. Originals
+              stay unchanged. When off, files are referenced where they are.
+            </p>
+            <label className="media-option">
+              <input
+                type="checkbox"
+                checked={data?.mediaSettings.keepOrganized ?? true}
+                disabled={busy || !data?.libraryPath}
+                onChange={(e) =>
+                  void changeMedia({ keepOrganized: e.target.checked })
+                }
+                aria-describedby="media-organize-help"
+              />
+              <span>Keep Rhythm Media folder organized</span>
+            </label>
+            <p id="media-organize-help" className="muted">
+              Organize new copies by Album Artist and Album. Existing files stay
+              where they are. Playlist files reference music without copying it.
+            </p>
+            <p className="muted">
+              {data?.tracks.filter((t) => t.locationKind === "managed")
+                .length ?? 0}{" "}
+              managed ·{" "}
+              {data?.tracks.filter((t) => t.locationKind === "referenced")
+                .length ?? 0}{" "}
+              referenced
+            </p>
+            {!!data?.mediaSettings.pendingImports && (
+              <p role="status">
+                {data.mediaSettings.pendingImports} unfinished import
+                {data.mediaSettings.pendingImports === 1 ? "" : "s"}. Add the
+                original files again to retry; copies are checked before use.
+              </p>
+            )}
+            {mediaError && (
+              <p className="media-error" role="alert">
+                {mediaError}
+              </p>
+            )}
+            <button
+              className="quiet"
+              disabled={busy || !data?.libraryPath}
+              onClick={() => setModal("consolidate")}
+            >
+              Consolidate Library…
+            </button>
+          </section>
           <h3>Track List columns</h3>
           <p className="muted">
             Shared across Songs, playlists and other Track Lists. Title stays
@@ -2092,12 +2611,126 @@ export function App() {
             </button>
           )}
           <h3>File information</h3>
+          {actionTrack.missing && (
+            <button
+              className="quiet"
+              disabled={busy}
+              onClick={() => void locateTrack(actionTrack.id)}
+            >
+              Locate File…
+            </button>
+          )}
+          <p className="muted">
+            {actionTrack.locationKind === "managed"
+              ? "Managed copy in Rhythm Media"
+              : "Referenced file · stays in its original location"}
+          </p>
           <p className="path">{actionTrack.path}</p>
           <p className="fine-print">
             {actionTrack.format.toUpperCase()} · {time(actionTrack.duration)} ·{" "}
             {actionTrack.genre}
             {actionTrack.year ? ` · ${actionTrack.year}` : ""}
           </p>
+        </Modal>
+      )}
+      {modal === "info" && actionTrack && (
+        <Modal title="Track Info" close={() => setModal(null)}>
+          <p className="muted">Read only. Your audio file stays unchanged.</p>
+          <dl className="track-info-fields">
+            {(
+              [
+                ["Title", actionTrack.title],
+                ["Artist", actionTrack.artist],
+                ["Album", actionTrack.album],
+                ["Album Artist", actionTrack.albumArtist],
+                ["Genre", actionTrack.genre],
+                ["Year", actionTrack.year || "—"],
+                ["Track number", actionTrack.track || "—"],
+                ["Disc number", actionTrack.disc || "—"],
+                ["BPM", actionTrack.bpm || "—"],
+                ["Comments", actionTrack.comments || "—"],
+                ["Duration", time(actionTrack.duration)],
+                ["Format", actionTrack.format.toUpperCase()],
+                ["Codec", actionTrack.codec || "—"],
+                [
+                  "Bit rate",
+                  actionTrack.bitRate
+                    ? `${Math.round(actionTrack.bitRate / 1000)} kbps`
+                    : "—",
+                ],
+                [
+                  "Ownership",
+                  actionTrack.locationKind === "managed"
+                    ? "Managed copy in Rhythm Media"
+                    : "Referenced file",
+                ],
+                [
+                  "Availability",
+                  actionTrack.missing
+                    ? "Unavailable · use Locate File to reconnect"
+                    : "Available",
+                ],
+                ["File location", actionTrack.path],
+              ] as const
+            ).map(([label, value]) => (
+              <div key={label}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+          <div className="dialog-actions">
+            <button className="quiet" onClick={() => setModal(null)}>
+              Done
+            </button>
+          </div>
+        </Modal>
+      )}
+      {modal === "consolidate" && (
+        <Modal title="Consolidate Library?" close={() => setModal(null)}>
+          <p>
+            Copy referenced music into Rhythm Media. External originals stay
+            where they are and remain unchanged.
+          </p>
+          <p className="muted">
+            {tracks.filter((t) => t.locationKind === "referenced").length}{" "}
+            referenced tracks to copy ·{" "}
+            {tracks.filter((t) => t.locationKind === "managed").length} already
+            managed and will be skipped.
+          </p>
+          <p className="muted">
+            Successful tracks stay consolidated if another file fails. Running
+            this again retries only referenced tracks.
+          </p>
+          {data?.mediaSettings.root ? (
+            <p className="path">{data.mediaSettings.root.path}</p>
+          ) : (
+            <p>
+              Choose a Rhythm Media folder in Library settings before
+              consolidating.
+            </p>
+          )}
+          <div className="dialog-actions">
+            <button className="quiet" onClick={() => setModal(null)}>
+              Cancel
+            </button>
+            {!data?.mediaSettings.root && (
+              <button className="quiet" onClick={() => setModal("settings")}>
+                Library settings
+              </button>
+            )}
+            <button
+              className="primary"
+              disabled={
+                busy ||
+                !data?.mediaSettings.root ||
+                !tracks.some((t) => t.locationKind === "referenced")
+              }
+              onClick={() => void consolidate()}
+            >
+              Consolidate library
+            </button>
+          </div>
         </Modal>
       )}
     </div>

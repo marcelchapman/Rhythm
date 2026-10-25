@@ -39,7 +39,7 @@ export function TrackList({
   currentId?: string;
   playing: boolean;
   onPlay: (track: Track, queue: Track[]) => void;
-  onContext: (trackIds: string[]) => void;
+  onContext: (trackIds: string[], contextTrackId?: string) => void;
   onSelect: (track: Track) => void;
   onFavorite: (id: string) => void;
   resetKey: string;
@@ -141,7 +141,7 @@ export function TrackList({
       ? items.filter((t) => selected.has(t.id)).map((t) => t.id)
       : [track.id];
     if (!selected.has(track.id)) setSelected(new Set(ids));
-    onContext(ids);
+    onContext(ids, track.id);
   };
   const text = (track: Track, key: TrackSortKey) => {
     if (key === "duration") return time(track.duration);

@@ -1,8 +1,24 @@
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
-import { mkdir, realpath, readdir, stat, access } from "node:fs/promises";
+import {
+  mkdir,
+  realpath,
+  readdir,
+  stat,
+  access,
+  lstat,
+} from "node:fs/promises";
 import path from "node:path";
 import { parseFile, selectCover } from "music-metadata";
+import { inside } from "./media-plan.js";
+import {
+  fileDigest,
+  prepareManagedCopy,
+  finishManagedCopy,
+  validateManagedLocation,
+  type ManagedLocation,
+  type MediaRoot,
+} from "./managed-copy.js";
 import {
   defaultState,
   type Track,
@@ -10,6 +26,8 @@ import {
   type PlayerState,
   type ScanResult,
   type ScanProgress,
+  type MediaSettings,
+  type ConsolidationResult,
 } from "../shared/types.js";
 
 export const AUDIO_EXTENSIONS = new Set([
@@ -60,7 +78,7 @@ export function normalizeState(
   };
 }
 
-/** SQLite belongs to Rhythm; source audio is only ever opened for reading. */
+/** SQLite belongs to Rhythm. External source audio is only ever opened for reading. */
 export class Library {
   readonly db: DatabaseSync;
   scanning = false;
@@ -98,7 +116,7 @@ export class Library {
         const version = check.prepare("PRAGMA user_version").get() as {
           user_version: number;
         };
-        if (version.user_version > 2)
+        if (version.user_version > 3)
           throw new Error("This library needs a newer version of Rhythm.");
       } finally {
         check.close();
@@ -141,15 +159,36 @@ export class Library {
         throw error;
       }
     }
+    if (version < 3) {
+      db.exec("BEGIN IMMEDIATE");
+      try {
+        db.exec(`CREATE TABLE media_roots(id TEXT PRIMARY KEY);
+          CREATE TABLE media_root_locations(rootId TEXT PRIMARY KEY REFERENCES media_roots(id), path TEXT UNIQUE NOT NULL, device TEXT NOT NULL, inode TEXT NOT NULL);
+          CREATE TABLE track_locations(trackId TEXT PRIMARY KEY REFERENCES tracks(id) ON DELETE CASCADE,
+            kind TEXT NOT NULL CHECK(kind IN ('referenced','managed')),
+            mediaRootId TEXT REFERENCES media_roots(id), relativePath TEXT,
+            CHECK((kind='referenced' AND mediaRootId IS NULL AND relativePath IS NULL) OR (kind='managed' AND mediaRootId IS NOT NULL AND relativePath IS NOT NULL)));
+          INSERT INTO track_locations(trackId,kind) SELECT id,'referenced' FROM tracks;
+          CREATE TABLE managed_imports(id TEXT PRIMARY KEY, source TEXT NOT NULL, digest TEXT NOT NULL,
+            rootId TEXT NOT NULL REFERENCES media_roots(id), relative TEXT NOT NULL, stage TEXT NOT NULL,
+            stageDevice TEXT, stageInode TEXT, status TEXT NOT NULL CHECK(status IN ('copying','ready','done')),
+            trackId TEXT NOT NULL, UNIQUE(source,digest,rootId));
+          PRAGMA user_version=3; COMMIT;`);
+      } catch (error) {
+        db.exec("ROLLBACK");
+        db.close();
+        throw error;
+      }
+    }
     return new Library(canonical, db);
   }
 
-  tracks(): Track[] {
-    const rows = this.db
-      .prepare(
-        `SELECT id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,favorite,missing,format,bpm,comments,bitRate,codec,artwork IS NOT NULL AS hasArtwork FROM tracks ORDER BY album COLLATE NOCASE, disc, track, title COLLATE NOCASE`,
-      )
-      .all();
+  tracks(id?: string): Track[] {
+    const query = this.db.prepare(
+      `SELECT t.id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,favorite,missing,format,bpm,comments,bitRate,codec,artwork IS NOT NULL AS hasArtwork,
+        COALESCE(l.kind,'referenced') AS locationKind,l.mediaRootId,l.relativePath AS mediaRelativePath FROM tracks t LEFT JOIN track_locations l ON l.trackId=t.id ${id ? "WHERE t.id=?" : ""} ORDER BY album COLLATE NOCASE, disc, track, title COLLATE NOCASE`,
+    );
+    const rows = id ? query.all(id) : query.all();
     return rows.map((row) => ({
       ...row,
       favorite: !!row.favorite,
@@ -162,6 +201,257 @@ export class Library {
       .prepare("SELECT path FROM roots ORDER BY path")
       .all()
       .map((row) => row.path as string);
+  }
+  mediaSettings(): MediaSettings {
+    const row = this.db
+      .prepare("SELECT value FROM settings WHERE key='media'")
+      .get();
+    let saved: {
+      rootId?: string;
+      copyOnAdd?: boolean;
+      keepOrganized?: boolean;
+    } = {};
+    try {
+      saved = row ? (JSON.parse(String(row.value)) ?? {}) : {};
+    } catch {
+      /* Defaults are reference-only. */
+    }
+    const root =
+      typeof saved.rootId === "string"
+        ? (this.db
+            .prepare(
+              "SELECT rootId AS id,path FROM media_root_locations WHERE rootId=?",
+            )
+            .get(saved.rootId) as unknown as
+            { id: string; path: string } | undefined)
+        : undefined;
+    return {
+      root: root ?? null,
+      copyOnAdd: !!root && saved.copyOnAdd === true,
+      keepOrganized: saved.keepOrganized !== false,
+      pendingImports: Number(
+        this.db
+          .prepare(
+            "SELECT COUNT(*) AS n FROM managed_imports WHERE status!='done'",
+          )
+          .get()!.n,
+      ),
+    };
+  }
+  private writeMediaSettings(value: MediaSettings) {
+    this.db
+      .prepare(
+        "INSERT INTO settings VALUES('media',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+      )
+      .run(
+        JSON.stringify({
+          rootId: value.root?.id,
+          copyOnAdd: value.copyOnAdd,
+          keepOrganized: value.keepOrganized,
+        }),
+      );
+  }
+  saveMediaSettings(patch: {
+    copyOnAdd?: boolean;
+    keepOrganized?: boolean;
+  }): MediaSettings {
+    if (this.scanning)
+      throw new Error("Wait for the current import to finish.");
+    if (
+      !patch ||
+      Object.keys(patch).some(
+        (k) =>
+          !["copyOnAdd", "keepOrganized"].includes(k) ||
+          typeof patch[k as keyof typeof patch] !== "boolean",
+      )
+    )
+      throw new Error("Invalid media settings.");
+    const value = { ...this.mediaSettings(), ...patch };
+    if (value.copyOnAdd && !value.root)
+      throw new Error("Choose a Rhythm Media folder before enabling copying.");
+    this.writeMediaSettings(value);
+    return this.mediaSettings();
+  }
+  async chooseMediaRoot(directory: string): Promise<MediaSettings> {
+    if (this.scanning)
+      throw new Error("Wait for the current import to finish.");
+    if (!path.isAbsolute(directory))
+      throw new Error("Choose an absolute Rhythm Media folder.");
+    this.scanning = true;
+    try {
+      const canonical = await realpath(directory),
+        info = await lstat(canonical);
+      if (
+        !info.isDirectory() ||
+        canonical === path.parse(canonical).root ||
+        canonical === this.directory ||
+        inside(canonical, this.directory)
+      )
+        throw new Error(
+          "Choose a dedicated music folder, separate from the library database folder.",
+        );
+      const existing = this.db
+        .prepare("SELECT rootId AS id FROM media_root_locations WHERE path=?")
+        .get(canonical);
+      const id = (existing?.id as string) || randomUUID();
+      this.db.exec("BEGIN IMMEDIATE");
+      try {
+        this.db.prepare("INSERT OR IGNORE INTO media_roots VALUES(?)").run(id);
+        this.db
+          .prepare(
+            "INSERT INTO media_root_locations VALUES(?,?,?,?) ON CONFLICT(path) DO UPDATE SET device=excluded.device,inode=excluded.inode",
+          )
+          .run(id, canonical, String(info.dev), String(info.ino));
+        this.writeMediaSettings({
+          ...this.mediaSettings(),
+          root: { id, path: canonical },
+        });
+        this.db.exec("COMMIT");
+      } catch (e) {
+        this.db.exec("ROLLBACK");
+        throw e;
+      }
+      return this.mediaSettings();
+    } finally {
+      this.scanning = false;
+    }
+  }
+  /** Playlist/rescan aliases reuse a copied track only when the original bytes still match. */
+  async trackForFile(filename: string): Promise<Track | undefined> {
+    const direct = this.db
+      .prepare("SELECT id FROM tracks WHERE path=?")
+      .get(filename);
+    if (direct) return this.tracks(String(direct.id))[0];
+    const receipts = this.db
+      .prepare(
+        "SELECT trackId,digest FROM managed_imports WHERE source=? AND status='done'",
+      )
+      .all(filename);
+    if (!receipts.length) return;
+    const digest = await fileDigest(filename);
+    const receipt = receipts.find((r) => r.digest === digest);
+    const track = receipt && this.tracks(String(receipt.trackId))[0];
+    if (track && (await fileDigest(track.path)) === digest) return track;
+  }
+  add(directories: string[], progress?: (p: ScanProgress) => void) {
+    return this.scan(directories, progress, { copy: true });
+  }
+  /** Authority outside configured media roots is read/copy only, including recovery. */
+  async checkTrack(id: string): Promise<{ missing: boolean }> {
+    const track = this.tracks(id)[0];
+    if (!track) throw new Error("Track no longer exists.");
+    let missing = false;
+    try {
+      missing = !(await stat(track.path)).isFile();
+    } catch {
+      missing = true;
+    }
+    this.db
+      .prepare("UPDATE tracks SET missing=? WHERE id=? AND path=?")
+      .run(Number(missing), id, track.path);
+    return { missing };
+  }
+  private selectedMediaRoot(): MediaRoot {
+    const root = this.mediaSettings().root;
+    if (!root)
+      throw new Error(
+        "Choose a Rhythm Media folder in Library settings first.",
+      );
+    return this.db
+      .prepare(
+        "SELECT rootId AS id,path,device,inode FROM media_root_locations WHERE rootId=?",
+      )
+      .get(root.id) as unknown as MediaRoot;
+  }
+  async locateTrack(
+    id: string,
+    selected: string,
+    progress?: (p: ScanProgress) => void,
+  ) {
+    if (this.scanning)
+      throw new Error("Wait for the current import to finish.");
+    this.scanning = true;
+    try {
+      const track = this.tracks(id)[0];
+      if (!track) throw new Error("Track no longer exists.");
+      if (
+        !path.isAbsolute(selected) ||
+        !AUDIO_EXTENSIONS.has(path.extname(selected).toLowerCase())
+      )
+        throw new Error("Choose a supported audio file.");
+      const canonical = await realpath(selected);
+      if (!(await stat(canonical)).isFile())
+        throw new Error("Choose a supported audio file.");
+      const other = this.db
+        .prepare("SELECT id FROM tracks WHERE path=? AND id!=?")
+        .get(canonical, id);
+      if (other)
+        throw new Error(
+          "This file is already linked to another track. Choose a different file.",
+        );
+      let restoreCopy = track.locationKind === "managed";
+      if (restoreCopy) {
+        const root = this.selectedMediaRoot();
+        if (
+          canonical === track.path &&
+          track.mediaRootId === root.id &&
+          track.mediaRelativePath
+        ) {
+          await validateManagedLocation(root, track.mediaRelativePath);
+          restoreCopy = false;
+        }
+      }
+      // Handoff to the common serialized scanner without an asynchronous gap.
+      this.scanning = false;
+      const result = await this.scan([canonical], progress, {
+        targetId: id,
+        forceCopy: restoreCopy,
+        recovery: true,
+      });
+      if (result.errors.length || result.updated !== 1)
+        throw new Error(
+          result.errors.join("\n") ||
+            "The file could not be recovered. Choose its source again.",
+        );
+    } finally {
+      this.scanning = false;
+    }
+  }
+  async consolidate(
+    ids?: string[],
+    progress?: (p: ScanProgress) => void,
+  ): Promise<ConsolidationResult> {
+    if (this.scanning)
+      throw new Error("Wait for the current import to finish.");
+    const all = this.tracks();
+    if (
+      ids &&
+      (!Array.isArray(ids) ||
+        !ids.length ||
+        ids.length > 50000 ||
+        ids.some((id) => typeof id !== "string"))
+    )
+      throw new Error("Select valid tracks to consolidate.");
+    const wanted = ids ? new Set(ids) : null;
+    const selected = wanted ? all.filter((t) => wanted.has(t.id)) : all;
+    if (wanted && selected.length !== wanted.size)
+      throw new Error("A selected track no longer exists.");
+    const referenced = selected.filter((t) => t.locationKind === "referenced");
+    const alreadyManaged = selected.length - referenced.length;
+    if (!referenced.length)
+      return { consolidated: 0, alreadyManaged, failed: 0, errors: [] };
+    this.selectedMediaRoot();
+    const result = await this.scan(
+      referenced.map((t) => t.path),
+      progress,
+      { forceCopy: true },
+    );
+    return {
+      consolidated: result.updated,
+      alreadyManaged,
+      failed: referenced.length - result.updated,
+      errors: result.errors,
+    };
   }
   playlists(): Playlist[] {
     return this.db
@@ -336,9 +626,26 @@ export class Library {
   async scan(
     directories: string[],
     progress?: (p: ScanProgress) => void,
+    options: {
+      copy?: boolean;
+      forceCopy?: boolean;
+      targetId?: string;
+      recovery?: boolean;
+    } = {},
   ): Promise<ScanResult> {
     if (this.scanning) throw new Error("An import is already running.");
     this.scanning = true;
+    const settings = this.mediaSettings();
+    const copying =
+      options.forceCopy === true ||
+      (options.copy === true && settings.copyOnAdd);
+    const mediaRoot = settings.root
+      ? (this.db
+          .prepare(
+            "SELECT rootId AS id,path,device,inode FROM media_root_locations WHERE rootId=?",
+          )
+          .get(settings.root.id) as unknown as MediaRoot)
+      : null;
     const result: ScanResult = {
       added: 0,
       updated: 0,
@@ -357,14 +664,104 @@ export class Library {
         return;
       }
       try {
-        const canonical = await realpath(filename);
+        let canonical = await realpath(filename);
+        const sourceStem = path.basename(canonical, path.extname(canonical));
         if (seen.has(canonical)) return;
         seen.add(canonical);
-        const info = await stat(canonical);
-        const old = this.db
-          .prepare("SELECT size,mtime,metadataVersion FROM tracks WHERE path=?")
-          .get(canonical);
+        let info = await stat(canonical);
+        const reserved = this.db
+          .prepare(
+            "SELECT r.path,j.relative,j.stageDevice,j.stageInode FROM managed_imports j JOIN media_root_locations r ON r.rootId=j.rootId WHERE j.status!='done'",
+          )
+          .all();
         if (
+          reserved.some(
+            (row) =>
+              path.join(String(row.path), String(row.relative)) === canonical ||
+              (String(info.dev) === row.stageDevice &&
+                String(info.ino) === row.stageInode),
+          )
+        ) {
+          result.skipped++;
+          report(
+            `${path.basename(canonical)}: Unfinished managed import. Add the original file again to retry.`,
+          );
+          return;
+        }
+        let old = this.db
+          .prepare(
+            `SELECT id,path,size,mtime,metadataVersion FROM tracks WHERE ${options.targetId ? "id" : "path"}=?`,
+          )
+          .get(options.targetId ?? canonical);
+        if (options.forceCopy && !old)
+          throw new Error(
+            "The referenced file location changed. Use Locate File before consolidating.",
+          );
+        let managed: ManagedLocation | undefined;
+        if (
+          copying &&
+          mediaRoot &&
+          !old?.id &&
+          (await this.trackForFile(canonical))
+        ) {
+          result.unchanged++;
+          return;
+        }
+        if (!copying && !old && (await this.trackForFile(canonical))) {
+          result.unchanged++;
+          return;
+        }
+        const knownManaged =
+          old &&
+          this.db
+            .prepare("SELECT kind FROM track_locations WHERE trackId=?")
+            .get(old.id!)?.kind === "managed";
+        if (
+          copying &&
+          mediaRoot &&
+          (!knownManaged || options.recovery) &&
+          (options.forceCopy ||
+            (canonical !== mediaRoot.path &&
+              !inside(mediaRoot.path, canonical)))
+        ) {
+          const expectedDigest = await fileDigest(canonical);
+          const parsed = await parseFile(canonical, {
+            duration: true,
+            skipPostHeaders: true,
+          });
+          if (!parsed.format.sampleRate || !parsed.format.numberOfChannels)
+            throw new Error("No supported audio stream found.");
+          const c = parsed.common;
+          managed = await prepareManagedCopy(
+            this.db,
+            mediaRoot,
+            canonical,
+            {
+              albumArtist: c.albumartist,
+              artist: c.artist,
+              album: c.album,
+              title: c.title,
+              compilation: c.compilation,
+              track: c.track.no ?? undefined,
+              disc: c.disk.no ?? undefined,
+              discTotal: c.disk.of ?? undefined,
+            },
+            settings.keepOrganized,
+            old?.id as string | undefined,
+            expectedDigest,
+            options.recovery,
+          );
+          canonical = managed.path;
+          info = await stat(canonical);
+          old = this.db
+            .prepare(
+              "SELECT id,path,size,mtime,metadataVersion FROM tracks WHERE id=?",
+            )
+            .get(managed.trackId);
+        }
+        if (
+          !managed &&
+          !options.targetId &&
           old &&
           old.metadataVersion === 2 &&
           old.size === info.size &&
@@ -384,10 +781,9 @@ export class Library {
           throw new Error("No supported audio stream found.");
         const c = metadata.common;
         const artist = clean(c.artist, "Unknown artist");
-        const albumArtist = clean(
-          c.albumartist,
-          c.compilation ? "Various Artists" : artist,
-        );
+        const albumArtist = c.compilation
+          ? "Various Artists"
+          : clean(c.albumartist, artist);
         const folder = path.dirname(canonical);
         const albumFolder = /^(cd|disc|disk)[ _-]*\d+$/i.test(
           path.basename(folder),
@@ -404,9 +800,11 @@ export class Library {
             ? cover
             : undefined;
         const values = [
-          hash(canonical),
+          managed?.trackId ??
+            (old?.id as string | undefined) ??
+            hash(randomUUID()),
           canonical,
-          clean(c.title, path.basename(canonical, path.extname(canonical))),
+          clean(c.title, sourceStem),
           artist,
           albumArtist,
           album,
@@ -436,15 +834,48 @@ export class Library {
           clean(metadata.format.codec, clean(metadata.format.container, "")),
           2,
         ];
-        this.db
-          .prepare(
-            `INSERT INTO tracks(id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,format,size,mtime,artwork,artworkType,bpm,comments,bitRate,codec,metadataVersion)
-          VALUES(${values.map(() => "?").join(",")}) ON CONFLICT(path) DO UPDATE SET
+        this.db.exec("BEGIN IMMEDIATE");
+        try {
+          this.db
+            .prepare(
+              `INSERT INTO tracks(id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,format,size,mtime,artwork,artworkType,bpm,comments,bitRate,codec,metadataVersion)
+          VALUES(${values.map(() => "?").join(",")}) ON CONFLICT(id) DO UPDATE SET path=excluded.path,
           title=excluded.title,artist=excluded.artist,albumArtist=excluded.albumArtist,album=excluded.album,albumId=excluded.albumId,
           genre=excluded.genre,year=excluded.year,disc=excluded.disc,track=excluded.track,duration=excluded.duration,
           format=excluded.format,size=excluded.size,mtime=excluded.mtime,artwork=excluded.artwork,artworkType=excluded.artworkType,bpm=excluded.bpm,comments=excluded.comments,bitRate=excluded.bitRate,codec=excluded.codec,metadataVersion=excluded.metadataVersion,missing=0`,
-          )
-          .run(...values);
+            )
+            .run(...values);
+          if (managed) {
+            this.db
+              .prepare(
+                "INSERT INTO track_locations VALUES(?,'managed',?,?) ON CONFLICT(trackId) DO UPDATE SET kind='managed',mediaRootId=excluded.mediaRootId,relativePath=excluded.relativePath",
+              )
+              .run(managed.trackId, managed.rootId, managed.relative);
+            this.db
+              .prepare("UPDATE managed_imports SET status='done' WHERE id=?")
+              .run(managed.jobId);
+            this.db
+              .prepare("INSERT OR IGNORE INTO roots VALUES(?)")
+              .run(mediaRoot!.path);
+          } else
+            this.db
+              .prepare(
+                "INSERT OR IGNORE INTO track_locations(trackId,kind) VALUES(?,'referenced')",
+              )
+              .run(values[0]!);
+          if ((copying && !managed) || options.targetId)
+            this.db
+              .prepare("INSERT OR IGNORE INTO roots VALUES(?)")
+              .run(canonical);
+          this.db.exec("COMMIT");
+        } catch (e) {
+          this.db.exec("ROLLBACK");
+          throw e;
+        }
+        if (managed) {
+          result.copied = (result.copied ?? 0) + 1;
+          await finishManagedCopy(this.db, mediaRoot!, managed);
+        }
         if (old) result.updated++;
         else result.added++;
       } catch (error) {
@@ -483,22 +914,26 @@ export class Library {
           const info = await stat(root);
           if (info.isFile()) {
             if (AUDIO_EXTENSIONS.has(path.extname(root).toLowerCase())) {
-              this.db
-                .prepare("INSERT OR IGNORE INTO roots VALUES(?)")
-                .run(root);
+              if (!copying && !options.targetId)
+                this.db
+                  .prepare("INSERT OR IGNORE INTO roots VALUES(?)")
+                  .run(root);
               await inspect(root);
             } else result.skipped++;
             continue;
           }
           if (!info.isDirectory()) throw new Error("Not a file or folder");
+          if (options.forceCopy || options.targetId)
+            throw new Error("Choose a supported audio file.");
         } catch {
           report(`Music folder unavailable: ${directory}`);
           continue;
         }
-        this.db.prepare("INSERT OR IGNORE INTO roots VALUES(?)").run(root);
+        if (!copying)
+          this.db.prepare("INSERT OR IGNORE INTO roots VALUES(?)").run(root);
         const complete = await walk(root);
         // Incomplete traversal never marks a whole unavailable subtree missing.
-        if (complete) {
+        if (complete && !copying) {
           const missing = this.db.prepare(
             "UPDATE tracks SET missing=1 WHERE id=?",
           );

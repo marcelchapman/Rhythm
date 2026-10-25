@@ -7,6 +7,10 @@ export function wavFixture({
   seconds = 2,
   bpm,
   comments = "",
+  albumArtist,
+  compilation,
+  track,
+  disc,
 }: {
   title?: string;
   artist?: string;
@@ -15,6 +19,10 @@ export function wavFixture({
   seconds?: number;
   bpm?: number;
   comments?: string;
+  albumArtist?: string;
+  compilation?: boolean;
+  track?: number;
+  disc?: string;
 } = {}): Buffer {
   const chunk = (id: string, body: Buffer) => {
     const header = Buffer.alloc(8);
@@ -51,6 +59,11 @@ export function wavFixture({
     return Buffer.concat([header, data]);
   };
   if (bpm !== undefined) frames.push(frame("TBPM", Buffer.from(`\0${bpm}`)));
+  if (albumArtist) frames.push(frame("TPE2", Buffer.from(`\0${albumArtist}`)));
+  if (compilation) frames.push(frame("TCMP", Buffer.from("\x001")));
+  if (track !== undefined)
+    frames.push(frame("TRCK", Buffer.from(`\0${track}`)));
+  if (disc) frames.push(frame("TPOS", Buffer.from(`\0${disc}`)));
   if (comments)
     frames.push(
       frame(
