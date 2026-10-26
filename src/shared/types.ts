@@ -87,6 +87,7 @@ export interface ScanProgress {
 }
 export interface TrackRemovalResult {
   removedIds: string[];
+  cleanupWarnings?: { path: string; message: string }[];
   failures: {
     id: string;
     title: string;
@@ -106,14 +107,22 @@ export type TrackAction = {
     | "consolidate"
     | "remove-from-playlist"
     | "delete-from-library"
+    | "delete-album"
+    | "reveal-album"
     | "reveal"
     | "info";
   trackIds: string[];
   playlistId?: string;
+  albumId?: string;
 };
 export interface RhythmAPI {
   checkTrack(id: string): Promise<{ missing: boolean }>;
   revealTrack(id: string): Promise<void>;
+  revealAlbum(id: string): Promise<void>;
+  deleteAlbum(
+    id: string,
+    expectedIds: string[],
+  ): Promise<TrackRemovalResult | null>;
   locateTrack(id: string): Promise<boolean>;
   consolidateTracks(ids?: string[]): Promise<ConsolidationResult | null>;
   showAlbumMenu(albumId: string): Promise<void>;

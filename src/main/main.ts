@@ -19,7 +19,7 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Library } from "../domain/library.js";
-import { defaultState, type TrackAction } from "../shared/types.js";
+import { defaultState, type TrackAction, type Track } from "../shared/types.js";
 import { mediaResponse } from "./media.js";
 import { normalizeViewPreferences } from "../shared/preferences.js";
 import {
@@ -273,24 +273,77 @@ function handlers() {
       );
     shell.showItemInFolder(track.path);
   });
-  handle("track:delete", (ids: string | string[]) =>
+  handle("album:reveal", (id: string) =>
     playlistOperation(async (l) => {
-      const tracks = l.removalTracks(Array.isArray(ids) ? ids : [ids]);
-      const managed = tracks.filter(
-        (track) => track.locationKind === "managed",
-      ).length;
-      const referenced = tracks.length - managed;
-      const single = tracks.length === 1 ? tracks[0] : null;
-      const count = (n: number) => `${n} track${n === 1 ? "" : "s"}`;
-      const result = await dialog.showMessageBox(win!, {
-        type: managed ? "warning" : "question",
-        title: "Delete from Library",
-        message: single
+      if (process.platform !== "darwin")
+        throw new Error("Show in Finder is only available on macOS.");
+      const locations = await l.albumLocations(id);
+      if (!locations.folders.length)
+        throw new Error(
+          `Rhythm can't find any audio files for “${locations.name}” at their recorded locations. Use Locate File on the missing tracks.`,
+        );
+      if (locations.folders.length > 1 || locations.missing.length) {
+        const result = await dialog.showMessageBox(win!, {
+          type: "info",
+          title: "Show in Finder",
+          message: `Locations for “${locations.name}”`,
+          detail: [
+            `${locations.folders.length} available folder${locations.folders.length === 1 ? "" : "s"}:`,
+            ...locations.folders.map(
+              (folder) =>
+                `${folder.path} (${folder.count} track${folder.count === 1 ? "" : "s"})`,
+            ),
+            ...(locations.missing.length
+              ? [
+                  `${locations.missing.length} track${locations.missing.length === 1 ? " is" : "s are"} missing or inaccessible. Their recorded folders will not be revealed. Use Locate File to reconnect them.`,
+                ]
+              : []),
+          ].join("\n\n"),
+          buttons: [
+            "Cancel",
+            locations.folders.length === 1 ? "Show Folder" : "Show Folders",
+          ],
+          defaultId: 0,
+          cancelId: 0,
+          noLink: true,
+        });
+        if (result.response !== 1) return;
+      }
+      // Never hand off stale paths after a dialog or asynchronous filesystem work.
+      if (
+        l !== library ||
+        JSON.stringify(await l.albumLocations(id)) !== JSON.stringify(locations)
+      )
+        throw new Error(
+          "The album locations changed. Choose Show in Finder again.",
+        );
+      for (const folder of locations.folders)
+        shell.showItemInFolder(folder.path);
+    }),
+  );
+  const confirmRemoval = async (
+    l: Library,
+    tracks: Track[],
+    albumId?: string,
+  ) => {
+    const managed = tracks.filter(
+      (track) => track.locationKind === "managed",
+    ).length;
+    const referenced = tracks.length - managed;
+    const single = tracks.length === 1 ? tracks[0] : null;
+    const count = (n: number) => `${n} track${n === 1 ? "" : "s"}`;
+    const result = await dialog.showMessageBox(win!, {
+      type: managed ? "warning" : "question",
+      title: albumId ? "Delete Album" : "Delete from Library",
+      message: albumId
+        ? `Delete “${tracks[0].album}” from your library?`
+        : single
           ? managed
             ? "Delete this track from your library?"
             : "Remove this track from your library?"
           : `${managed ? "Delete" : "Remove"} ${count(tracks.length)} from your library?`,
-        detail: single
+      detail:
+        single && !albumId
           ? managed
             ? `“${single.title}” will be removed from Rhythm and its managed audio file moved to the Trash.\n\n${single.path}`
             : `“${single.title}” will be removed from Rhythm, but remains at its original location.\n\n${single.path}`
@@ -304,21 +357,52 @@ function handlers() {
             ]
               .filter(Boolean)
               .join("\n"),
-        buttons: [
-          "Cancel",
-          managed
-            ? referenced
-              ? "Delete from Library"
-              : "Move to Trash"
-            : "Remove from Library",
-        ],
-        defaultId: 0,
-        cancelId: 0,
-        noLink: true,
-      });
-      if (result.response !== 1) return null;
-      return l.deleteTracks(tracks, (filename) => shell.trashItem(filename));
-    }),
+      buttons: [
+        "Cancel",
+        managed
+          ? referenced
+            ? "Delete from Library"
+            : "Move to Trash"
+          : "Remove from Library",
+      ],
+      defaultId: 0,
+      cancelId: 0,
+      noLink: true,
+    });
+    if (result.response !== 1) return null;
+    if (albumId)
+      assertAlbumMembers(
+        l,
+        albumId,
+        tracks.map((track) => track.id),
+      );
+    return l.deleteTracks(tracks, (filename) => shell.trashItem(filename), {
+      cleanupEmptyAlbumDirectories: !!albumId,
+    });
+  };
+  function assertAlbumMembers(l: Library, id: string, expectedIds: string[]) {
+    const tracks = l.albumTracks(id);
+    const expected = new Set(
+      l.removalTracks(expectedIds).map((track) => track.id),
+    );
+    if (
+      tracks.length !== expected.size ||
+      tracks.some((track) => !expected.has(track.id))
+    )
+      throw new Error(
+        "The album membership changed. Choose Delete Album again.",
+      );
+    return tracks;
+  }
+  handle("track:delete", (ids: string | string[]) =>
+    playlistOperation((l) =>
+      confirmRemoval(l, l.removalTracks(Array.isArray(ids) ? ids : [ids])),
+    ),
+  );
+  handle("album:delete", (id: string, expectedIds: string[]) =>
+    playlistOperation((l) =>
+      confirmRemoval(l, assertAlbumMembers(l, id, expectedIds), id),
+    ),
   );
   handle("track:locate", (id: string) =>
     playlistOperation(async (l) => {
@@ -363,10 +447,9 @@ function handlers() {
   );
   handle("album:menu", (id: string) => {
     const ids = requireLibrary()
-      .tracks()
-      .filter((t) => t.albumId === id)
+      .albumTracks(id)
       .map((t) => t.id);
-    return showTrackMenu(ids, true);
+    return showTrackMenu(ids, id);
   });
   handle("desktop:ready", () => {
     rendererReady = true;
@@ -448,11 +531,11 @@ function handlers() {
   handle(
     "track:menu",
     (ids: string[], contextId?: string, playlistId?: string) =>
-      showTrackMenu(ids, false, contextId, playlistId),
+      showTrackMenu(ids, undefined, contextId, playlistId),
   );
   async function showTrackMenu(
     ids: string[],
-    album = false,
+    album?: string,
     contextId = ids[0],
     playlistId?: string,
   ) {
@@ -478,6 +561,7 @@ function handlers() {
           command,
           trackIds: [...new Set(ids)],
           playlistId,
+          ...(album ? { albumId: album } : {}),
         } satisfies TrackAction);
     const playable = tracks.some((t) => !t!.missing);
     Menu.buildFromTemplate([
@@ -589,7 +673,25 @@ function handlers() {
               click: dispatch("delete-from-library"),
             },
           ]
-        : []),
+        : [
+            { type: "separator" as const },
+            ...(process.platform === "darwin"
+              ? [
+                  {
+                    id: "album-reveal",
+                    label: "Show in Finder",
+                    enabled: !playlistIO && !l.scanning,
+                    click: dispatch("reveal-album"),
+                  },
+                ]
+              : []),
+            {
+              id: "album-delete",
+              label: "Delete Album…",
+              enabled: !playlistIO && !l.scanning,
+              click: dispatch("delete-album"),
+            },
+          ]),
     ]).popup({ window: win! });
   }
   handle("library:snapshot", snapshot);

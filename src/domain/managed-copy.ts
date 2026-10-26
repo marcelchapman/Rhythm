@@ -1,5 +1,14 @@
-import { constants } from "node:fs";
-import { open, lstat, mkdir, link, unlink, realpath } from "node:fs/promises";
+import { constants, type Stats } from "node:fs";
+import {
+  open,
+  lstat,
+  mkdir,
+  link,
+  unlink,
+  realpath,
+  readdir,
+  rmdir,
+} from "node:fs/promises";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
@@ -172,6 +181,183 @@ export async function validateManagedTrash(
       "The managed file location changed. It has not been moved to Trash.",
     );
   return target;
+}
+export interface ManagedAlbumDirectory {
+  root: MediaRoot;
+  relative: string;
+  parents: { relative: string; device: string; inode: string }[];
+}
+// Every actual managed ancestor may be cleaned, but the root is never a candidate.
+function managedDirectory(relative: string) {
+  const parts = relative.split("/");
+  return (
+    !path.isAbsolute(relative) &&
+    parts.every(
+      (part) => part && part !== "." && part !== ".." && !part.includes("\\"),
+    )
+  );
+}
+/** Snapshot real managed parents before Trash; never authority over unknown content. */
+export async function planManagedAlbumCleanup(
+  root: MediaRoot,
+  filename: string,
+  relative: string,
+): Promise<ManagedAlbumDirectory[]> {
+  if ((await directories(root, relative, false)) !== filename)
+    throw new Error("Unsafe managed album folder location.");
+  const parent = relative.split("/").slice(0, -1).join("/");
+  if (!managedDirectory(parent)) return [];
+  const parents: ManagedAlbumDirectory["parents"] = [];
+  const parts = parent.split("/");
+  for (let n = 1; n <= parts.length; n++) {
+    const relative = parts.slice(0, n).join("/");
+    const directory = path.resolve(root.path, relative);
+    const info = await lstat(directory);
+    if (
+      !info.isDirectory() ||
+      info.isSymbolicLink() ||
+      (await realpath(directory)) !== directory
+    )
+      throw new Error(
+        "The managed album folder changed. It will be left in place.",
+      );
+    parents.push({
+      relative,
+      device: String(info.dev),
+      inode: String(info.ino),
+    });
+  }
+  return [...parents].reverse().map(({ relative }) => ({
+    root: { ...root },
+    relative,
+    parents: parents.slice(0, relative.split("/").length),
+  }));
+}
+function sameCleanupFile(a: Stats, b: Stats) {
+  return (
+    b.isFile() &&
+    !b.isSymbolicLink() &&
+    b.nlink === 1 &&
+    a.dev === b.dev &&
+    a.ino === b.ino &&
+    a.size === b.size &&
+    a.mtimeMs === b.mtimeMs &&
+    a.ctimeMs === b.ctimeMs
+  );
+}
+/** Recognize Finder's version-1 Bud1 allocation header, not a filename alone. */
+async function finderMetadata(filename: string) {
+  const entry = await lstat(filename);
+  if (!entry.isFile() || entry.isSymbolicLink() || entry.nlink !== 1) return;
+  const handle = await open(
+    filename,
+    constants.O_RDONLY | constants.O_NOFOLLOW,
+  );
+  try {
+    const info = await handle.stat();
+    if (
+      !sameCleanupFile(entry, info) ||
+      (await realpath(filename)) !== filename
+    )
+      throw new Error("Finder metadata changed. The folder was left in place.");
+    const header = Buffer.alloc(36);
+    const { bytesRead } = await handle.read(header, 0, header.length, 0);
+    const offset = header.readUInt32BE(8),
+      size = header.readUInt32BE(12);
+    if (
+      bytesRead !== header.length ||
+      header.readUInt32BE(0) !== 1 ||
+      header.readUInt32BE(4) !== 0x42756431 ||
+      offset < header.length - 4 ||
+      header.readUInt32BE(16) !== offset ||
+      size < 32 ||
+      offset + 4 + size > info.size
+    )
+      return;
+    if (!sameCleanupFile(info, await handle.stat()))
+      throw new Error("Finder metadata changed. The folder was left in place.");
+    return info;
+  } finally {
+    await handle.close();
+  }
+}
+/** Only recognized sole Finder metadata may reach Trash; rmdir stays non-recursive. */
+export async function removeEmptyManagedAlbumDirectory(
+  plan: ManagedAlbumDirectory,
+  trashFinderMetadata?: (filename: string) => Promise<void>,
+) {
+  if (
+    !managedDirectory(plan.relative) ||
+    plan.parents.length !== plan.relative.split("/").length
+  )
+    throw new Error("Unsafe managed album cleanup boundary.");
+  const target = path.resolve(plan.root.path, plan.relative);
+  const recheck = async () => {
+    await directories(
+      plan.root,
+      `${plan.relative}/.rhythm-cleanup-check`,
+      false,
+    );
+    const parts = plan.relative.split("/");
+    for (let i = 0; i < plan.parents.length; i++) {
+      const expected = plan.parents[i];
+      if (expected.relative !== parts.slice(0, i + 1).join("/"))
+        throw new Error("Unsafe managed album cleanup boundary.");
+      const directory = path.resolve(plan.root.path, expected.relative);
+      const info = await lstat(directory);
+      if (
+        !info.isDirectory() ||
+        info.isSymbolicLink() ||
+        String(info.dev) !== expected.device ||
+        String(info.ino) !== expected.inode ||
+        (await realpath(directory)) !== directory
+      )
+        throw new Error(
+          "The managed album folder changed. It was left in place.",
+        );
+    }
+  };
+  try {
+    await recheck();
+    const entries = await readdir(target);
+    if (entries.length) {
+      if (
+        !trashFinderMetadata ||
+        entries.length !== 1 ||
+        entries[0] !== ".DS_Store"
+      )
+        return;
+      const filename = path.join(target, ".DS_Store");
+      const identity = await finderMetadata(filename);
+      if (!identity) return;
+      await recheck();
+      const latestEntries = await readdir(target);
+      if (latestEntries.length !== 1 || latestEntries[0] !== ".DS_Store")
+        return;
+      if (
+        !sameCleanupFile(identity, await lstat(filename)) ||
+        (await realpath(filename)) !== filename
+      )
+        throw new Error(
+          "Finder metadata changed. The folder was left in place.",
+        );
+      // Same native Trash adapter as managed audio, only after committed deletion.
+      // No permanent-unlink fallback, no other dotfiles or unknown content adopted.
+      await trashFinderMetadata(filename);
+      await recheck();
+      if ((await readdir(target)).length) return;
+    }
+    await recheck();
+    await rmdir(target);
+  } catch (error) {
+    // Already absent or concurrently made non-empty is a safe no-op, never recursion.
+    if (
+      !["ENOENT", "ENOTEMPTY", "EEXIST"].includes(
+        (error as NodeJS.ErrnoException).code ?? "",
+      )
+    )
+      throw error;
+  }
 }
 const getJob = (db: DatabaseSync, id: string) =>
   db

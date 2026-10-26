@@ -1073,7 +1073,11 @@ export function App() {
     setShowQueue(true);
     setModal(null);
   };
-  const removeTrack = async (ids: string[], playlistId?: string) => {
+  const removeTrack = async (
+    ids: string[],
+    playlistId?: string,
+    albumId?: string,
+  ) => {
     if (busy) return;
     setBusy(true);
     setProgress(
@@ -1091,7 +1095,9 @@ export function App() {
           `${ids.length} track${ids.length === 1 ? "" : "s"} removed from playlist. Your library and files are unchanged.`,
         );
       } else {
-        const result = await api.deleteTrack(ids);
+        const result = albumId
+          ? await api.deleteAlbum(albumId, ids)
+          : await api.deleteTrack(ids);
         if (!result) return;
         const removed = new Set(result.removedIds);
         const previous = stateRef.current;
@@ -1147,6 +1153,14 @@ export function App() {
           pausePlayback();
         await refresh();
         const summary = `${removed.size} of ${ids.length} track${ids.length === 1 ? "" : "s"} removed from your library.`;
+        const cleanupNotice = result.cleanupWarnings?.length
+          ? ` Folder cleanup could not finish. ${result.cleanupWarnings
+              .slice(0, 5)
+              .map((warning) => `${warning.path}: ${warning.message}`)
+              .join(
+                "; ",
+              )}${result.cleanupWarnings.length > 5 ? `; and ${result.cleanupWarnings.length - 5} more folders.` : ""}`
+          : "";
         if (result.failures.length)
           setError(
             `${summary} ${result.failures.length} retained: ${result.failures
@@ -1154,8 +1168,9 @@ export function App() {
               .map((failure) => `${failure.title}: ${failure.message}`)
               .join(
                 "; ",
-              )}${result.failures.length > 5 ? `; and ${result.failures.length - 5} more. Retry retained tracks individually for details.` : ""}`,
+              )}${result.failures.length > 5 ? `; and ${result.failures.length - 5} more. Retry retained tracks individually for details.` : ""}${cleanupNotice}`,
           );
+        else if (cleanupNotice) setError(`${summary}${cleanupNotice}`);
         else setMessage(summary);
       }
     } catch (e) {
@@ -1188,6 +1203,10 @@ export function App() {
       void removeTrack(action.trackIds, action.playlistId);
     else if (action.command === "delete-from-library")
       void removeTrack(action.trackIds);
+    else if (action.command === "delete-album" && action.albumId)
+      void removeTrack(action.trackIds, undefined, action.albumId);
+    else if (action.command === "reveal-album" && action.albumId)
+      void api.revealAlbum(action.albumId).catch(fail);
     else if (action.command === "reveal")
       void api.revealTrack(action.trackIds[0]).catch(fail);
     else if (action.command === "info")
@@ -2233,6 +2252,17 @@ export function App() {
       <aside
         className="detail-panel"
         aria-label={showQueue ? "Queue" : "Album details"}
+        onContextMenu={(e) => {
+          if (
+            !showQueue &&
+            rightAlbum &&
+            !e.defaultPrevented &&
+            (e.target as HTMLElement).closest(".detail-art, .album-meta")
+          ) {
+            e.preventDefault();
+            void api.showAlbumMenu(rightAlbum.id).catch(fail);
+          }
+        }}
       >
         {showQueue ? (
           <>
@@ -2263,7 +2293,25 @@ export function App() {
               }
               className="detail-art"
             />
-            <div className="detail-title">
+            <div
+              className="detail-title"
+              role="group"
+              tabIndex={0}
+              aria-label={`Album ${rightAlbum.name} by ${rightAlbum.artist}`}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                void api.showAlbumMenu(rightAlbum.id).catch(fail);
+              }}
+              onKeyDown={(e) => {
+                if (
+                  e.key === "ContextMenu" ||
+                  (e.key === "F10" && e.shiftKey)
+                ) {
+                  e.preventDefault();
+                  void api.showAlbumMenu(rightAlbum.id).catch(fail);
+                }
+              }}
+            >
               <div>
                 <h2>{rightAlbum.name}</h2>
                 <p>{rightAlbum.artist}</p>

@@ -17,6 +17,9 @@ import {
   finishManagedCopy,
   validateManagedLocation,
   validateManagedTrash,
+  planManagedAlbumCleanup,
+  removeEmptyManagedAlbumDirectory,
+  type ManagedAlbumDirectory,
   type ManagedLocation,
   type MediaRoot,
 } from "./managed-copy.js";
@@ -200,6 +203,44 @@ export class Library {
       missing: !!row.missing,
       hasArtwork: !!row.hasArtwork,
     })) as unknown as Track[];
+  }
+  albumTracks(id: string): Track[] {
+    if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
+      throw new Error("Choose a valid album.");
+    const tracks = this.tracks().filter((track) => track.albumId === id);
+    if (!tracks.length) throw new Error("Album no longer exists.");
+    return tracks;
+  }
+  async albumLocations(id: string) {
+    const tracks = this.albumTracks(id);
+    const folders = new Map<string, { path: string; count: number }>();
+    const missing: string[] = [];
+    const locations: { id: string; path: string }[] = [];
+    for (const track of tracks) {
+      // Playback and track reveal use this same authoritative location.
+      const location = this.media(track.id);
+      locations.push({ id: track.id, path: location?.path ?? "" });
+      try {
+        if (!location || !(await stat(location.path)).isFile())
+          throw new Error("Unavailable audio file");
+        const directory = path.dirname(await realpath(location.path));
+        const info = await stat(directory);
+        const key = `${info.dev}:${info.ino}`;
+        const folder = folders.get(key);
+        if (folder) folder.count++;
+        else folders.set(key, { path: directory, count: 1 });
+      } catch {
+        missing.push(track.id);
+      }
+    }
+    return {
+      name: tracks[0].album,
+      locations,
+      folders: [...folders.values()].sort((a, b) =>
+        a.path < b.path ? -1 : a.path > b.path ? 1 : 0,
+      ),
+      missing,
+    };
   }
   roots(): string[] {
     return this.db
@@ -600,6 +641,7 @@ export class Library {
   async deleteTracks(
     confirmed: Track[],
     trash: (filename: string) => Promise<void>,
+    options: { cleanupEmptyAlbumDirectories?: boolean } = {},
   ): Promise<TrackRemovalResult> {
     if (this.scanning)
       throw new Error("Wait for the current media operation to finish.");
@@ -611,6 +653,9 @@ export class Library {
         "The track location changed. Choose Delete from Library again to review it.",
       );
     const result: TrackRemovalResult = { removedIds: [], failures: [] };
+    const directories = new Map<string, ManagedAlbumDirectory>();
+    const cleanupWarnings: NonNullable<TrackRemovalResult["cleanupWarnings"]> =
+      [];
     this.scanning = true;
     try {
       for (const track of confirmed) {
@@ -619,8 +664,17 @@ export class Library {
             throw new Error(
               "The track location changed. Choose Delete from Library again to review it.",
             );
-          await this.deleteTrackEntry(track.id, trash);
+          const cleanup = await this.deleteTrackEntry(
+            track.id,
+            trash,
+            options.cleanupEmptyAlbumDirectories,
+          );
           result.removedIds.push(track.id);
+          cleanupWarnings.push(...cleanup.warnings);
+          for (const directory of cleanup.directories) {
+            const key = `${directory.root.id}\0${directory.relative}`;
+            if (!directories.has(key)) directories.set(key, directory);
+          }
         } catch (error) {
           result.failures.push({
             id: track.id,
@@ -630,6 +684,57 @@ export class Library {
           });
         }
       }
+      // Only successfully trashed AND committed managed tracks contribute candidates.
+      // Children first through their actual ancestor chain, excluding registered roots.
+      let registeredRoots:
+        { path: string; device: string; inode: string }[] | undefined;
+      if (directories.size) {
+        try {
+          registeredRoots = this.db
+            .prepare("SELECT path,device,inode FROM media_root_locations")
+            .all()
+            .map((root) => ({
+              path: String(root.path),
+              device: String(root.device),
+              inode: String(root.inode),
+            }));
+        } catch (error) {
+          cleanupWarnings.push({
+            path: directories.values().next().value!.root.path,
+            message: `Managed folder boundaries could not be checked; folders were left in place. ${error instanceof Error ? error.message : String(error)}`,
+          });
+        }
+      }
+      for (const directory of (registeredRoots
+        ? [...directories.values()]
+        : []
+      ).sort(
+        (a, b) => b.relative.split("/").length - a.relative.split("/").length,
+      )) {
+        const target = path.resolve(directory.root.path, directory.relative);
+        const identity = directory.parents.at(-1)!;
+        // A nested/historical media root can overlap an older copy's album path.
+        // Stop at every registered root, including ancestors of nested/historical roots.
+        if (
+          registeredRoots!.some(
+            (root) =>
+              (root.device === identity.device &&
+                root.inode === identity.inode) ||
+              target === root.path ||
+              inside(target, root.path),
+          )
+        )
+          continue;
+        try {
+          await removeEmptyManagedAlbumDirectory(directory, trash);
+        } catch (error) {
+          cleanupWarnings.push({
+            path: target,
+            message: error instanceof Error ? error.message : String(error),
+          });
+        }
+      }
+      if (cleanupWarnings.length) result.cleanupWarnings = cleanupWarnings;
       return result;
     } finally {
       this.scanning = false;
@@ -644,8 +749,11 @@ export class Library {
   private async deleteTrackEntry(
     id: string,
     trash: (filename: string) => Promise<void>,
+    cleanupEmptyAlbumDirectories = false,
   ) {
     let trashed = false;
+    let directories: ManagedAlbumDirectory[] = [];
+    const warnings: NonNullable<TrackRemovalResult["cleanupWarnings"]> = [];
     try {
       const track = this.tracks(id)[0];
       if (!track) throw new Error("Track no longer exists.");
@@ -660,6 +768,20 @@ export class Library {
           throw new Error(
             "The managed-media authority is unavailable. The track has not been removed.",
           );
+        if (cleanupEmptyAlbumDirectories) {
+          try {
+            directories = await planManagedAlbumCleanup(
+              root,
+              track.path,
+              track.mediaRelativePath,
+            );
+          } catch (error) {
+            warnings.push({
+              path: path.dirname(track.path),
+              message: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
         managedPath = await validateManagedTrash(
           this.db,
           root,
@@ -706,6 +828,7 @@ export class Library {
         this.db.exec("ROLLBACK");
         throw error;
       }
+      return { directories, warnings };
     } catch (error) {
       if (trashed) {
         await this.checkTrack(id).catch(() => {});

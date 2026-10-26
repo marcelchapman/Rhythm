@@ -12,8 +12,8 @@
     "build": "tsc -p tsconfig.main.json && vite build",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "test": "vitest run --root .",
-    "test:desktop": "npm run build && node scripts/startup.mjs && node scripts/smoke.mjs && node scripts/features.mjs && node scripts/interchange.mjs && node scripts/acceptance.mjs && node scripts/managed.mjs && node scripts/recovery.mjs && node scripts/track-info.mjs && node scripts/playback-recovery.mjs && node scripts/removal.mjs",
-    "test:packaged": "node scripts/smoke.mjs --packaged && node scripts/features.mjs --packaged && node scripts/interchange.mjs --packaged && node scripts/acceptance.mjs --packaged && node scripts/managed.mjs --packaged && node scripts/recovery.mjs --packaged && node scripts/track-info.mjs --packaged && node scripts/playback-recovery.mjs --packaged && node scripts/removal.mjs --packaged",
+    "test:desktop": "npm run build && node scripts/startup.mjs && node scripts/smoke.mjs && node scripts/features.mjs && node scripts/interchange.mjs && node scripts/acceptance.mjs && node scripts/managed.mjs && node scripts/recovery.mjs && node scripts/track-info.mjs && node scripts/playback-recovery.mjs && node scripts/removal.mjs && node scripts/albums.mjs",
+    "test:packaged": "node scripts/smoke.mjs --packaged && node scripts/features.mjs --packaged && node scripts/interchange.mjs --packaged && node scripts/acceptance.mjs --packaged && node scripts/managed.mjs --packaged && node scripts/recovery.mjs --packaged && node scripts/track-info.mjs --packaged && node scripts/playback-recovery.mjs --packaged && node scripts/removal.mjs --packaged && node scripts/albums.mjs --packaged",
     "test:codecs": "node scripts/codecs.mjs",
     "pack": "npm run icons && npm run build && electron-builder --dir",
     "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip",
@@ -29,7 +29,8 @@
     "test:track-info": "npm run build && node scripts/track-info.mjs",
     "test:playback-recovery": "npm run build && node scripts/playback-recovery.mjs",
     "test:startup": "npm run build && node scripts/startup.mjs",
-    "test:removal": "npm run build && node scripts/removal.mjs"
+    "test:removal": "npm run build && node scripts/removal.mjs",
+    "test:albums": "npm run build && node scripts/albums.mjs"
   },
   "dependencies": {
     "lucide-react": "1.60.0",

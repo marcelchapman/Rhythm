@@ -93,3 +93,12 @@ export function wavFixture({
   riff.writeUInt32LE(body.length, 4);
   return Buffer.concat([riff, body]);
 }
+/** Non-personal Finder store header/layout, matching the real macOS retention case. */
+export function finderStoreFixture() {
+  const bytes = Buffer.alloc(6148);
+  Buffer.from(
+    "000000014275643100001000000008000000100000000087000000000000000000000000",
+    "hex",
+  ).copy(bytes);
+  return bytes;
+}
