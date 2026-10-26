@@ -85,6 +85,15 @@ export interface ScanProgress {
   scanned: number;
   current: string;
 }
+export interface TrackRemovalResult {
+  removedIds: string[];
+  failures: {
+    id: string;
+    title: string;
+    message: string;
+    fileTrashed: boolean;
+  }[];
+}
 export type TrackAction = {
   command:
     | "play"
@@ -133,8 +142,11 @@ export interface RhythmAPI {
     contextTrackId?: string,
     playlistId?: string,
   ): Promise<void>;
-  removeFromPlaylist(playlistId: string, trackId: string): Promise<void>;
-  deleteTrack(id: string): Promise<boolean>;
+  removeFromPlaylist(
+    playlistId: string,
+    trackIds: string | string[],
+  ): Promise<void>;
+  deleteTrack(ids: string | string[]): Promise<TrackRemovalResult | null>;
   onTrackAction(callback: (action: TrackAction) => void): () => void;
   favorite(id: string): Promise<void>;
   createPlaylist(name: string): Promise<Playlist>;

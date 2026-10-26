@@ -454,7 +454,7 @@ try {
   await p.locator(".songs-viewport").press("Shift+F10");
   await menuClick("track-info");
   await info(p).waitFor();
-  assert.equal(await field(p, "Title").innerText(), a.title);
+  assert.equal(await field(p, "Title").innerText(), b.title);
   await done(p);
   // The same native command is available across every reusable Track List view.
   await p

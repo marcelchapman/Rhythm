@@ -16,6 +16,9 @@ import {
   type TrackSortKey,
 } from "./track-columns";
 
+import { selectionModifier } from "./track-selection";
+import { useTrackSelection } from "./use-track-selection";
+
 const ROW = 34;
 const COLUMN_DRAG_TYPE = "application/x-rhythm-song-column";
 
@@ -90,16 +93,14 @@ export function TrackList({
     () => (sort ? sortTracks(tracks, sort.key, sort.direction) : tracks),
     [tracks, sort],
   );
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const anchor = useRef(0);
-  useEffect(() => {
-    const available = new Set(items.map((track) => track.id));
-    setSelected((previous) => {
-      const next = new Set([...previous].filter((id) => available.has(id)));
-      return next.size === previous.size ? previous : next;
-    });
-    anchor.current = Math.min(anchor.current, Math.max(0, items.length - 1));
-  }, [items]);
+  const order = useMemo(() => items.map((track) => track.id), [items]);
+  const {
+    selection,
+    choose: chooseId,
+    context: contextIds,
+    dragIds,
+  } = useTrackSelection(order);
+  const selected = selection.ids;
   const [scrollTop, setScrollTop] = useState(0);
   const [height, setHeight] = useState(500);
   const [viewportWidth, setViewportWidth] = useState(1000);
@@ -123,32 +124,13 @@ export function TrackList({
   const choose = (index: number, extend: boolean, toggle: boolean) => {
     const track = items[index];
     if (!track) return;
-    setSelected((previous) => {
-      if (extend)
-        return new Set(
-          items
-            .slice(
-              Math.min(anchor.current, index),
-              Math.max(anchor.current, index) + 1,
-            )
-            .map((t) => t.id),
-        );
-      anchor.current = index;
-      if (toggle) {
-        const next = new Set(previous);
-        if (next.has(track.id)) next.delete(track.id);
-        else next.add(track.id);
-        return next;
-      }
-      return new Set([track.id]);
-    });
+    chooseId(track.id, extend, toggle);
     onSelect(track);
   };
   const context = (track: Track) => {
-    const ids = selected.has(track.id)
-      ? items.filter((t) => selected.has(t.id)).map((t) => t.id)
-      : [track.id];
-    if (!selected.has(track.id)) setSelected(new Set(ids));
+    const ids = contextIds(track.id);
+    viewport.current?.focus();
+    onSelect(track);
     onContext(ids, track.id);
   };
   const text = (track: Track, key: TrackSortKey) => {
@@ -189,7 +171,7 @@ export function TrackList({
         aria-label={`${label} Track List, use arrow keys to select tracks`}
         onKeyDown={(e) => {
           if (e.target !== e.currentTarget) return;
-          const index = items.findIndex((t) => selected.has(t.id));
+          const index = items.findIndex((t) => t.id === selection.focus);
           if (
             e.key === "ArrowDown" ||
             e.key === "ArrowUp" ||
@@ -431,9 +413,7 @@ export function TrackList({
                   style={{ gridTemplateColumns, top: index * ROW }}
                   draggable
                   onDragStart={(e) => {
-                    const ids = selected.has(track.id)
-                      ? items.filter((t) => selected.has(t.id)).map((t) => t.id)
-                      : [track.id];
+                    const ids = dragIds(track.id);
                     e.dataTransfer.setData(
                       TRACK_DRAG_TYPE,
                       JSON.stringify(ids),
@@ -442,7 +422,11 @@ export function TrackList({
                   }}
                   onClick={(e) => {
                     viewport.current?.focus();
-                    choose(index, e.shiftKey, e.metaKey || e.ctrlKey);
+                    choose(
+                      index,
+                      e.shiftKey,
+                      selectionModifier(e, navigator.platform),
+                    );
                   }}
                   onDoubleClick={() => onPlay(track, items)}
                   onContextMenu={(e) => {

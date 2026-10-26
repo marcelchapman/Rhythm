@@ -273,41 +273,51 @@ function handlers() {
       );
     shell.showItemInFolder(track.path);
   });
-  handle("track:delete", (id: string) =>
+  handle("track:delete", (ids: string | string[]) =>
     playlistOperation(async (l) => {
-      if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
-        throw new Error("Choose a valid track to remove.");
-      const track = l.tracks(id)[0];
-      if (!track) throw new Error("Track no longer exists.");
-      const managed = track.locationKind === "managed";
+      const tracks = l.removalTracks(Array.isArray(ids) ? ids : [ids]);
+      const managed = tracks.filter(
+        (track) => track.locationKind === "managed",
+      ).length;
+      const referenced = tracks.length - managed;
+      const single = tracks.length === 1 ? tracks[0] : null;
+      const count = (n: number) => `${n} track${n === 1 ? "" : "s"}`;
       const result = await dialog.showMessageBox(win!, {
         type: managed ? "warning" : "question",
         title: "Delete from Library",
-        message: managed
-          ? "Delete this track from your library?"
-          : "Remove this track from your library?",
-        detail: managed
-          ? `“${track.title}” will be removed from Rhythm and its managed audio file moved to the Trash.\n\n${track.path}`
-          : `“${track.title}” will be removed from Rhythm, but remains at its original location.\n\n${track.path}`,
-        buttons: ["Cancel", managed ? "Move to Trash" : "Remove from Library"],
+        message: single
+          ? managed
+            ? "Delete this track from your library?"
+            : "Remove this track from your library?"
+          : `${managed ? "Delete" : "Remove"} ${count(tracks.length)} from your library?`,
+        detail: single
+          ? managed
+            ? `“${single.title}” will be removed from Rhythm and its managed audio file moved to the Trash.\n\n${single.path}`
+            : `“${single.title}” will be removed from Rhythm, but remains at its original location.\n\n${single.path}`
+          : [
+              managed
+                ? `${managed} managed track${managed === 1 ? "" : "s"} will be removed from Rhythm and moved to the Trash.`
+                : "",
+              referenced
+                ? `${referenced} referenced track${referenced === 1 ? "" : "s"} will be removed from Rhythm but remain at their original locations.`
+                : "",
+            ]
+              .filter(Boolean)
+              .join("\n"),
+        buttons: [
+          "Cancel",
+          managed
+            ? referenced
+              ? "Delete from Library"
+              : "Move to Trash"
+            : "Remove from Library",
+        ],
         defaultId: 0,
         cancelId: 0,
         noLink: true,
       });
-      if (result.response !== 1) return false;
-      const current = l.tracks(id)[0];
-      if (
-        !current ||
-        current.path !== track.path ||
-        current.locationKind !== track.locationKind ||
-        current.mediaRootId !== track.mediaRootId ||
-        current.mediaRelativePath !== track.mediaRelativePath
-      )
-        throw new Error(
-          "The track location changed. Choose Delete from Library again to review it.",
-        );
-      await l.deleteTrack(id, (filename) => shell.trashItem(filename));
-      return true;
+      if (result.response !== 1) return null;
+      return l.deleteTracks(tracks, (filename) => shell.trashItem(filename));
     }),
   );
   handle("track:locate", (id: string) =>
@@ -430,8 +440,10 @@ function handlers() {
   handle("playlist:add", (id: string, ids: string[]) =>
     requireLibrary().addToPlaylist(id, ids),
   );
-  handle("playlist:remove-track", (playlistId: string, id: string) =>
-    playlistOperation(async (l) => l.removeFromPlaylist(playlistId, id)),
+  handle(
+    "playlist:remove-track",
+    (playlistId: string, ids: string | string[]) =>
+      playlistOperation(async (l) => l.removeFromPlaylist(playlistId, ids)),
   );
   handle(
     "track:menu",
@@ -453,14 +465,13 @@ function handlers() {
     if (tracks.some((t) => !t)) throw new Error("Track no longer exists.");
     if (!ids.includes(contextId))
       throw new Error("Select the track to inspect.");
-    if (
-      playlistId &&
-      !l
-        .playlists()
-        .find((p) => p.id === playlistId)
-        ?.trackIds.includes(contextId)
-    )
-      throw new Error("This track is no longer in that playlist.");
+    if (playlistId) {
+      const members = new Set(
+        l.playlists().find((p) => p.id === playlistId)?.trackIds,
+      );
+      if (ids.some((id) => !members.has(id)))
+        throw new Error("These tracks are no longer in that playlist.");
+    }
     const dispatch =
       (command: TrackAction["command"], playlistId?: string) => () =>
         win?.webContents.send("track:action", {
@@ -567,12 +578,7 @@ function handlers() {
                     id: "track-remove-playlist",
                     label: "Remove from Playlist",
                     enabled: !playlistIO && !l.scanning,
-                    click: () =>
-                      win?.webContents.send("track:action", {
-                        command: "remove-from-playlist",
-                        trackIds: [contextId],
-                        playlistId,
-                      } satisfies TrackAction),
+                    click: dispatch("remove-from-playlist", playlistId),
                   },
                 ]
               : []),
@@ -580,11 +586,7 @@ function handlers() {
               id: "track-delete",
               label: "Delete from Library…",
               enabled: !playlistIO && !l.scanning,
-              click: () =>
-                win?.webContents.send("track:action", {
-                  command: "delete-from-library",
-                  trackIds: [contextId],
-                } satisfies TrackAction),
+              click: dispatch("delete-from-library"),
             },
           ]
         : []),

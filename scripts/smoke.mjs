@@ -352,7 +352,7 @@ try {
     await page.getByRole("heading", { name: "Queue", exact: true }).isVisible(),
   );
   await page
-    .getByRole("list", { name: "Playback queue", exact: true })
+    .getByRole("listbox", { name: "Playback queue", exact: true })
     .getByRole("button", { name: blueHour.title, exact: true })
     .waitFor({ state: "visible", timeout: 10000 });
   await page.getByRole("button", { name: "Next track", exact: true }).click();

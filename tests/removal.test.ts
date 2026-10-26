@@ -403,3 +403,213 @@ test("concurrent media operations are rejected during Trash, while independent p
     position: 8,
   });
 });
+
+test("bulk playlist removal changes only named memberships and persists their remaining order", async () => {
+  const a = await add("A"),
+    b = await add("B"),
+    c = await add("C"),
+    d = await add("D");
+  const { a: first, b: second } = relationships(a, b);
+  library.addToPlaylist(first.id, [c.id, d.id]);
+  const state = library.state();
+  library.removeFromPlaylist(first.id, [a.id, c.id, a.id]);
+  expect(library.playlists().find((p) => p.id === first.id)!.trackIds).toEqual([
+    b.id,
+    d.id,
+  ]);
+  expect(library.playlists().find((p) => p.id === second.id)!.trackIds).toEqual(
+    [b.id, a.id],
+  );
+  expect(library.tracks(a.id)[0].favorite).toBe(true);
+  expect(library.state()).toEqual(state);
+  await restart();
+  expect(library.playlists().find((p) => p.id === first.id)!.trackIds).toEqual([
+    b.id,
+    d.id,
+  ]);
+  expect(library.tracks()).toHaveLength(4);
+});
+test.each(["referenced", "managed", "mixed"])(
+  "bulk %s cleanup preserves originals and unrelated current playback",
+  async (kind) => {
+    const keep = await add("Keep");
+    const a = await add("A", kind !== "referenced");
+    // add() follows the current copy policy, so explicitly switch it for the reference in mixed selections.
+    library.saveMediaSettings({ copyOnAdd: kind === "managed" });
+    const b = await add("B", kind === "managed");
+    const first = library.createPlaylist("First", [a.id, keep.id, b.id]);
+    library.createPlaylist("Other", [b.id, a.id]);
+    library.favorite(a.id);
+    library.saveState({
+      ...defaultState(),
+      queue: [a.id, keep.id, b.id, a.id],
+      currentId: keep.id,
+      position: 7,
+    });
+    const trash = vi.fn(async (file: string) => {
+      await rename(file, path.join(root, `trashed-${path.basename(file)}`));
+    });
+    const selection = library.removalTracks([a.id, b.id, a.id]);
+    expect(selection.map((t) => t.locationKind)).toEqual(
+      kind === "mixed" ? ["managed", "referenced"] : [kind, kind],
+    );
+    const result = await library.deleteTracks(selection, trash);
+    expect(result).toEqual({ removedIds: [a.id, b.id], failures: [] });
+    expect(trash).toHaveBeenCalledTimes(
+      kind === "mixed" ? 1 : kind === "managed" ? 2 : 0,
+    );
+    absent(a.id);
+    absent(b.id);
+    expect(library.state()).toMatchObject({
+      currentId: keep.id,
+      position: 7,
+      queue: [keep.id],
+    });
+    expect(
+      library.playlists().find((p) => p.id === first.id)!.trackIds,
+    ).toEqual([keep.id]);
+    await restart();
+    expect(library.tracks().map((t) => t.id)).toEqual([keep.id]);
+  },
+);
+test("bulk deleting current and queued tracks clears current and duplicate queue references", async () => {
+  const a = await add("A"),
+    b = await add("B"),
+    keep = await add("Keep");
+  relationships(a, b);
+  library.saveState({ ...library.state(), queue: [a.id, b.id, keep.id, a.id] });
+  const trash = vi.fn(async () => {});
+  expect(
+    (await library.deleteTracks(library.removalTracks([a.id, b.id]), trash))
+      .failures,
+  ).toEqual([]);
+  expect(library.state()).toMatchObject({
+    currentId: null,
+    position: 0,
+    queue: [keep.id],
+  });
+  expect(trash).not.toHaveBeenCalled();
+});
+test.each(["receipt", "path"])(
+  "invalid managed %s within a selection is retained while valid managed/reference removals succeed",
+  async (invalid) => {
+    const bad = await add("Bad", true),
+      good = await add("Good", true);
+    library.saveMediaSettings({ copyOnAdd: false });
+    const ref = await add("Reference");
+    relationships(bad, good);
+    if (invalid === "receipt")
+      library.db
+        .prepare("UPDATE managed_imports SET status='ready' WHERE trackId=?")
+        .run(bad.id);
+    else
+      library.db
+        .prepare("UPDATE tracks SET path=? WHERE id=?")
+        .run(ref.path + ".forged", bad.id);
+    const trash = vi.fn(async (file: string) => {
+      await rename(file, path.join(root, "trashed-good.wav"));
+    });
+    const result = await library.deleteTracks(
+      library.removalTracks([bad.id, good.id, ref.id]),
+      trash,
+    );
+    expect(result.removedIds).toEqual([good.id, ref.id]);
+    expect(result.failures).toEqual([
+      expect.objectContaining({ id: bad.id, fileTrashed: false }),
+    ]);
+    expect(trash).toHaveBeenCalledExactlyOnceWith(good.path);
+    expect(library.tracks(bad.id)[0].favorite).toBe(true);
+    expect((await stat(bad.path)).isFile()).toBe(true);
+    expect(library.state()).toMatchObject({
+      currentId: bad.id,
+      queue: [bad.id, bad.id],
+    });
+    await restart();
+    expect(library.tracks()).toHaveLength(1);
+  },
+);
+test("bulk Trash rejection continues, retaining failed identity and relationships; retry succeeds", async () => {
+  const a = await add("A", true),
+    b = await add("B", true);
+  relationships(a, b);
+  const result = await library.deleteTracks(
+    library.removalTracks([a.id, b.id]),
+    async (file) => {
+      if (file === a.path) throw Error("Trash unavailable");
+      await rename(file, path.join(root, "trashed-b.wav"));
+    },
+  );
+  expect(result.removedIds).toEqual([b.id]);
+  expect(result.failures).toEqual([
+    {
+      id: a.id,
+      title: a.title,
+      message: "Trash unavailable",
+      fileTrashed: false,
+    },
+  ]);
+  expect(library.tracks(a.id)[0].missing).toBe(false);
+  expect(library.playlists().every((p) => p.trackIds.includes(a.id))).toBe(
+    true,
+  );
+  await restart();
+  expect(
+    (
+      await library.deleteTracks(library.removalTracks([a.id]), (file) =>
+        rename(file, path.join(root, "trashed-a.wav")),
+      )
+    ).failures,
+  ).toEqual([]);
+});
+test("bulk post-Trash DB failure reports physical outcome, retains recoverable track and continues unrelated deletion", async () => {
+  const a = await add("A", true);
+  library.saveMediaSettings({ copyOnAdd: false });
+  const b = await add("B");
+  relationships(a, b);
+  library.db.exec(
+    `CREATE TRIGGER reject_one BEFORE DELETE ON tracks WHEN OLD.id='${a.id}' BEGIN SELECT RAISE(ABORT,'injected bulk database failure'); END;`,
+  );
+  const result = await library.deleteTracks(
+    library.removalTracks([a.id, b.id]),
+    (file) => rename(file, path.join(root, "trashed-a.wav")),
+  );
+  expect(result.removedIds).toEqual([b.id]);
+  expect(result.failures).toEqual([
+    expect.objectContaining({
+      id: a.id,
+      fileTrashed: true,
+      message: expect.stringContaining("Restore it from Trash"),
+    }),
+  ]);
+  expect(library.tracks(a.id)[0]).toMatchObject({
+    missing: true,
+    favorite: true,
+  });
+  expect(library.playlists().every((p) => p.trackIds.includes(a.id))).toBe(
+    true,
+  );
+  await restart();
+  expect(library.tracks(a.id)[0].missing).toBe(true);
+});
+test("complete identity/location preflight rejects before any mutation if selection changed after confirmation", async () => {
+  const a = await add("A", true),
+    b = await add("B", true);
+  const confirmed = library.removalTracks([a.id, b.id]);
+  library.db
+    .prepare(
+      "UPDATE track_locations SET kind='referenced',mediaRootId=NULL,relativePath=NULL WHERE trackId=?",
+    )
+    .run(b.id);
+  const trash = vi.fn(async () => {});
+  await expect(library.deleteTracks(confirmed, trash)).rejects.toThrow(
+    "location changed",
+  );
+  expect(trash).not.toHaveBeenCalled();
+  expect(library.tracks()).toHaveLength(2);
+  expect(() => library.removalTracks([a.id, "f".repeat(64)])).toThrow(
+    "no longer exists",
+  );
+  expect(() =>
+    library.removeFromPlaylist("anything", [a.id, "invalid"]),
+  ).toThrow("valid track");
+});

@@ -74,6 +74,7 @@ async function launch() {
     timeout: 30000,
   });
   const p = await app.firstWindow();
+  p.setDefaultTimeout(30000);
   await p.waitForSelector("h1");
   await app.evaluate(({ Menu, dialog, shell }, media) => {
     Menu.prototype.popup = function () {
@@ -111,7 +112,12 @@ const select = (file) =>
       filePaths: [file],
     });
   }, file);
-const row = (p, id) => p.locator(`.song-row[data-track-id="${id}"]`);
+const row = (p, id, detail = false) =>
+  p.locator(
+    detail
+      ? `.detail-panel .track-row[data-detail-track-id="${id}"]`
+      : `.song-row[data-track-id="${id}"]`,
+  );
 const nav = (p, name) =>
   p.locator(".sidebar").getByRole("button", { name, exact: true }).click();
 async function settled(p, predicate) {
@@ -122,11 +128,11 @@ async function settled(p, predicate) {
   }
   throw Error("Removal state did not converge");
 }
-async function menu(p, id, playlist = false) {
+async function menu(p, id, playlist = false, detail = false) {
   await app.evaluate(() => {
     globalThis.removalMenu = null;
   });
-  await row(p, id).click({ button: "right" });
+  await row(p, id, detail).click({ button: "right" });
   for (let n = 0; n < 100; n++) {
     if (await app.evaluate(() => !!globalThis.removalMenu)) break;
     await p.waitForTimeout(50);
@@ -146,15 +152,41 @@ const clickMenu = (id) =>
     if (!item?.enabled) throw Error(`Missing/disabled ${id}`);
     item.click(undefined, undefined, {});
   }, id);
-async function confirm(p, id, managed, response = 1, playlist = false) {
-  await menu(p, id, playlist);
+async function confirm(
+  p,
+  id,
+  managed,
+  response = 1,
+  playlist = false,
+  detail = false,
+) {
+  await menu(p, id, playlist, detail);
   const before = await snapshot(p),
-    count = await app.evaluate(() => globalThis.confirmations.length);
+    selectedIds = await p
+      .locator(
+        detail
+          ? '.detail-panel .track-row[aria-selected="true"]'
+          : '.song-row[aria-selected="true"]',
+      )
+      .evaluateAll(
+        (rows, detail) =>
+          rows.map((row) =>
+            detail ? row.dataset.detailTrackId : row.dataset.trackId,
+          ),
+        detail,
+      ),
+    selected = before.tracks.filter((track) => selectedIds.includes(track.id)),
+    managedCount = selected.filter(
+      (track) => track.locationKind === "managed",
+    ).length,
+    referenceCount = selected.length - managedCount,
+    count = await app.evaluate(() => globalThis.confirmations.length),
+    trashCount = await app.evaluate(() => globalThis.trashCalls.length);
   await clickMenu("track-delete");
   for (let n = 0; n < 100; n++) {
     if (
       await app.evaluate(
-        (count) => globalThis.confirmations.length > count,
+        (_, count) => globalThis.confirmations.length > count,
         count,
       )
     )
@@ -169,17 +201,45 @@ async function confirm(p, id, managed, response = 1, playlist = false) {
   assert.equal(options.title, "Delete from Library");
   assert.deepEqual(options.buttons, [
     "Cancel",
-    managed ? "Move to Trash" : "Remove from Library",
+    managedCount
+      ? referenceCount
+        ? "Delete from Library"
+        : "Move to Trash"
+      : "Remove from Library",
   ]);
   assert.equal(options.defaultId, 0);
   assert.equal(options.cancelId, 0);
-  assert.match(
-    options.detail,
-    managed
-      ? /managed audio file moved to the Trash/
-      : /remains at its original location/,
-  );
+  assert.equal(!!managedCount, managed);
+  if (selected.length === 1) {
+    assert.match(
+      options.detail,
+      managed
+        ? /managed audio file moved to the Trash/
+        : /remains at its original location/,
+    );
+  } else {
+    assert.equal(
+      options.message,
+      `${managedCount ? "Delete" : "Remove"} ${selected.length} tracks from your library?`,
+    );
+    if (managedCount)
+      assert(
+        options.detail.includes(
+          `${managedCount} managed track${managedCount === 1 ? "" : "s"} will be removed from Rhythm and moved to the Trash.`,
+        ),
+      );
+    if (referenceCount)
+      assert(
+        options.detail.includes(
+          `${referenceCount} referenced track${referenceCount === 1 ? "" : "s"} will be removed from Rhythm but remain at their original locations.`,
+        ),
+      );
+  }
   const pending = await snapshot(p);
+  assert.equal(
+    await app.evaluate(() => globalThis.trashCalls.length),
+    trashCount,
+  );
   assert.deepEqual(pending.tracks, before.tracks);
   assert.deepEqual(pending.playlists, before.playlists);
   assert.deepEqual(pending.state.queue, before.state.queue);
@@ -194,6 +254,10 @@ async function confirm(p, id, managed, response = 1, playlist = false) {
     );
     assert.deepEqual((await snapshot(p)).tracks, before.tracks);
     assert.deepEqual((await snapshot(p)).playlists, before.playlists);
+    assert.equal(
+      await app.evaluate(() => globalThis.trashCalls.length),
+      trashCount,
+    );
   }
 }
 async function play(p, track) {
@@ -261,6 +325,267 @@ function noRelationships(id) {
     db.close();
   }
 }
+const primary = process.platform === "darwin" ? "Meta" : "Control";
+async function selection(p, ids, detail = false) {
+  await (
+    detail ? row(p, ids[0], true).locator(".track-title") : row(p, ids[0])
+  ).click();
+  for (const id of ids.slice(1))
+    await (
+      detail ? row(p, id, true).locator(".track-title") : row(p, id)
+    ).click({ modifiers: [primary] });
+  assert.deepEqual(
+    new Set(
+      await p
+        .locator(
+          detail
+            ? '.detail-panel .track-row[aria-selected="true"]'
+            : '.song-row[aria-selected="true"]',
+        )
+        .evaluateAll(
+          (rows, detail) =>
+            rows.map((row) =>
+              detail ? row.dataset.detailTrackId : row.dataset.trackId,
+            ),
+          detail,
+        ),
+    ),
+    new Set(ids),
+  );
+}
+async function bulkAcceptance(p, { c, d }) {
+  async function importBatch(name, titles, managed) {
+    const directory = path.join(root, name);
+    await mkdir(directory);
+    for (const title of titles) {
+      const file = path.join(directory, `${title}.wav`);
+      await writeFile(
+        file,
+        wavFixture({
+          title,
+          artist: "Bulk artist",
+          album: "Bulk album",
+          seconds: 30,
+        }),
+      );
+      originals.set(file, {
+        hash: sha(await readFile(file)),
+        mtime: (await stat(file)).mtimeMs,
+      });
+    }
+    await p.evaluate(
+      (managed) => window.rhythm.saveMediaSettings({ copyOnAdd: managed }),
+      managed,
+    );
+    await select(directory);
+    await p
+      .getByRole("button", { name: "Add music", exact: true })
+      .first()
+      .click();
+    const s = await settled(p, (s) =>
+      titles.every((title) => s.tracks.some((t) => t.title === title)),
+    );
+    return titles.map((title) => s.tracks.find((t) => t.title === title));
+  }
+  await nav(p, "Songs");
+  const [r1, r2, r3, r4] = await importBatch(
+    "Bulk references",
+    ["Bulk R1", "Bulk R2", "Bulk R3", "Bulk R4"],
+    false,
+  );
+  const [g1, g2, g3, bad, dbbad] = await importBatch(
+    "Bulk originals",
+    ["Bulk M1", "Bulk M2", "Bulk M3", "Bulk M4 bad", "Bulk M5 database"],
+    true,
+  );
+  // Normal/toggle/range selection, moving keyboard endpoint, and right-click anchoring.
+  await selection(p, [r1.id, r3.id]);
+  await row(p, r3.id).click({ modifiers: [primary] });
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 1);
+  await row(p, r1.id).click();
+  await row(p, r3.id).click({ modifiers: ["Shift"] });
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 3);
+  await p.locator(".songs-viewport").press("Shift+ArrowDown");
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 4);
+  await p.locator(".songs-viewport").press("Shift+ArrowUp");
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 3);
+  await menu(p, r2.id);
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 3);
+  await mkdir(path.resolve(".impeccable/review"), { recursive: true });
+  await p.screenshot({
+    path: path.resolve(".impeccable/review/multi-selection.png"),
+  });
+  await menu(p, r4.id);
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 1);
+  await row(p, r2.id).click({ modifiers: ["Shift"] });
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 3);
+  // Real double click must still start the clicked track, with advancing audio.
+  await row(p, r2.id).dblclick();
+  await p.waitForFunction((id) => {
+    const a = document.querySelector("audio");
+    return a.currentSrc.endsWith(id) && !a.paused && a.currentTime > 0.2;
+  }, r2.id);
+  const bulkList = await p.evaluate(
+    async (ids) => {
+      const list = await window.rhythm.createPlaylist("Bulk selection");
+      await window.rhythm.playlistTracks(list.id, ids);
+      for (const id of ids) await window.rhythm.favorite(id);
+      return list;
+    },
+    [r1.id, r2.id, r3.id, r4.id, g1.id, g2.id, g3.id, bad.id, dbbad.id],
+  );
+  // Cross-view selection (the same reusable Track List), single-only Info/Finder remain covered in track-info.mjs.
+  await p.reload();
+  for (const view of [
+    bulkList.name,
+    "Songs",
+    "Artists",
+    "Genres",
+    "Favourites",
+  ]) {
+    await nav(p, view);
+    if (view === "Artists")
+      await p
+        .locator(".group-list button")
+        .filter({ hasText: "Bulk artist" })
+        .click();
+    if (view === "Genres")
+      await p
+        .locator(".group-list button")
+        .filter({ hasText: "Ambient" })
+        .click();
+    await selection(p, [r1.id, r2.id]);
+    await menu(p, r2.id, view === bulkList.name);
+    assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 2);
+  }
+  await nav(p, "Albums");
+  await p.getByRole("button", { name: "Track list", exact: true }).click();
+  await selection(p, [r1.id, r2.id]);
+  await menu(p, r1.id);
+  await p.getByRole("searchbox", { name: "Search library" }).fill("Bulk R");
+  await selection(p, [r1.id, r2.id]);
+  await menu(p, r2.id);
+  await p.getByRole("searchbox", { name: "Search library" }).fill("");
+  await nav(p, "Songs");
+  await play(p, c);
+  await selection(p, [r1.id, r2.id]);
+  await confirm(p, r2.id, false, 0);
+  const time = await p.locator("audio").evaluate((a) => a.currentTime);
+  await confirm(p, r2.id, false);
+  await cleared(p, r1.id);
+  await cleared(p, r2.id);
+  await p.waitForFunction((time) => {
+    const a = document.querySelector("audio");
+    return !a.paused && a.currentTime > time;
+  }, time);
+  assert.equal((await snapshot(p)).state.currentId, c.id);
+  noRelationships(r1.id);
+  noRelationships(r2.id);
+  // Open the managed album's detail list explicitly; current playback need not own the browsed album.
+  await row(p, g1.id).click();
+  // All-managed selection includes current and queued media; one confirmation and two real Trash calls.
+  await play(p, g1);
+  await selection(p, [g1.id, g2.id], true);
+  await confirm(p, g2.id, true, 0, false, true);
+  assert.equal((await stat(g1.path)).isFile(), true);
+  await confirm(p, g2.id, true, 1, false, true);
+  await cleared(p, g1.id);
+  await cleared(p, g2.id);
+  await stopped(p);
+  for (const t of [g1, g2]) {
+    await assert.rejects(stat(t.path), { code: "ENOENT" });
+    noRelationships(t.id);
+  }
+  // Invalid authority is item-specific. The rest of the mixed selection completes truthfully.
+  sql("UPDATE managed_imports SET status='ready' WHERE trackId=?", bad.id);
+  await play(p, c);
+  await p.getByRole("button", { name: "Show queue", exact: true }).click();
+  await selection(p, [r3.id, g3.id, bad.id], true);
+  const calls = await app.evaluate(() => globalThis.trashCalls.length);
+  await confirm(p, bad.id, true, 0, false, true);
+  assert.equal(await app.evaluate(() => globalThis.trashCalls.length), calls);
+  await confirm(p, bad.id, true, 1, false, true);
+  await cleared(p, r3.id);
+  await cleared(p, g3.id);
+  await p
+    .getByRole("alert")
+    .filter({ hasText: "2 of 3 tracks removed" })
+    .waitFor();
+  await p.screenshot({
+    path: path.resolve(".impeccable/review/multi-selection-partial.png"),
+  });
+  const partial = await snapshot(p);
+  assert(partial.tracks.find((t) => t.id === bad.id).favorite);
+  assert(
+    partial.playlists
+      .find((list) => list.id === bulkList.id)
+      .trackIds.includes(bad.id),
+  );
+  assert.equal(
+    await row(p, bad.id, true).getAttribute("aria-selected"),
+    "true",
+  );
+  assert.equal(await p.locator("audio").evaluate((a) => a.paused), false);
+  assert.equal((await stat(bad.path)).isFile(), true);
+  assert.deepEqual(
+    await app.evaluate((_, calls) => globalThis.trashCalls.slice(calls), calls),
+    [g3.path],
+  );
+  sql("UPDATE managed_imports SET status='done' WHERE trackId=?", bad.id);
+  await play(p, r4);
+  await selection(p, [r4.id, bad.id]);
+  await confirm(p, r4.id, true);
+  await cleared(p, r4.id);
+  await cleared(p, bad.id);
+  await stopped(p);
+  // Partial success after Trash/SQLite failure preserves the failed identity and reports recovery.
+  await play(p, dbbad);
+  sql(
+    `CREATE TRIGGER reject_bulk BEFORE DELETE ON tracks WHEN OLD.id='${dbbad.id}' BEGIN SELECT RAISE(ABORT,'injected bulk removal database failure'); END;`,
+  );
+  await p.getByRole("button", { name: "Show queue", exact: true }).click();
+  await selection(p, [c.id, dbbad.id], true);
+  await confirm(p, dbbad.id, true, 1, false, true);
+  await cleared(p, c.id);
+  await p
+    .getByRole("alert")
+    .filter({ hasText: "1 of 2 tracks removed" })
+    .waitFor();
+  await p
+    .getByRole("alert")
+    .filter({ hasText: "Restore it from Trash" })
+    .waitFor();
+  await p.waitForFunction(() => document.querySelector("audio").paused);
+  const recoverable = await settled(
+    p,
+    (s) => s.tracks.find((t) => t.id === dbbad.id)?.missing,
+  );
+  assert(recoverable.tracks.find((t) => t.id === dbbad.id).favorite);
+  assert(
+    recoverable.playlists
+      .find((list) => list.id === bulkList.id)
+      .trackIds.includes(dbbad.id),
+  );
+  sql("DROP TRIGGER reject_bulk");
+  await app.close();
+  p = await launch();
+  await nav(p, "Songs");
+  await menu(p, dbbad.id);
+  await select(path.join(root, "Bulk originals", "Bulk M5 database.wav"));
+  await clickMenu("track-locate");
+  await settled(p, (s) => !s.tracks.find((t) => t.id === dbbad.id).missing);
+  await play(p, dbbad);
+  await confirm(p, dbbad.id, true);
+  await cleared(p, dbbad.id);
+  await stopped(p);
+  assert.deepEqual(
+    (await snapshot(p)).tracks.map((t) => t.id),
+    [d.id],
+  );
+  console.log(
+    "MULTI_SELECTION: pointer/keyboard/range/context/shared views; reference/managed/mixed counts/cancel; partial outcomes/recovery; real playback and OS Trash passed",
+  );
+}
 try {
   let p = await launch();
   await select(library);
@@ -317,10 +642,34 @@ try {
   assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 2);
   await confirm(p, b.id, false, 0, true);
   assert.equal(await app.evaluate(() => globalThis.trashCalls.length), 0);
+  // The collection action removes both selected memberships, preserving the other playlist and playback.
+  await clickMenu("track-remove-playlist");
+  await settled(
+    p,
+    (s) =>
+      s.playlists.find((list) => list.id === lists[0].id).trackIds.length === 0,
+  );
+  const multiRemoved = await snapshot(p);
+  assert.equal(multiRemoved.tracks.length, 4);
+  assert.deepEqual(
+    multiRemoved.playlists.find((list) => list.id === lists[1].id).trackIds,
+    [c.id, a.id, b.id],
+  );
+  assert.equal(await p.locator("audio").evaluate((a) => a.paused), false);
+  await nav(p, "Songs");
+  await selection(p, [b.id, c.id]);
+  await menu(p, c.id);
+  await clickMenu(`playlist-${lists[0].id}`);
+  await settled(
+    p,
+    (s) =>
+      s.playlists.find((list) => list.id === lists[0].id).trackIds.length === 2,
+  );
+  await nav(p, lists[0].name);
+  await row(p, b.id).click();
   await confirm(p, b.id, false, 1, true);
   await cleared(p, b.id);
-  assert.equal(await row(p, c.id).getAttribute("aria-selected"), "true");
-  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 1);
+  assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 0);
   assert.equal(await p.locator("audio").evaluate((a) => a.paused), false);
   noRelationships(b.id);
   // The playlist relationship is never inferred from the overall navigation view.
@@ -483,6 +832,8 @@ try {
     ),
   );
   await stopped(p);
+  // Multi-selection uses the same real menu/IPC/Trash route and isolated library.
+  await bulkAcceptance(p, { c, d });
   for (const [file, before] of originals) {
     assert.equal(sha(await readFile(file)), before.hash, file);
     assert.equal((await stat(file)).mtimeMs, before.mtime, file);

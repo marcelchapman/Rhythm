@@ -1,16 +1,16 @@
-# Rhythm — single-track removal
+# Rhythm — track removal
 
-Baseline: `7b007aa` (main), after Iteration 3 and the Settings/startup work. This mission adds single-track native context actions without changing the Settings menu, schema, managed-copy/recovery policy, metadata, table styling or column preferences. No stage, commit, push, installation or release publication is part of this work.
+Baseline: `7b007aa` (main), after Iteration 3 and the Settings/startup work. The original mission added single-track native context actions; the multi-selection foundation described in [MULTI-SELECTION.md](MULTI-SELECTION.md) now extends their scope without changing the Settings menu, schema, managed-copy/recovery policy, metadata, table styling or column preferences. No stage, commit, push, installation or release publication is part of this work.
 
 ## Interaction and ownership
 
 - In an actual playlist Track List: **Remove from Playlist**, and **Delete from Library…**.
 - In Songs, Albums list mode, Artist/Genre track views, Favourites, global search (including search opened from a playlist), and compact track contexts: **Delete from Library…**. No playlist relationship is inferred from navigation alone.
-- Both commands act on the clicked/context track, following the existing Track Info targeting convention. A multi-selection does not authorize bulk deletion. Other selected rows survive.
-- Remove from Playlist deletes only that membership using the current database state. Other playlists, favourite, library identity, audio and playback stay unchanged; remaining playlist order is preserved.
-- Delete from Library opens a native confirmation in the main process. Cancel is the default and Escape/cancel action. The dialog includes the single title and location. Referenced audio uses **Cancel / Remove from Library** and says it stays at the original location. Managed audio uses **Cancel / Move to Trash** and states that the managed file moves to Trash.
+- Both removal commands act on the selected tracks. Right-click inside a selection preserves it; outside it selects only that row. Track Info and Show in Finder still target the clicked/focused row only.
+- Remove from Playlist deletes only the selected memberships using the current database state. Other playlists, favourite, library identity, audio and playback stay unchanged; remaining playlist order is preserved.
+- Delete from Library opens a native confirmation in the main process. Cancel is the default and Escape/cancel action. A single-track dialog includes its title and location. A multi-track dialog counts all tracks and explicitly states both managed and referenced consequences for mixed selections. Referenced audio uses **Cancel / Remove from Library** and says it stays at the original location. Managed audio uses **Cancel / Move to Trash** and states that the managed file moves to Trash.
 
-The renderer supplies an identity, never a filesystem deletion path. Main-process IPC retains trusted-frame checking. Existing media-operation serialization covers confirmation and execution, preventing imports, recovery, root changes or library switches from invalidating the operation. The confirmed ownership/location is rechecked before execution. No permanent audio-delete API is implemented.
+The renderer supplies track identities, never filesystem deletion paths. Main-process IPC retains trusted-frame checking. Existing media-operation serialization covers confirmation and execution, preventing imports, recovery, root changes or library switches from invalidating the operation. The confirmed ownership/location is rechecked before execution. No permanent audio-delete API is implemented.
 
 ## Managed authority
 
@@ -25,29 +25,31 @@ Unknown files merely placed inside Media remain referenced. External paths, trav
 
 ## Ordering and failure
 
-1. Native confirmation; cancellation returns without mutation.
-2. Revalidate ownership and managed authority; preflight SQLite writability.
+1. Classify the entire selection and show one native confirmation; cancellation returns without mutation. Recheck all confirmed locations before the first removal.
+2. For each track, revalidate ownership and managed authority; preflight SQLite writability.
 3. For managed audio only, await Electron `shell.trashItem` on the validated copy. Referenced audio has no filesystem mutation step.
 4. In one synchronous SQLite transaction, delete the track, cascading its locations and all playlist memberships; delete associated import receipts and exact single-file scan roots; normalize persisted queue/current state and position. Favourite and artwork live on the deleted track. Retain folder scan roots and playlist objects/order.
 5. Immediately reconcile the renderer's identity, queue, pending playlist targets and selection; clear Track Info/recovery for that track; refresh every derived view from the snapshot. A deleted current track invalidates pending Play, pauses/clears the decoder, clears current ID/position and media-session metadata/handlers. Removing another queued track preserves current playback. Stale saved IDs cannot resurrect a deleted track.
 
-No SQLite transaction spans asynchronous shell work, so a player save cannot accidentally join a transaction later rolled back by Trash. A Trash rejection removes no records or relationships and reports no success. Current buffered playback pauses on an operation error, allowing safe inspection/retry.
+No SQLite transaction spans asynchronous shell work, so a player save cannot accidentally join a transaction later rolled back by Trash. A Trash rejection removes no records or relationships and reports no success. A per-track failure is retained and reported while other selected tracks continue. Untouched playback continues; buffered playback pauses if its current file reached Trash but the identity could not be removed.
 
 SQLite and OS Trash are not atomic together. If Trash succeeds but subsequent database cleanup fails, rollback retains the identity, receipts, favourites, playlist links and player references. Rhythm reports that the file **was moved to Trash**, marks it missing when writes remain possible, pauses buffered playback and refreshes the retained entry. Restore from Trash or use Locate File to copy the original back into Media, then retry after resolving the database problem. That recovery/retry, including restart and real playback, is automated.
 
 A process crash after Trash and before database completion can likewise leave a retained missing entry; there is no automatic deletion completion or durable deletion-intent migration. Existing first-Play checking/rescan and Locate provide recovery. The path-based Electron Trash interface does not provide kernel descriptor-anchored protection against hostile concurrent directory replacement; checks are repeated at the handoff boundary. No permanent deletion fallback is used when Trash is unavailable.
 
-Explicitly rescanning a retained source folder can discover referenced audio previously removed from Rhythm. This mission implements identity removal, not import exclusion rules. Missing/unverifiable managed copies cannot be silently forgotten through this command. Empty Media subdirectories are left alone. Bulk removal, metadata editing and reorganization remain out of scope.
+Explicitly rescanning a retained source folder can discover referenced audio previously removed from Rhythm. This mission implements identity removal, not import exclusion rules. Missing/unverifiable managed copies cannot be silently forgotten through this command. Empty Media subdirectories are left alone. Album-level actions, metadata editing and reorganization remain out of scope.
 
 ## Automated coverage
 
-`tests/removal.test.ts` adds 25 unit cases. It uses sacrificial temporary audio and a test Trash adapter, checking playlist-only semantics/order, multiple playlists, favourites, queue/current cleanup, stale saves, restart, receipt cleanup/reimport, Trash rejection, database failure after Trash, source bytes/mtimes, identity validation, old registered roots, preserving scan sources shared with another identity, concurrent-operation serialization and independent player saves. Its authority matrix includes external paths, traversal, absolute paths, no/wrong/pending receipt, changed bytes, leaf/parent symlinks, an external hard-link replacement, replaced roots and missing files. Existing 73 unit cases remain intact.
+The original `tests/removal.test.ts` mission added 25 unit cases; the multi-selection mission adds 10 more (see its report). It uses sacrificial temporary audio and a test Trash adapter, checking playlist-only semantics/order, multiple playlists, favourites, queue/current cleanup, stale saves, restart, receipt cleanup/reimport, Trash rejection, database failure after Trash, source bytes/mtimes, identity validation, old registered roots, preserving scan sources shared with another identity, concurrent-operation serialization and independent player saves. Its authority matrix includes external paths, traversal, absolute paths, no/wrong/pending receipt, changed bytes, leaf/parent symlinks, an external hard-link replacement, replaced roots and missing files. Existing 73 unit cases remain intact.
 
-`scripts/removal.mjs` runs in both source and packaged suites. It intercepts the existing native menu model/dialog options and invokes real callbacks through the renderer/preload/main boundary. Pending confirmation and cancellation preserve snapshots, memberships and playback. It checks all shared Track List contexts, global search from a playlist, single clicked-row deletion within a multi-selection, immediate row/selection refresh, unrelated real playback, deleted-current decoder/media-session cleanup, restart, actual Electron OS Trash, injected Trash rejection, a forged external path, post-Trash database failure and Locate/retry. All original fixture hashes and mtimes must remain unchanged.
+`scripts/removal.mjs` runs in both source and packaged suites. It intercepts the existing native menu model/dialog options and invokes real callbacks through the renderer/preload/main boundary. Pending confirmation and cancellation preserve snapshots, memberships and playback. It checks all shared Track List contexts, global search from a playlist, selection-based deletion and playlist multi-remove, immediate row/selection refresh, unrelated real playback, deleted-current decoder/media-session cleanup, restart, actual Electron OS Trash, injected Trash rejection, a forged external path, post-Trash database failure and Locate/retry. All original fixture hashes and mtimes must remain unchanged.
 
 The Trash wrapper lives only in the test process: it refuses any path outside that test's generated Media folder, can inject a rejection, and otherwise delegates to the real `shell.trashItem`. Production has no test flag or bypass. Linux tests use a temporary `XDG_DATA_HOME` for disposable trash data and the existing Playwright Electron launcher. The Ubuntu workflow explicitly installs `libglib2.0-bin`, providing the `gio trash` backend used by Electron in a headless/default Linux environment ([Electron implementation](https://github.com/electron/electron/blob/main/shell/common/platform_util_linux.cc)). No test opens Marcel's library/media or changes `/Applications/Rhythm.app`. Tests do not empty the macOS Trash; sacrificial copies may remain there.
 
-## Validation
+## Original single-track mission validation
+
+The table below records the original mission. Current multi-selection results are recorded in [MULTI-SELECTION.md](MULTI-SELECTION.md).
 
 Validated locally on 2026-10-25: Intel macOS 15.8.1, Node 26.12.0, Electron 44.9.2.
 

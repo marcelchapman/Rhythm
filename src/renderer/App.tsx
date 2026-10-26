@@ -1,5 +1,7 @@
 import { MediaSource } from "./media-source";
 import { TrackList } from "./TrackList";
+import { useTrackSelection } from "./use-track-selection";
+import { selectionModifier } from "./track-selection";
 import { TRACK_COLUMNS } from "./track-columns";
 import {
   patchTrackListPreferences,
@@ -231,7 +233,6 @@ export function App() {
   const [modal, setModal] = useState<
     | "settings"
     | "playlist"
-    | "track"
     | "delete"
     | "export-playlist"
     | "consolidate"
@@ -241,7 +242,6 @@ export function App() {
   const [editPlaylist, setEditPlaylist] = useState<Playlist | null>(null);
   const [name, setName] = useState("");
   const [actionTrack, setActionTrack] = useState<Track | null>(null);
-  const [targetPlaylist, setTargetPlaylist] = useState("");
   const audio = useRef<HTMLAudioElement>(null);
   const mediaSource = useRef<MediaSource | null>(null);
   const playRequest = useRef(0);
@@ -287,6 +287,32 @@ export function App() {
   const rightAlbum =
     albums.find((a) => a.id === selectedAlbum) ??
     albums.find((a) => a.id === current?.albumId);
+  const detailTracks = useMemo(
+    () =>
+      showQueue
+        ? state.queue
+            .map((id) => byId.get(id))
+            .filter((track): track is Track => !!track)
+        : (rightAlbum?.tracks ?? []),
+    [showQueue, state.queue, byId, rightAlbum],
+  );
+  const detailOrder = useMemo(
+    () => detailTracks.map((track) => track.id),
+    [detailTracks],
+  );
+  const detailSelection = useTrackSelection(
+    detailOrder,
+    showQueue ? "queue" : `album:${rightAlbum?.id}`,
+  );
+  const detailList = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (detailSelection.selection.focus)
+      detailList.current
+        ?.querySelector<HTMLElement>(
+          `[data-detail-track-id="${detailSelection.selection.focus}"]`,
+        )
+        ?.scrollIntoView({ block: "nearest" });
+  }, [detailSelection.selection.focus, detailLimit]);
   useEffect(
     () => setDetailLimit(200),
     [selectedAlbum, current?.albumId, showQueue],
@@ -1015,11 +1041,6 @@ export function App() {
     setName(p?.name ?? "");
     setModal("playlist");
   };
-  const trackActions = (track: Track) => {
-    setActionTrack(track);
-    setTargetPlaylist("");
-    setModal("track");
-  };
   const appendToPlaylist = async (id: string, ids: string[]) => {
     try {
       await api.addToPlaylist(id, ids);
@@ -1052,24 +1073,30 @@ export function App() {
     setShowQueue(true);
     setModal(null);
   };
-  const queueTrack = (track: Track, next: boolean) =>
-    queueTracks([track], next);
-  const removeTrack = async (id: string, playlistId?: string) => {
+  const removeTrack = async (ids: string[], playlistId?: string) => {
     if (busy) return;
     setBusy(true);
     setProgress(
-      playlistId ? "Removing track from playlist…" : "Reviewing track removal…",
+      playlistId
+        ? "Removing tracks from playlist…"
+        : "Reviewing track removal…",
     );
     setError("");
     setMessage("");
     try {
       if (playlistId) {
-        await api.removeFromPlaylist(playlistId, id);
+        await api.removeFromPlaylist(playlistId, ids);
         await refresh();
-        setMessage("Track removed from playlist. It remains in your library.");
-      } else if (await api.deleteTrack(id)) {
+        setMessage(
+          `${ids.length} track${ids.length === 1 ? "" : "s"} removed from playlist. Your library and files are unchanged.`,
+        );
+      } else {
+        const result = await api.deleteTrack(ids);
+        if (!result) return;
+        const removed = new Set(result.removedIds);
         const previous = stateRef.current;
-        const wasCurrent = previous.currentId === id;
+        const wasCurrent =
+          !!previous.currentId && removed.has(previous.currentId);
         if (wasCurrent) {
           pausePlayback();
           mediaSource.current?.clear();
@@ -1083,7 +1110,7 @@ export function App() {
         }
         const next = {
           ...previous,
-          queue: previous.queue.filter((queued) => queued !== id),
+          queue: previous.queue.filter((queued) => !removed.has(queued)),
           currentId: wasCurrent ? null : previous.currentId,
           position: wasCurrent ? 0 : previous.position,
         };
@@ -1094,29 +1121,46 @@ export function App() {
         if (dataRef.current) {
           dataRef.current = {
             ...dataRef.current,
-            tracks: dataRef.current.tracks.filter((t) => t.id !== id),
+            tracks: dataRef.current.tracks.filter((t) => !removed.has(t.id)),
             playlists: dataRef.current.playlists.map((p) => ({
               ...p,
-              trackIds: p.trackIds.filter((trackId) => trackId !== id),
+              trackIds: p.trackIds.filter((trackId) => !removed.has(trackId)),
             })),
           };
           setData(dataRef.current);
         }
         setPendingPlaylistTracks((ids) =>
-          ids.filter((trackId) => trackId !== id),
+          ids.filter((trackId) => !removed.has(trackId)),
         );
-        setRecoveryId((currentId) => (currentId === id ? null : currentId));
-        if (actionTrack?.id === id) {
+        setRecoveryId((currentId) =>
+          currentId && removed.has(currentId) ? null : currentId,
+        );
+        if (actionTrack && removed.has(actionTrack.id)) {
           setActionTrack(null);
           setModal(null);
         }
+        if (
+          result.failures.some(
+            (failure) => failure.fileTrashed && failure.id === next.currentId,
+          )
+        )
+          pausePlayback();
         await refresh();
-        setMessage("Track removed from your library.");
+        const summary = `${removed.size} of ${ids.length} track${ids.length === 1 ? "" : "s"} removed from your library.`;
+        if (result.failures.length)
+          setError(
+            `${summary} ${result.failures.length} retained: ${result.failures
+              .slice(0, 5)
+              .map((failure) => `${failure.title}: ${failure.message}`)
+              .join(
+                "; ",
+              )}${result.failures.length > 5 ? `; and ${result.failures.length - 5} more. Retry retained tracks individually for details.` : ""}`,
+          );
+        else setMessage(summary);
       }
     } catch (e) {
-      // Trash may have succeeded before a database failure. Stop buffered audio
-      // and refresh the retained, recoverable identity instead of claiming success.
-      if (!playlistId && stateRef.current.currentId === id) pausePlayback();
+      // Preflight/confirmation errors do not interrupt unrelated or untouched playback.
+      // Per-track Trash/cleanup failures are returned and reconciled above.
       await refresh().catch(() => {});
       fail(e);
     } finally {
@@ -1141,9 +1185,9 @@ export function App() {
     else if (action.command === "consolidate")
       void consolidate(action.trackIds);
     else if (action.command === "remove-from-playlist" && action.playlistId)
-      void removeTrack(action.trackIds[0], action.playlistId);
+      void removeTrack(action.trackIds, action.playlistId);
     else if (action.command === "delete-from-library")
-      void removeTrack(action.trackIds[0]);
+      void removeTrack(action.trackIds);
     else if (action.command === "reveal")
       void api.revealTrack(action.trackIds[0]).catch(fail);
     else if (action.command === "info")
@@ -1317,29 +1361,87 @@ export function App() {
       }
     })();
   };
+  const detailContext = (track: Track) => {
+    const ids = detailSelection.context(track.id);
+    detailList.current?.focus({ preventScroll: true });
+    showTrackMenu(ids, track.id);
+  };
   const renderTracks = (items: Track[], compact = false, queueMode = false) => (
     <div
+      ref={detailList}
       className={`track-list ${compact ? "compact" : ""}`}
-      role="list"
+      role="listbox"
+      aria-multiselectable="true"
+      tabIndex={0}
       aria-label={queueMode ? "Playback queue" : "Tracks"}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        const index = items.findIndex(
+          (track) => track.id === detailSelection.selection.focus,
+        );
+        const last = Math.min(items.length, detailLimit) - 1;
+        if (["ArrowUp", "ArrowDown", "Home", "End"].includes(e.key)) {
+          e.preventDefault();
+          const next =
+            e.key === "Home"
+              ? 0
+              : e.key === "End"
+                ? last
+                : Math.max(
+                    0,
+                    Math.min(last, index + (e.key === "ArrowDown" ? 1 : -1)),
+                  );
+          if (items[next]) {
+            detailSelection.choose(items[next].id, e.shiftKey);
+          }
+        } else if (e.key === "Enter" && index >= 0) {
+          e.preventDefault();
+          playTrack(items[index], items);
+        } else if (
+          (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) &&
+          index >= 0
+        ) {
+          e.preventDefault();
+          detailContext(items[index]);
+        }
+      }}
     >
       {(compact ? items.slice(0, detailLimit) : items).map((t, i) => (
         <div
-          className={`track-row ${t.id === current?.id ? "is-playing" : ""} ${t.missing ? "is-missing" : ""}`}
-          role="listitem"
+          className={`track-row ${detailSelection.selection.ids.has(t.id) ? "selected" : ""} ${t.id === current?.id ? "is-playing" : ""} ${t.missing ? "is-missing" : ""}`}
+          role="option"
+          data-detail-track-id={t.id}
+          aria-selected={detailSelection.selection.ids.has(t.id)}
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest(".track-play,.icon-button"))
+              return;
+            detailSelection.choose(
+              t.id,
+              e.shiftKey,
+              selectionModifier(e, navigator.platform),
+            );
+            detailList.current?.focus({ preventScroll: true });
+          }}
+          onDoubleClick={(e) => {
+            if (!(e.target as HTMLElement).closest(".track-play,.icon-button"))
+              playTrack(t, items);
+          }}
           draggable
           onDragStart={(e) => {
-            e.dataTransfer.setData(TRACK_DRAG_TYPE, JSON.stringify([t.id]));
+            e.dataTransfer.setData(
+              TRACK_DRAG_TYPE,
+              JSON.stringify(detailSelection.dragIds(t.id)),
+            );
             e.dataTransfer.effectAllowed = "copy";
           }}
           onContextMenu={(e) => {
             e.preventDefault();
-            showTrackMenu([t.id]);
+            detailContext(t);
           }}
           onKeyDown={(e) => {
             if (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) {
               e.preventDefault();
-              showTrackMenu([t.id]);
+              detailContext(t);
             }
           }}
           key={`${t.id}-${i}`}
@@ -1362,11 +1464,10 @@ export function App() {
           {!compact && <Art track={t} />}
           <button
             className="track-title"
-            onClick={() => {
-              setSelectedAlbum(t.albumId);
-              if (compact) playTrack(t, items);
+            onClick={(e) => {
+              // Keep explicit keyboard activation; pointer clicks use row selection.
+              if (e.detail === 0) playTrack(t, items);
             }}
-            onDoubleClick={() => playTrack(t, items)}
           >
             <span>
               {t.title}
@@ -1387,8 +1488,9 @@ export function App() {
             </IconButton>
           )}
           <span className="track-duration">{time(t.duration)}</span>
-          {queueMode ? (
+          {queueMode && (
             <IconButton
+              data-queue-remove=""
               label={`Remove ${t.title} from queue`}
               onClick={() =>
                 setState((s) => ({
@@ -1398,13 +1500,6 @@ export function App() {
               }
             >
               <X size={14} />
-            </IconButton>
-          ) : (
-            <IconButton
-              label={`Options for ${t.title}`}
-              onClick={() => trackActions(t)}
-            >
-              <MoreHorizontal size={16} />
             </IconButton>
           )}
         </div>
@@ -2152,13 +2247,7 @@ export function App() {
             </div>
             <p className="muted">{state.queue.length} songs in this session</p>
             {state.queue.length ? (
-              renderTracks(
-                state.queue
-                  .map((id) => byId.get(id))
-                  .filter((t): t is Track => !!t),
-                true,
-                true,
-              )
+              renderTracks(detailTracks, true, true)
             ) : (
               <p className="detail-empty">
                 Play an album or add songs using their options.
@@ -2198,7 +2287,7 @@ export function App() {
               {rightAlbum.tracks.length} songs ·{" "}
               {time(rightAlbum.tracks.reduce((n, t) => n + t.duration, 0))}
             </p>
-            {renderTracks(rightAlbum.tracks, true)}
+            {renderTracks(detailTracks, true)}
           </>
         ) : (
           <div className="detail-empty">
@@ -2629,106 +2718,6 @@ export function App() {
               Delete playlist
             </button>
           </div>
-        </Modal>
-      )}
-      {modal === "track" && actionTrack && (
-        <Modal title={actionTrack.title} close={() => setModal(null)}>
-          <p className="muted">
-            {actionTrack.artist} · {actionTrack.album}
-          </p>
-          <div className="track-menu">
-            <button
-              className="quiet"
-              disabled={actionTrack.missing}
-              onClick={() => queueTrack(actionTrack, true)}
-            >
-              <SkipForward size={17} />
-              Play next
-            </button>
-            <button
-              className="quiet"
-              disabled={actionTrack.missing}
-              onClick={() => queueTrack(actionTrack, false)}
-            >
-              <ListMusic size={17} />
-              Add to queue
-            </button>
-          </div>
-          <h3>Add to playlist</h3>
-          {data?.playlists.length ? (
-            <div className="dialog-actions">
-              <select
-                aria-label="Choose playlist"
-                value={targetPlaylist}
-                onChange={(e) => setTargetPlaylist(e.target.value)}
-              >
-                <option value="">Choose a playlist…</option>
-                {data.playlists.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="primary"
-                disabled={!targetPlaylist}
-                onClick={async () => {
-                  await appendToPlaylist(targetPlaylist, [actionTrack.id]);
-                }}
-              >
-                Add song
-              </button>
-            </div>
-          ) : (
-            <button
-              className="quiet"
-              onClick={() => makePlaylist(null, [actionTrack.id])}
-            >
-              Create a playlist first
-            </button>
-          )}
-          {activePlaylist && (
-            <button
-              className="quiet"
-              onClick={async () => {
-                try {
-                  await api.playlistTracks(
-                    activePlaylist.id,
-                    activePlaylist.trackIds.filter(
-                      (id) => id !== actionTrack.id,
-                    ),
-                  );
-                  await refresh();
-                  setModal(null);
-                } catch (e) {
-                  fail(e);
-                }
-              }}
-            >
-              Remove from this playlist
-            </button>
-          )}
-          <h3>File information</h3>
-          {actionTrack.missing && (
-            <button
-              className="quiet"
-              disabled={busy}
-              onClick={() => void locateTrack(actionTrack.id)}
-            >
-              Locate File…
-            </button>
-          )}
-          <p className="muted">
-            {actionTrack.locationKind === "managed"
-              ? "Managed copy in Rhythm Media"
-              : "Referenced file · stays in its original location"}
-          </p>
-          <p className="path">{actionTrack.path}</p>
-          <p className="fine-print">
-            {actionTrack.format.toUpperCase()} · {time(actionTrack.duration)} ·{" "}
-            {actionTrack.genre}
-            {actionTrack.year ? ` · ${actionTrack.year}` : ""}
-          </p>
         </Modal>
       )}
       {modal === "info" && actionTrack && (

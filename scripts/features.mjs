@@ -85,6 +85,258 @@ async function menuClick(id) {
     item.click();
   }, id);
 }
+async function compactSelectionAcceptance(page) {
+  const primary = process.platform === "darwin" ? "Meta" : "Control";
+  const panel = page.locator(".detail-panel");
+  const list = () => panel.getByRole("listbox");
+  const row = (id) => panel.locator(`[data-detail-track-id="${id}"]`);
+  const selected = () =>
+    panel
+      .locator('.track-row[aria-selected="true"]')
+      .evaluateAll((rows) => rows.map((row) => row.dataset.detailTrackId));
+  async function context(id) {
+    await app.evaluate(() => {
+      globalThis.__rhythmTestMenu = null;
+    });
+    await row(id).click({ button: "right" });
+    for (let i = 0; i < 100; i++) {
+      if (await app.evaluate(() => !!globalThis.__rhythmTestMenu)) return;
+      await page.waitForTimeout(50);
+    }
+    throw Error("Compact context menu did not appear");
+  }
+  await app.evaluate(({ BrowserWindow, shell }) => {
+    const contents = BrowserWindow.getAllWindows()[0].webContents;
+    const send = contents.send.bind(contents);
+    globalThis.compactActions = [];
+    contents.send = (channel, ...args) => {
+      if (channel === "track:action") globalThis.compactActions.push(args[0]);
+      return send(channel, ...args);
+    };
+    globalThis.compactReveals = [];
+    shell.showItemInFolder = (filename) =>
+      globalThis.compactReveals.push(filename);
+  });
+  await page
+    .locator(".sidebar")
+    .getByRole("button", { name: "Albums", exact: true })
+    .click();
+  await page.locator(".album-cover").first().click();
+  const order = await panel
+    .locator(".track-row")
+    .evaluateAll((rows) => rows.map((row) => row.dataset.detailTrackId));
+  assert(order.length >= 3);
+  const [a, b, c] = order;
+  await row(b).hover();
+  assert.equal(
+    await panel.getByRole("button", { name: /^Options for / }).count(),
+    0,
+  );
+  const layout = await panel.locator(".track-row").evaluateAll((rows) =>
+    rows.map((row) => {
+      const duration = row.querySelector(".track-duration");
+      return {
+        children: [...row.children].map((child) => child.className),
+        trailingSpace:
+          row.getBoundingClientRect().right -
+          duration.getBoundingClientRect().right,
+        padding: parseFloat(getComputedStyle(row).paddingRight),
+      };
+    }),
+  );
+  for (const row of layout) {
+    assert.deepEqual(row.children, [
+      "track-play",
+      "track-title",
+      "track-duration",
+    ]);
+    assert(
+      Math.abs(row.trailingSpace - row.padding) < 1,
+      "duration must end at row padding without an action strip",
+    );
+  }
+  const before = await page
+    .locator("audio")
+    .evaluate((audio) => ({ src: audio.src, paused: audio.paused }));
+  await row(a).locator(".track-title").click();
+  assert.deepEqual(await selected(), [a]);
+  await row(b)
+    .locator(".track-title")
+    .click({ modifiers: [primary] });
+  assert.deepEqual(await selected(), [a, b]);
+  await row(a)
+    .locator(".track-title")
+    .click({ modifiers: [primary] });
+  assert.deepEqual(await selected(), [b]);
+  await row(a).locator(".track-title").click();
+  await row(c)
+    .locator(".track-title")
+    .click({ modifiers: ["Shift"] });
+  assert.deepEqual(await selected(), order.slice(0, 3));
+  assert.deepEqual(
+    await page
+      .locator("audio")
+      .evaluate((audio) => ({ src: audio.src, paused: audio.paused })),
+    before,
+  );
+  await context(b);
+  assert.deepEqual(await selected(), order.slice(0, 3));
+  await page.screenshot({
+    path: path.join(review, "album-detail-selection.png"),
+  });
+  const mix = await page.evaluate(() =>
+    window.rhythm.createPlaylist("Detail selection mix"),
+  );
+  await context(b);
+  await menuClick(`playlist-${mix.id}`);
+  await waitSnapshot(
+    page,
+    (s) => s.playlists.find((p) => p.id === mix.id)?.trackIds.length === 3,
+  );
+  assert.deepEqual(
+    (await snapshot(page)).playlists.find((p) => p.id === mix.id).trackIds,
+    order.slice(0, 3),
+  );
+  // Repeating native playlist addition preserves selection and does not duplicate membership.
+  const bTrack = (await snapshot(page)).tracks.find((t) => t.id === b);
+  await context(b);
+  await menuClick(`playlist-${mix.id}`);
+  assert.deepEqual(
+    (await snapshot(page)).playlists.find((p) => p.id === mix.id).trackIds,
+    order.slice(0, 3),
+  );
+  // Single-track commands retain the clicked row even inside a group.
+  await context(b);
+  await menuClick("track-info");
+  await page.getByRole("dialog", { name: "Track Info", exact: true }).waitFor();
+  assert.deepEqual(
+    await app.evaluate(() => globalThis.compactActions.at(-1).trackIds),
+    [b],
+  );
+  await page.getByRole("button", { name: "Done", exact: true }).click();
+  assert.deepEqual(await selected(), order.slice(0, 3));
+  if (process.platform === "darwin") {
+    await context(b);
+    await menuClick("track-reveal");
+    await page.waitForFunction(
+      () => !document.querySelector('[role="dialog"]'),
+    );
+    assert.deepEqual(
+      await app.evaluate(() => globalThis.compactActions.at(-1).trackIds),
+      [b],
+    );
+    for (let i = 0; i < 100; i++) {
+      if (await app.evaluate(() => globalThis.compactReveals.length)) break;
+      await page.waitForTimeout(50);
+    }
+    assert.deepEqual(await app.evaluate(() => globalThis.compactReveals), [
+      bTrack.path,
+    ]);
+  }
+  await context(order[3]);
+  assert.deepEqual(await selected(), [order[3]]);
+  await row(b)
+    .locator(".track-title")
+    .click({ modifiers: ["Shift"] });
+  assert.deepEqual(await selected(), order.slice(1, 4));
+  await list().press("Home");
+  await list().press("Shift+ArrowDown");
+  await list().press("Shift+ArrowDown");
+  assert.deepEqual(await selected(), order.slice(0, 3));
+  await list().press("Shift+ArrowUp");
+  assert.deepEqual(await selected(), order.slice(0, 2));
+  const transfer = await page.evaluateHandle(() => new DataTransfer());
+  await row(b).dispatchEvent("dragstart", { dataTransfer: transfer });
+  assert.deepEqual(
+    await transfer.evaluate((transfer) =>
+      JSON.parse(transfer.getData("application/x-rhythm-track-ids")),
+    ),
+    [a, b],
+  );
+  await transfer.dispose();
+  await list().press("Shift+F10");
+  await menuClick("track-info");
+  await page.getByRole("dialog", { name: "Track Info", exact: true }).waitFor();
+  assert.deepEqual(
+    await app.evaluate(() => globalThis.compactActions.at(-1).trackIds),
+    [b],
+  );
+  await page.getByRole("button", { name: "Done", exact: true }).click();
+  await row(a).locator(".track-title").dblclick();
+  await page.waitForFunction((id) => {
+    const audio = document.querySelector("audio");
+    return (
+      audio.currentSrc.endsWith(id) && !audio.paused && audio.currentTime > 0.2
+    );
+  }, a);
+  const album = (await snapshot(page)).tracks.find((t) => t.id === a).albumId;
+  const otherAlbum = (await snapshot(page)).tracks.find(
+    (t) => t.albumId !== album,
+  );
+  await page
+    .getByRole("button", {
+      name: `Open ${otherAlbum.album} by ${otherAlbum.albumArtist}`,
+      exact: true,
+    })
+    .click();
+  assert.deepEqual(await selected(), []);
+  await page.getByRole("button", { name: "Show queue", exact: true }).click();
+  assert.deepEqual(await selected(), []);
+  await row(b).hover();
+  assert.equal(
+    await panel.getByRole("button", { name: /^Options for / }).count(),
+    0,
+  );
+  assert.equal(
+    await panel.locator("[data-queue-remove]").count(),
+    order.length,
+  );
+  assert.equal(await row(b).locator(":scope > *").count(), 4);
+  assert.deepEqual(
+    await panel
+      .locator(".track-row")
+      .evaluateAll((rows) => rows.map((row) => row.dataset.detailTrackId)),
+    order,
+  );
+  await row(a).locator(".track-title").click();
+  await row(b)
+    .locator(".track-title")
+    .click({ modifiers: [primary] });
+  await context(b);
+  assert.deepEqual(await selected(), [a, b]);
+  await menuClick(`playlist-${mix.id}`);
+  assert.deepEqual(
+    await app.evaluate(() => globalThis.compactActions.at(-1).trackIds),
+    [a, b],
+  );
+  const queueBefore = (await snapshot(page)).state.queue;
+  await row(b)
+    .getByRole("button", {
+      name: `Remove ${bTrack.title} from queue`,
+      exact: true,
+    })
+    .click();
+  await waitSnapshot(page, (s) => !s.state.queue.includes(b));
+  assert.deepEqual(
+    (await snapshot(page)).state.queue,
+    queueBefore.filter((id) => id !== b),
+  );
+  assert.deepEqual(await selected(), [a]);
+  assert.equal(
+    await page.locator("audio").evaluate((audio) => audio.paused),
+    false,
+  );
+  await page.getByRole("button", { name: "Close queue", exact: true }).click();
+  assert.deepEqual(await selected(), []);
+  await page
+    .locator(".sidebar")
+    .getByRole("button", { name: "Songs", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  console.log(
+    "COMPACT_SELECTION: album/details and queue selection/context/drag/keyboard, collection actions, single Info/Finder and real playback passed",
+  );
+}
 try {
   let page = await launch();
   if (process.platform === "darwin") {
@@ -230,33 +482,24 @@ try {
     return a.currentSrc.endsWith(id) && !a.paused && a.currentTime > 0;
   }, first.id);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
-  await page
-    .locator(".detail-panel")
-    .getByRole("button", { name: `Options for ${first.title}`, exact: true })
-    .first()
-    .click();
-  const picker = page.getByRole("combobox", { name: "Choose playlist" });
-  await picker.focus();
   const firstMix = (await snapshot(page)).playlists.find(
     (p) => p.name === "First mix",
   );
-  await picker.selectOption(firstMix.id);
-  assert(
-    await picker.evaluate((el) => el === document.activeElement),
-    "Playlist selection must retain focus after its state update",
-  );
-  await page.screenshot({ path: path.join(review, "playlist-picker.png") });
-  await page.getByRole("button", { name: "Add song", exact: true }).click();
-  await waitSnapshot(
-    page,
-    (s) => s.playlists.find((p) => p.id === firstMix.id)?.trackIds.length === 1,
-  );
-  // Capture the real native menu model, dispatch its real callbacks, without OS popup automation.
+  // Capture real native menus and dispatch their callbacks without OS popup automation.
   await app.evaluate(({ Menu }) => {
     Menu.prototype.popup = function () {
       globalThis.__rhythmTestMenu = this;
     };
   });
+  await page
+    .locator(`.detail-panel [data-detail-track-id="${first.id}"]`)
+    .click({ button: "right" });
+  await menuClick(`playlist-${firstMix.id}`);
+  await waitSnapshot(
+    page,
+    (s) => s.playlists.find((p) => p.id === firstMix.id)?.trackIds.length === 1,
+  );
+  await compactSelectionAcceptance(page);
   await row().click({ button: "right" });
   const labels = await app.evaluate(() =>
     globalThis.__rhythmTestMenu.items.map((i) => i.label),
@@ -490,9 +733,13 @@ try {
       `Benchmark ${String(i).padStart(5, "0")}`,
       template.artist,
       template.albumArtist,
-      `Benchmark album ${Math.floor(i / 10)}`,
+      i < 230 ? "Large detail album" : `Benchmark album ${Math.floor(i / 10)}`,
       createHash("sha256")
-        .update(`benchmark-album-${Math.floor(i / 10)}`)
+        .update(
+          i < 230
+            ? "large-detail-album"
+            : `benchmark-album-${Math.floor(i / 10)}`,
+        )
         .digest("hex"),
       template.genre,
       2026,
@@ -544,6 +791,56 @@ try {
       launchAndScrollMs: Date.now() - start,
     }),
   );
+  // Compact rendering retains its 200-row paging and displayed album order.
+  await page.locator(".songs-viewport").evaluate((el) => {
+    el.scrollTop = 0;
+    el.scrollLeft = 0;
+  });
+  await page.waitForFunction(() =>
+    document
+      .querySelector(".song-row")
+      ?.textContent.includes("Benchmark 00000"),
+  );
+  await page.locator(".song-row").first().click();
+  const detail = page.locator(".detail-panel");
+  await page.waitForFunction(
+    () => document.querySelectorAll(".detail-panel .track-row").length === 200,
+  );
+  const detailFirst = await detail
+    .locator(".track-row")
+    .first()
+    .getAttribute("data-detail-track-id");
+  await detail.locator(".track-row").first().locator(".track-title").click();
+  await detail
+    .getByRole("button", { name: "Show more tracks (200 of 230)", exact: true })
+    .click();
+  assert.equal(await detail.locator(".track-row").count(), 230);
+  await detail
+    .locator(".track-row")
+    .nth(205)
+    .locator(".track-title")
+    .click({ modifiers: ["Shift"] });
+  assert.equal(
+    await detail.locator('.track-row[aria-selected="true"]').count(),
+    206,
+  );
+  assert.equal(
+    await detail
+      .locator(".track-row")
+      .first()
+      .getAttribute("data-detail-track-id"),
+    detailFirst,
+  );
+  assert((await detail.evaluate((el) => el.scrollTop)) > 0);
+  await detail.getByRole("listbox").press("Home");
+  assert.equal(
+    await detail.locator('.track-row[aria-selected="true"]').count(),
+    1,
+  );
+  assert.equal(
+    await detail.locator(".track-row").first().getAttribute("aria-selected"),
+    "true",
+  );
   for (const [file, hash] of sources)
     assert.equal(
       createHash("sha256")
@@ -559,10 +856,11 @@ try {
           ...(process.platform === "darwin"
             ? ["native Settings menu, existing modal and closed-window reopen"]
             : ["macOS Settings menu absent on this platform"]),
-          "playlist picker focus",
+          "compact lists have no ellipsis/reserved action strip; queue remove control preserved",
           "atomic duplicate-safe append",
           "native context commands",
           "right-click selection and keyboard context menu",
+          "album/details and queue share selection, contextual action scopes and drag payloads",
           "File > New Playlist",
           "row selection and activation",
           "sortable metadata",

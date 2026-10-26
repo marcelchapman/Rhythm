@@ -29,7 +29,10 @@ import {
   type ScanProgress,
   type MediaSettings,
   type ConsolidationResult,
+  type TrackRemovalResult,
 } from "../shared/types.js";
+
+class TrashedTrackRemovalError extends Error {}
 
 export const AUDIO_EXTENSIONS = new Set([
   ".mp3",
@@ -549,21 +552,99 @@ export class Library {
   deletePlaylist(id: string) {
     this.db.prepare("DELETE FROM playlists WHERE id=?").run(id);
   }
-  /** Remove one relationship against current database state, preserving the remaining order. */
-  removeFromPlaylist(playlistId: string, trackId: string) {
+  /** Remove only the requested memberships; preserve remaining positions and order. */
+  removeFromPlaylist(playlistId: string, trackIds: string | string[]) {
+    const tracks = this.removalTracks(
+      Array.isArray(trackIds) ? trackIds : [trackIds],
+    );
     if (!this.db.prepare("SELECT id FROM playlists WHERE id=?").get(playlistId))
       throw new Error("Playlist no longer exists.");
-    this.db
-      .prepare("DELETE FROM playlist_tracks WHERE playlistId=? AND trackId=?")
-      .run(playlistId, trackId);
+    this.db.exec("BEGIN IMMEDIATE");
+    try {
+      const remove = this.db.prepare(
+        "DELETE FROM playlist_tracks WHERE playlistId=? AND trackId=?",
+      );
+      for (const track of tracks) remove.run(playlistId, track.id);
+      this.db.exec("COMMIT");
+    } catch (error) {
+      this.db.exec("ROLLBACK");
+      throw error;
+    }
+  }
+  /** Resolve/classify the entire selection before confirmation or mutation. */
+  removalTracks(ids: string[]) {
+    if (
+      !Array.isArray(ids) ||
+      !ids.length ||
+      ids.length > 50000 ||
+      ids.some((id) => typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
+    )
+      throw new Error("Choose a valid track to remove.");
+    const indexed = new Map(this.tracks().map((track) => [track.id, track]));
+    return [...new Set(ids)].map((id) => {
+      const track = indexed.get(id);
+      if (!track) throw new Error("Track no longer exists.");
+      return track;
+    });
+  }
+  private sameRemovalLocation(before: Track, current: Track | undefined) {
+    return (
+      current &&
+      current.path === before.path &&
+      current.locationKind === before.locationKind &&
+      current.mediaRootId === before.mediaRootId &&
+      current.mediaRelativePath === before.mediaRelativePath
+    );
+  }
+  /** One confirmation, then independent guarded transactions. Failed identities survive. */
+  async deleteTracks(
+    confirmed: Track[],
+    trash: (filename: string) => Promise<void>,
+  ): Promise<TrackRemovalResult> {
+    if (this.scanning)
+      throw new Error("Wait for the current media operation to finish.");
+    const current = this.removalTracks(confirmed.map((track) => track.id));
+    if (
+      current.some((track, i) => !this.sameRemovalLocation(confirmed[i], track))
+    )
+      throw new Error(
+        "The track location changed. Choose Delete from Library again to review it.",
+      );
+    const result: TrackRemovalResult = { removedIds: [], failures: [] };
+    this.scanning = true;
+    try {
+      for (const track of confirmed) {
+        try {
+          if (!this.sameRemovalLocation(track, this.tracks(track.id)[0]))
+            throw new Error(
+              "The track location changed. Choose Delete from Library again to review it.",
+            );
+          await this.deleteTrackEntry(track.id, trash);
+          result.removedIds.push(track.id);
+        } catch (error) {
+          result.failures.push({
+            id: track.id,
+            title: track.title,
+            message: error instanceof Error ? error.message : String(error),
+            fileTrashed: error instanceof TrashedTrackRemovalError,
+          });
+        }
+      }
+      return result;
+    } finally {
+      this.scanning = false;
+    }
   }
   /** Called only after native confirmation. The shell adapter can only trash a validated copy. */
   async deleteTrack(id: string, trash: (filename: string) => Promise<void>) {
-    if (typeof id !== "string" || !/^[a-f0-9]{64}$/.test(id))
-      throw new Error("Choose a valid track to remove.");
-    if (this.scanning)
-      throw new Error("Wait for the current media operation to finish.");
-    this.scanning = true;
+    const tracks = this.removalTracks([id]);
+    const result = await this.deleteTracks(tracks, trash);
+    if (result.failures.length) throw new Error(result.failures[0].message);
+  }
+  private async deleteTrackEntry(
+    id: string,
+    trash: (filename: string) => Promise<void>,
+  ) {
     let trashed = false;
     try {
       const track = this.tracks(id)[0];
@@ -628,13 +709,11 @@ export class Library {
     } catch (error) {
       if (trashed) {
         await this.checkTrack(id).catch(() => {});
-        throw new Error(
+        throw new TrashedTrackRemovalError(
           `The file was moved to the Trash, but its library entry could not be removed. Restore it from Trash or use Locate File to recover it. ${error instanceof Error ? error.message : String(error)}`,
         );
       }
       throw error;
-    } finally {
-      this.scanning = false;
     }
   }
   playlistTracks(id: string, trackIds: string[]) {

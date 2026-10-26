@@ -19,7 +19,7 @@ Rhythm’s long-term scope includes macOS, Windows, Linux, Android, iOS, and clo
 - Album details and track list; play/pause, previous/next, seeking, time, volume/mute, shuffle, and repeat.
 - Queue inspection, play-next, add/remove queue entries, and persistent listening state.
 - Create, rename, delete, and add/remove songs from playlists.
-- Native track context menus for playback, queue, playlists, favourites, read-only Track Info and confirmed single-track library removal; File → New Playlist (Command/Ctrl+N).
+- Native track context menus for playback, queue, playlists, favourites, read-only Track Info and confirmed selection-based library removal; File → New Playlist (Command/Ctrl+N).
 - File → Import Playlist accepts UTF-8 M3U/M3U8 and safely indexes new local audio; File → Export Playlist writes M3U8 in playlist order.
 - Drop local audio files/folders to add them using the selected reference/copy policy; drop M3U/M3U8 playlists to import them; drag library tracks onto sidebar playlists. macOS Open With/Dock playlist opens queue safely through startup or library setup.
 - Manual folder rescanning, import reports, missing-file indication, and playback errors.
@@ -67,7 +67,7 @@ Rhythm's management authority ends at its configured media environment. External
 
 ## Track information
 
-Right-click a track and choose **Track Info…** to inspect stored metadata, file path, referenced/managed ownership and availability. In a multi-selection it shows the clicked row while preserving the selection; keyboard context activation uses the existing selected-row target. This works across the shared Track List views. There is no trailing action column and no metadata editing/tag writing. Composer, track/disc totals and play count are omitted because the current model does not store them.
+Right-click a track and choose **Track Info…** to inspect stored metadata, file path, referenced/managed ownership and availability. In a multi-selection it shows the clicked row while preserving the selection; keyboard context activation uses the focused row. This works across the shared Track List views. There is no trailing action column and no metadata editing/tag writing. Composer, track/disc totals and play count are omitted because the current model does not store them.
 
 On macOS, **Show in Finder** reveals the clicked track's currently resolved audio file, for both references and managed copies. It only navigates; it does not change the file or ownership. A missing/unavailable audio file produces an error with a Locate File suggestion, without opening a fallback folder.
 
@@ -75,9 +75,9 @@ Locate updates the existing referenced track, including when copy-on-add is enab
 
 ## Removing tracks
 
-Right-click a track in a playlist for **Remove from Playlist** (membership only) or **Delete from Library…** (complete Rhythm identity). Other track contexts offer only Delete from Library. These commands act on the clicked track, including within a multi-selection; bulk deletion is not implemented.
+Right-click a track in a playlist for **Remove from Playlist** (membership only) or **Delete from Library…** (complete Rhythm identity). Other track contexts offer only Delete from Library. These commands act on the current selection. Command-click on macOS (Control-click on Linux/Windows) toggles rows; Shift-click selects a range. Right-click inside a selection preserves it, while right-click outside it selects that row. Track Info and Show in Finder remain single-row actions.
 
-Delete from Library always asks for confirmation. Referenced audio stays at its original location. A managed copy is moved to the operating system Trash only after root/path, file identity and import-receipt validation; a database pathname alone grants no Trash authority. All playlist memberships, favourite state and queue references are removed. Deleting the current track stops playback and clears the player. Cancellation changes nothing; a Trash failure retains the identity. A database failure after Trash explicitly reports the partial outcome and retains the entry for recovery using Trash or Locate File. Missing, replaced or unverifiable managed copies are retained with an error rather than silently removed.
+Delete from Library asks once for the entire selection, explicitly counting managed copies that will move to Trash and references whose originals stay untouched. Referenced audio stays at its original location. A managed copy is moved to the operating system Trash only after root/path, file identity and import-receipt validation; a database pathname alone grants no Trash authority. All playlist memberships, favourite state and queue references are removed. Deleting the current track stops playback and clears the player. Cancellation changes nothing; a Trash failure retains the identity. A database failure after Trash explicitly reports the partial outcome and retains the entry for recovery using Trash or Locate File. Missing, replaced or unverifiable managed copies are retained with an error rather than silently removed. Bulk execution continues with other tracks, reports the removed/retained counts and failure reasons, and cleans queue/player state only for successful deletions. An affected current file already moved to Trash is paused even if its identity had to be retained.
 
 Only dedicated sacrificial media should be used for initial manual acceptance. See [TRACK-REMOVAL.md](docs/TRACK-REMOVAL.md) for tests, recovery limits and the acceptance checklist. Explicit rescanning of a retained source folder may index a previously removed referenced file again; this feature does not create exclusion rules.
 
@@ -169,8 +169,8 @@ This iteration was developed and run on macOS. The user reports the preceding ch
 
 - No cloud sync, mobile clients, Windows release, metadata editing, or automatic filesystem watching in 0.1.
 - No gapless/crossfade, ReplayGain, equalizer, audio-device picker, or bit-perfect output guarantee. Volume uses the operating system’s default output device.
-- No playlist track-reorder UI, tag writing, automatic reorganization of existing files, bulk track deletion or CD import. A queue contains unique tracks and supports basic next/add/remove operations. Playlist interchange is local-file UTF-8 M3U/M3U8 only; repeated song references collapse to their first occurrence.
-- Track List presentation is application/profile-global. Sort/selection/scroll are local mounted-view state and reset to the view's defaults when re-entered. Side-panel queue/album rows remain compact contextual lists.
+- No playlist track-reorder UI, tag writing, automatic reorganization of existing files, album-level track deletion or CD import. A queue contains unique tracks and supports basic next/add/remove operations. Playlist interchange is local-file UTF-8 M3U/M3U8 only; repeated song references collapse to their first occurrence.
+- Track List presentation is application/profile-global. Sort/selection/scroll are local mounted-view state and reset to the view's defaults when re-entered. Side-panel queue/album rows retain their compact layout and share the same selection model and contextual action scope. Their selections reset when switching albums or between album/queue surfaces; Show more preserves the selection anchor. Plain row/title clicks select, while play controls, double-click and Enter play.
 - Metadata is cached by file size, modification time, and extraction version; a migration may require one rescan to backfill new fields. Only embedded artwork is used.
 - SQLite artwork caching can grow the database for large collections. No cache-size UI or automated pruning yet.
 - Songs rendering was checked with 10,014 synthetic records, not a full large-collection import benchmark. Snapshots and sorting still process the full collection; synchronous SQLite writes can cause latency and scans have no cancel control. The right panel initially shows 200 tracks with a Show more control.
