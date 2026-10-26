@@ -441,10 +441,35 @@ try {
       s.tracks.find((t) => t.id === a.id).path === finalPath &&
       !s.tracks.find((t) => t.id === a.id).missing,
   );
+  // The DB path changes before decoder preparation and the recovery UI finish.
+  // Select only after that operation settles, then observe each React selection
+  // before the next gesture/assertion (Locator.count() itself never waits).
+  await p
+    .getByText(
+      "File located. The track is ready to play; its original stays unchanged.",
+      { exact: true },
+    )
+    .waitFor();
+  const waitSelection = (ids) =>
+    p.waitForFunction(
+      (ids) => {
+        const selected = [
+          ...document.querySelectorAll('.song-row[aria-selected="true"]'),
+        ].map((row) => row.dataset.trackId);
+        return (
+          selected.length === ids.length &&
+          ids.every((id) => selected.includes(id))
+        );
+      },
+      ids,
+      { timeout: 10000 },
+    );
   await row(p, a.id).click();
+  await waitSelection([a.id]);
   await row(p, b.id).click({
     modifiers: [process.platform === "darwin" ? "Meta" : "Control"],
   });
+  await waitSelection([a.id, b.id]);
   assert.equal(await p.locator('.song-row[aria-selected="true"]').count(), 2);
   await inspect(p, b.id, b.title);
   await p.screenshot({ path: path.join(review, "track-info-basic.png") });
