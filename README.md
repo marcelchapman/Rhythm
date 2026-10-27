@@ -25,6 +25,7 @@ Rhythm’s long-term scope includes macOS, Windows, Linux, Android, iOS, and clo
 - Drop local audio files/folders to add them using the selected reference/copy policy; drop M3U/M3U8 playlists to import them; drag library tracks onto sidebar playlists. macOS Open With/Dock playlist opens queue safely through startup or library setup.
 - Manual folder rescanning, import reports, missing-file indication, and playback errors.
 - Native folder dialogs, application menus, media-session integration, keyboard focus, and desktop window resizing.
+- Persistent collection summaries above playback: Songs and track collections show count, indexed duration and audio-file storage; album grids show established album identities and storage. Selection and sorting leave totals unchanged. See [LIBRARY-SUMMARY.md](docs/LIBRARY-SUMMARY.md) for scope, units and unknown metadata.
 
 ## Run from source
 

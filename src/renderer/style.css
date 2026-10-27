@@ -293,6 +293,30 @@ button {
   flex: 1;
   min-height: 0;
 }
+.collection-summary {
+  flex: 0 0 auto;
+  padding: 4px 26px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+.collection-summary > span {
+  display: inline-block;
+  white-space: pre;
+}
+.detail-pane {
+  border-left: 1px solid var(--line);
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.detail-pane > .collection-summary {
+  padding-left: 25px;
+  padding-right: 25px;
+}
 .section-heading {
   display: flex;
   align-items: center;
@@ -429,7 +453,7 @@ select option {
   text-underline-offset: 3px;
 }
 .detail-panel {
-  border-left: 1px solid var(--line);
+  flex: 1;
   padding: 66px 25px 26px;
   overflow: auto;
   min-height: 0;
@@ -1042,6 +1066,10 @@ input[type="range"]:disabled {
     padding-left: 22px;
     padding-right: 22px;
   }
+  .workspace > .collection-summary {
+    padding-left: 22px;
+    padding-right: 22px;
+  }
   .album-grid {
     gap: 22px 16px;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1049,7 +1077,8 @@ input[type="range"]:disabled {
   .recent-section .album-card:last-child {
     display: none;
   }
-  .detail-panel {
+  .detail-panel,
+  .detail-pane > .collection-summary {
     padding-left: 20px;
     padding-right: 20px;
   }
@@ -1088,7 +1117,8 @@ input[type="range"]:disabled {
     padding-left: 10px;
     gap: 11px;
   }
-  .detail-panel {
+  .detail-panel,
+  .detail-pane > .collection-summary {
     padding-left: 16px;
     padding-right: 16px;
   }

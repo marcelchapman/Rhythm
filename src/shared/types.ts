@@ -12,6 +12,8 @@ export interface Track {
   disc: number;
   track: number;
   duration: number;
+  /** Last indexed audio-file byte count; null when no trustworthy size is stored. */
+  fileSize: number | null;
   addedAt: number;
   favorite: boolean;
   missing: boolean;

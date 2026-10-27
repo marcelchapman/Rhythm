@@ -193,12 +193,18 @@ export class Library {
 
   tracks(id?: string): Track[] {
     const query = this.db.prepare(
-      `SELECT t.id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,favorite,missing,format,bpm,comments,bitRate,codec,artwork IS NOT NULL AS hasArtwork,
+      `SELECT t.id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,size AS fileSize,addedAt,favorite,missing,format,bpm,comments,bitRate,codec,artwork IS NOT NULL AS hasArtwork,
         COALESCE(l.kind,'referenced') AS locationKind,l.mediaRootId,l.relativePath AS mediaRelativePath FROM tracks t LEFT JOIN track_locations l ON l.trackId=t.id ${id ? "WHERE t.id=?" : ""} ORDER BY album COLLATE NOCASE, disc, track, title COLLATE NOCASE`,
     );
     const rows = id ? query.all(id) : query.all();
     return rows.map((row) => ({
       ...row,
+      fileSize:
+        typeof row.fileSize === "number" &&
+        Number.isSafeInteger(row.fileSize) &&
+        row.fileSize >= 0
+          ? row.fileSize
+          : null,
       favorite: !!row.favorite,
       missing: !!row.missing,
       hasArtwork: !!row.hasArtwork,

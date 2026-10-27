@@ -6,6 +6,10 @@ import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { Library } from "../dist/domain/library.js";
 import { wavFixture } from "../tests/fixtures.ts";
+import {
+  collectionTotals,
+  collectionSummaryText,
+} from "../src/shared/collection-summary.ts";
 const root = await mkdtemp(path.join(tmpdir(), "rhythm-feature-test-"));
 const library = path.join(root, "Library");
 const music = path.join(root, "Music");
@@ -765,6 +769,13 @@ try {
       .getAttribute("aria-rowcount"),
     "10015",
   );
+  const benchmarkTracks = (await snapshot(page)).tracks;
+  const benchmarkSummary = collectionSummaryText(
+    collectionTotals(benchmarkTracks),
+  );
+  const summary = page.locator(".workspace > .collection-summary");
+  assert.equal(await summary.innerText(), benchmarkSummary);
+  assert(benchmarkSummary.startsWith("10,014 songs · "));
   await page
     .locator('[data-column-id="artist"]')
     .dragTo(page.locator('[data-column-id="title"]'), {
@@ -783,12 +794,24 @@ try {
   await page.waitForFunction(
     () => !!document.querySelector('[aria-rowindex="10015"]'),
   );
+  await page
+    .locator('.song-row[aria-rowindex="10015"]')
+    .scrollIntoViewIfNeeded();
+  const finalRow = await page
+    .locator('.song-row[aria-rowindex="10015"]')
+    .boundingBox();
+  const footer = await summary.boundingBox();
+  assert(
+    finalRow && footer && finalRow.y + finalRow.height <= footer.y,
+    "Final virtualized row must remain accessible above the summary",
+  );
   console.log(
     "VIRTUAL_TABLE",
     JSON.stringify({
       tracks: 10014,
       renderedRows: await page.locator(".song-row").count(),
       launchAndScrollMs: Date.now() - start,
+      summary: await summary.innerText(),
     }),
   );
   // Compact rendering retains its 200-row paging and displayed album order.
@@ -805,6 +828,15 @@ try {
   const detail = page.locator(".detail-panel");
   await page.waitForFunction(
     () => document.querySelectorAll(".detail-panel .track-row").length === 200,
+  );
+  const expectedAlbumSummary = collectionSummaryText(
+    collectionTotals(
+      benchmarkTracks.filter((t) => t.album === "Large detail album"),
+    ),
+  );
+  assert.equal(
+    await page.locator(".detail-pane > .collection-summary").innerText(),
+    expectedAlbumSummary,
   );
   const detailFirst = await detail
     .locator(".track-row")
@@ -832,6 +864,11 @@ try {
     detailFirst,
   );
   assert((await detail.evaluate((el) => el.scrollTop)) > 0);
+  assert.equal(await summary.innerText(), benchmarkSummary);
+  assert.equal(
+    await page.locator(".detail-pane > .collection-summary").innerText(),
+    expectedAlbumSummary,
+  );
   await detail.getByRole("listbox").press("Home");
   assert.equal(
     await detail.locator('.track-row[aria-selected="true"]').count(),

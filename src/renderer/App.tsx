@@ -1,5 +1,6 @@
 import { MediaSource } from "./media-source";
 import { TrackList } from "./TrackList";
+import { CollectionSummary } from "./CollectionSummary";
 import { useTrackSelection } from "./use-track-selection";
 import { selectionModifier } from "./track-selection";
 import { TRACK_COLUMNS } from "./track-columns";
@@ -1035,6 +1036,37 @@ export function App() {
     () => [...new Set(tracks.flatMap((t) => t.genre.split(", ")))].sort(),
     [tracks],
   );
+  const showsPlaylists = view === "Playlists" && !query;
+  const showsGroups =
+    (view === "Artists" || view === "Genres") && !group && !query;
+  const showsTracks =
+    !!query ||
+    !!activePlaylist ||
+    ["Songs", "Favourites"].includes(view) ||
+    ((view === "Artists" || view === "Genres") && !!group) ||
+    layout === "list";
+  const representedTracks = useMemo(() => {
+    if (showsPlaylists) {
+      // The directory represents playlists, without double-counting shared members.
+      const ids = new Set(data?.playlists.flatMap((p) => p.trackIds));
+      return tracks.filter((t) => ids.has(t.id));
+    }
+    if (showsGroups) return tracks; // These directory cards use the complete library.
+    if (showsTracks) return visible;
+    // A displayed album card represents its complete album, including under a genre filter.
+    return visibleAlbums.flatMap((album) => album.tracks);
+  }, [
+    showsPlaylists,
+    showsGroups,
+    showsTracks,
+    data?.playlists,
+    tracks,
+    visible,
+    visibleAlbums,
+  ]);
+  const summaryLabel = query
+    ? "Search results"
+    : (activePlaylist?.name ?? group ?? (view === "Home" ? "Albums" : view));
   const makePlaylist = (p: Playlist | null = null, trackIds: string[] = []) => {
     setPendingPlaylistTracks(trackIds);
     setEditPlaylist(p);
@@ -2136,7 +2168,7 @@ export function App() {
                     <span> / {group}</span>
                   </button>
                 )}
-                {view === "Playlists" && !query ? (
+                {showsPlaylists ? (
                   <div className="playlist-grid">
                     {data.playlists.map((p) => (
                       <button
@@ -2158,9 +2190,7 @@ export function App() {
                       <small>Make a mix of your own.</small>
                     </button>
                   </div>
-                ) : (view === "Artists" || view === "Genres") &&
-                  !group &&
-                  !query ? (
+                ) : showsGroups ? (
                   <div className="group-list">
                     {groups.map((g) => {
                       const items = tracks.filter((t) =>
@@ -2208,11 +2238,7 @@ export function App() {
                       </button>
                     )}
                   </div>
-                ) : query ||
-                  activePlaylist ||
-                  ["Songs", "Favourites"].includes(view) ||
-                  ((view === "Artists" || view === "Genres") && !!group) ||
-                  layout === "list" ? (
+                ) : showsTracks ? (
                   <TrackList
                     key={`${view}\0${group}\0${query ? "search" : "browse"}`}
                     label={
@@ -2248,9 +2274,23 @@ export function App() {
             </>
           )}
         </div>
+        {data?.libraryPath && (
+          <CollectionSummary
+            tracks={representedTracks}
+            label={summaryLabel}
+            kind={
+              showsPlaylists
+                ? "playlists"
+                : showsGroups || showsTracks
+                  ? "songs"
+                  : "albums"
+            }
+            playlists={data.playlists.length}
+          />
+        )}
       </main>
       <aside
-        className="detail-panel"
+        className="detail-pane"
         aria-label={showQueue ? "Queue" : "Album details"}
         onContextMenu={(e) => {
           if (
@@ -2264,85 +2304,95 @@ export function App() {
           }
         }}
       >
-        {showQueue ? (
-          <>
-            <div className="detail-heading">
-              <h2>Queue</h2>
-              <IconButton
-                label="Close queue"
-                onClick={() => setShowQueue(false)}
-              >
-                <X />
-              </IconButton>
-            </div>
-            <p className="muted">{state.queue.length} songs in this session</p>
-            {state.queue.length ? (
-              renderTracks(detailTracks, true, true)
-            ) : (
-              <p className="detail-empty">
-                Play an album or add songs using their options.
+        <div className="detail-panel">
+          {showQueue ? (
+            <>
+              <div className="detail-heading">
+                <h2>Queue</h2>
+                <IconButton
+                  label="Close queue"
+                  onClick={() => setShowQueue(false)}
+                >
+                  <X />
+                </IconButton>
+              </div>
+              <p className="muted">
+                {state.queue.length} songs in this session
               </p>
-            )}
-          </>
-        ) : rightAlbum ? (
-          <>
-            <Art
-              track={
-                rightAlbum.tracks.find((t) => t.hasArtwork) ??
-                rightAlbum.tracks[0]
-              }
-              className="detail-art"
-            />
-            <div
-              className="detail-title"
-              role="group"
-              tabIndex={0}
-              aria-label={`Album ${rightAlbum.name} by ${rightAlbum.artist}`}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                void api.showAlbumMenu(rightAlbum.id).catch(fail);
-              }}
-              onKeyDown={(e) => {
-                if (
-                  e.key === "ContextMenu" ||
-                  (e.key === "F10" && e.shiftKey)
-                ) {
+              {state.queue.length ? (
+                renderTracks(detailTracks, true, true)
+              ) : (
+                <p className="detail-empty">
+                  Play an album or add songs using their options.
+                </p>
+              )}
+            </>
+          ) : rightAlbum ? (
+            <>
+              <Art
+                track={
+                  rightAlbum.tracks.find((t) => t.hasArtwork) ??
+                  rightAlbum.tracks[0]
+                }
+                className="detail-art"
+              />
+              <div
+                className="detail-title"
+                role="group"
+                tabIndex={0}
+                aria-label={`Album ${rightAlbum.name} by ${rightAlbum.artist}`}
+                onContextMenu={(e) => {
                   e.preventDefault();
                   void api.showAlbumMenu(rightAlbum.id).catch(fail);
-                }
-              }}
-            >
-              <div>
-                <h2>{rightAlbum.name}</h2>
-                <p>{rightAlbum.artist}</p>
-              </div>
-              <IconButton
-                label={`Play ${rightAlbum.name}`}
-                onClick={() =>
-                  playTrack(
-                    rightAlbum.tracks.find((t) => !t.missing) ??
-                      rightAlbum.tracks[0],
-                    rightAlbum.tracks,
-                  )
-                }
+                }}
+                onKeyDown={(e) => {
+                  if (
+                    e.key === "ContextMenu" ||
+                    (e.key === "F10" && e.shiftKey)
+                  ) {
+                    e.preventDefault();
+                    void api.showAlbumMenu(rightAlbum.id).catch(fail);
+                  }
+                }}
               >
-                <Play />
-              </IconButton>
+                <div>
+                  <h2>{rightAlbum.name}</h2>
+                  <p>{rightAlbum.artist}</p>
+                </div>
+                <IconButton
+                  label={`Play ${rightAlbum.name}`}
+                  onClick={() =>
+                    playTrack(
+                      rightAlbum.tracks.find((t) => !t.missing) ??
+                        rightAlbum.tracks[0],
+                      rightAlbum.tracks,
+                    )
+                  }
+                >
+                  <Play />
+                </IconButton>
+              </div>
+              <p className="album-meta">
+                {rightAlbum.tracks[0].year || ""}
+                {rightAlbum.tracks[0].year ? " · " : ""}
+                {rightAlbum.tracks.length} songs ·{" "}
+                {time(rightAlbum.tracks.reduce((n, t) => n + t.duration, 0))}
+              </p>
+              {renderTracks(detailTracks, true)}
+            </>
+          ) : (
+            <div className="detail-empty">
+              <Disc3 size={44} strokeWidth={1} />
+              <h3>A closer listen.</h3>
+              <p>Select an album to explore its tracks.</p>
             </div>
-            <p className="album-meta">
-              {rightAlbum.tracks[0].year || ""}
-              {rightAlbum.tracks[0].year ? " · " : ""}
-              {rightAlbum.tracks.length} songs ·{" "}
-              {time(rightAlbum.tracks.reduce((n, t) => n + t.duration, 0))}
-            </p>
-            {renderTracks(detailTracks, true)}
-          </>
-        ) : (
-          <div className="detail-empty">
-            <Disc3 size={44} strokeWidth={1} />
-            <h3>A closer listen.</h3>
-            <p>Select an album to explore its tracks.</p>
-          </div>
+          )}
+        </div>
+        {(showQueue || rightAlbum) && (
+          <CollectionSummary
+            tracks={detailTracks}
+            label={showQueue ? "Queue" : `Album ${rightAlbum!.name}`}
+          />
         )}
       </aside>
       <footer className="player">
