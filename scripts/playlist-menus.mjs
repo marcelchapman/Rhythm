@@ -64,6 +64,15 @@ async function launch() {
   page = await app.firstWindow();
   page.setDefaultTimeout(30000);
   await page.waitForSelector("h1");
+  // Native macOS window constraints can start below the 1050px breakpoint,
+  // which intentionally hides history controls. Exercise history at a known size.
+  const initialWidth = await page.evaluate(() => innerWidth);
+  await app.evaluate(({ BrowserWindow }) =>
+    BrowserWindow.getAllWindows()[0].setSize(1464, 940),
+  );
+  await page.waitForFunction(() => innerWidth === 1464);
+  await page.getByRole("button", { name: "Go back", exact: true }).waitFor();
+  console.log("PLAYLIST_MENU_VIEWPORT", { initialWidth, width: 1464 });
   await app.evaluate(({ Menu, dialog, shell }) => {
     globalThis.playlistMenu = null;
     globalThis.playlistDialogs = [];
@@ -422,7 +431,17 @@ try {
   await app.close();
   app = null;
   await launch();
+  // Restart restores the current view, not its navigation history. Establish a
+  // distinct previous route before checking deletion's history reconciliation.
+  await sidebar(open.name).waitFor();
+  await nav("Songs");
+  await contextIs("Songs");
   await nav(open.name);
+  await contextIs(open.name);
+  const back = page.getByRole("button", { name: "Go back", exact: true }),
+    forward = page.getByRole("button", { name: "Go forward", exact: true });
+  assert.equal(await back.isEnabled(), true);
+  assert.equal(await forward.isEnabled(), false);
   for (const copy of copies) await sidebar(copy.name).waitFor();
   assert.deepEqual(
     (await snapshot()).playlists.find((p) => p.id === copies[0].id).trackIds,
@@ -440,9 +459,17 @@ try {
   await deleted(open, true);
   await contextIs("Playlists");
   await unchangedPlayback(a.id);
-  await page.getByRole("button", { name: "Go back", exact: true }).click();
+  await back.click();
+  // The heading stays Playlists for the sanitized deleted route. An enabled
+  // Forward button proves that Back has actually moved the history index.
+  await forward.and(page.locator(":enabled")).waitFor();
   await contextIs("Playlists");
-  await page.getByRole("button", { name: "Go forward", exact: true }).click();
+  await back.click();
+  await contextIs("Songs");
+  await forward.click();
+  await contextIs("Playlists");
+  await forward.click();
+  await forward.and(page.locator(":disabled")).waitFor();
   await contextIs("Playlists");
   await until(async () => (await snapshot()).state.view === "Playlists");
   await nav("Songs");
