@@ -255,14 +255,18 @@ try {
     dialog.showSaveDialog = async () => ({ canceled: true });
   });
   await page.getByRole("button", { name: "Export…", exact: true }).click();
-  await page.waitForFunction(() => !document.querySelector(".notice .spin"));
+  await page.waitForFunction(
+    () => !document.querySelector(".sidebar-bottom button").disabled,
+  );
   await page.getByRole("button", { name: "Close dialog", exact: true }).click();
   const count = (await snapshot(page)).playlists.length;
   await app.evaluate(({ dialog }) => {
     dialog.showOpenDialog = async () => ({ canceled: true, filePaths: [] });
   });
   await command("Import Playlist…");
-  await page.waitForFunction(() => !document.querySelector(".notice .spin"));
+  await page.waitForFunction(
+    () => !document.querySelector(".sidebar-bottom button").disabled,
+  );
   assert.equal((await snapshot(page)).playlists.length, count);
   await app.close();
   app = undefined;

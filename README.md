@@ -19,6 +19,7 @@ Rhythm’s long-term scope includes macOS, Windows, Linux, Android, iOS, and clo
 - Album details and track list; play/pause, previous/next, seeking, time, volume/mute, shuffle, and repeat.
 - Queue inspection, play-next, add/remove queue entries, and persistent listening state.
 - Create, rename, delete, and add/remove songs from playlists.
+- Right-click a sidebar playlist for native **Export Playlist…**, **Duplicate Playlist** and **Delete Playlist…** actions. Actions target that playlist without opening it. Copies have independent identities and ordered memberships; native deletion confirmation preserves library tracks and audio. See [PLAYLIST-CONTEXT-MENU.md](docs/PLAYLIST-CONTEXT-MENU.md).
 - Native track context menus for playback, queue, playlists, favourites, read-only Track Info and confirmed selection-based library removal; File → New Playlist (Command/Ctrl+N).
 - Native album context menus retain collection actions and add **Delete Album…** plus macOS **Show in Finder**, using the album's exact identity and the existing guarded track-removal engine.
 - File → Import Playlist accepts UTF-8 M3U/M3U8 and safely indexes new local audio; File → Export Playlist writes M3U8 in playlist order.

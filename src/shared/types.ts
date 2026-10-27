@@ -117,7 +117,14 @@ export type TrackAction = {
   playlistId?: string;
   albumId?: string;
 };
+export interface PlaylistAction {
+  command: "export" | "duplicate" | "delete";
+  playlistId: string;
+}
 export interface RhythmAPI {
+  showPlaylistMenu(id: string): Promise<void>;
+  onPlaylistAction(callback: (action: PlaylistAction) => void): () => void;
+  duplicatePlaylist(id: string): Promise<Playlist>;
   checkTrack(id: string): Promise<{ missing: boolean }>;
   revealTrack(id: string): Promise<void>;
   revealAlbum(id: string): Promise<void>;
@@ -162,7 +169,7 @@ export interface RhythmAPI {
   favorite(id: string): Promise<void>;
   createPlaylist(name: string): Promise<Playlist>;
   renamePlaylist(id: string, name: string): Promise<void>;
-  deletePlaylist(id: string): Promise<void>;
+  deletePlaylist(id: string): Promise<boolean>;
   playlistTracks(id: string, trackIds: string[]): Promise<void>;
   saveState(state: PlayerState): Promise<void>;
   onProgress(callback: (progress: ScanProgress) => void): () => void;

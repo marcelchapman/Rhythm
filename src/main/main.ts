@@ -19,7 +19,12 @@ import {
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Library } from "../domain/library.js";
-import { defaultState, type TrackAction, type Track } from "../shared/types.js";
+import {
+  defaultState,
+  type TrackAction,
+  type Track,
+  type PlaylistAction,
+} from "../shared/types.js";
 import { mediaResponse } from "./media.js";
 import { normalizeViewPreferences } from "../shared/preferences.js";
 import {
@@ -710,8 +715,64 @@ function handlers() {
   handle("playlist:rename", (id: string, name: string) =>
     requireLibrary().renamePlaylist(id, name),
   );
+  handle("playlist:menu", (id: string) => {
+    const l = requireLibrary();
+    if (!l.playlists().some((playlist) => playlist.id === id))
+      throw new Error("Playlist no longer exists.");
+    const action = (command: PlaylistAction["command"]) => () =>
+      win?.webContents.send("playlist:action", {
+        command,
+        playlistId: id,
+      } satisfies PlaylistAction);
+    const enabled = !playlistIO && !l.scanning && !choosingLibrary;
+    Menu.buildFromTemplate([
+      {
+        id: "playlist-export",
+        label: "Export Playlist…",
+        enabled,
+        click: action("export"),
+      },
+      {
+        id: "playlist-duplicate",
+        label: "Duplicate Playlist",
+        enabled,
+        click: action("duplicate"),
+      },
+      {
+        id: "playlist-delete",
+        label: "Delete Playlist…",
+        enabled,
+        click: action("delete"),
+      },
+    ]).popup({ window: win! });
+  });
+  handle("playlist:duplicate", (id: string) =>
+    playlistOperation(async (l) => l.duplicatePlaylist(id)),
+  );
   handle("playlist:delete", (id: string) =>
-    requireLibrary().deletePlaylist(id),
+    playlistOperation(async (l) => {
+      const playlist = l.playlists().find((playlist) => playlist.id === id);
+      if (!playlist) throw new Error("Playlist no longer exists.");
+      const result = await dialog.showMessageBox(win!, {
+        type: "warning",
+        title: "Delete Playlist",
+        message: `Delete “${playlist.name}”?`,
+        detail:
+          "Only this playlist will be deleted. Its songs remain in your library and your audio files stay unchanged.",
+        buttons: ["Cancel", "Delete Playlist"],
+        defaultId: 0,
+        cancelId: 0,
+        noLink: true,
+      });
+      if (result.response !== 1) return false;
+      if (
+        l.playlists().find((current) => current.id === id)?.name !==
+        playlist.name
+      )
+        throw new Error("The playlist changed. Choose Delete Playlist again.");
+      l.deletePlaylist(id);
+      return true;
+    }),
   );
   handle("playlist:tracks", (id: string, ids: string[]) =>
     requireLibrary().playlistTracks(id, ids),

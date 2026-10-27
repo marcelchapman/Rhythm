@@ -4,8 +4,16 @@ import type {
   ScanProgress,
   RhythmAPI,
   TrackAction,
+  PlaylistAction,
 } from "../shared/types.js";
 const api: RhythmAPI = {
+  showPlaylistMenu: (id) => ipcRenderer.invoke("playlist:menu", id),
+  duplicatePlaylist: (id) => ipcRenderer.invoke("playlist:duplicate", id),
+  onPlaylistAction: (callback) => {
+    const listener = (_: unknown, action: PlaylistAction) => callback(action);
+    ipcRenderer.on("playlist:action", listener);
+    return () => ipcRenderer.removeListener("playlist:action", listener);
+  },
   checkTrack: (id) => ipcRenderer.invoke("track:check", id),
   revealTrack: (id) => ipcRenderer.invoke("track:reveal", id),
   revealAlbum: (id) => ipcRenderer.invoke("album:reveal", id),

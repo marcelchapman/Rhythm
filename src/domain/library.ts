@@ -591,6 +591,25 @@ export class Library {
       throw new Error("Use a playlist name between 1 and 120 characters.");
     return name.trim();
   }
+  duplicatePlaylist(id: string): Playlist {
+    const playlists = this.playlists();
+    const source = playlists.find((playlist) => playlist.id === id);
+    if (!source) throw new Error("Playlist no longer exists.");
+    const names = new Set(
+      playlists.map((playlist) => playlist.name.toLocaleLowerCase()),
+    );
+    for (let number = 1; ; number++) {
+      const suffix = number === 1 ? " copy" : ` copy ${number}`;
+      // Keep the existing 120 UTF-16-unit limit without splitting a surrogate pair.
+      const base = source.name
+        .slice(0, 120 - suffix.length)
+        .replace(/[\uD800-\uDBFF]$/, "")
+        .trimEnd();
+      const name = `${base}${suffix}`;
+      if (!names.has(name.toLocaleLowerCase()))
+        return this.createPlaylist(name, source.trackIds);
+    }
+  }
   renamePlaylist(id: string, name: string) {
     this.db
       .prepare("UPDATE playlists SET name=? WHERE id=?")

@@ -11,7 +11,11 @@ import {
 import type { DesktopPlaylistEvent } from "../shared/types";
 import type { PlaylistImportResult } from "../shared/types";
 import { TRACK_DRAG_TYPE, dragTrackIds } from "./track-columns";
-import type { TrackAction, ConsolidationResult } from "../shared/types";
+import type {
+  TrackAction,
+  ConsolidationResult,
+  PlaylistAction,
+} from "../shared/types";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Activity,
@@ -195,6 +199,7 @@ export function App() {
     () => {},
   );
   const playlistCommandRef = useRef<(command: string) => void>(() => {});
+  const playlistActionRef = useRef<(action: PlaylistAction) => void>(() => {});
   const [playlistReport, setPlaylistReport] = useState<PlaylistImportResult[]>(
     [],
   );
@@ -232,13 +237,7 @@ export function App() {
     useState<ConsolidationResult | null>(null);
   const [report, setReport] = useState<ScanResult | null>(null);
   const [modal, setModal] = useState<
-    | "settings"
-    | "playlist"
-    | "delete"
-    | "export-playlist"
-    | "consolidate"
-    | "info"
-    | null
+    "settings" | "playlist" | "export-playlist" | "consolidate" | "info" | null
   >(null);
   const [editPlaylist, setEditPlaylist] = useState<Playlist | null>(null);
   const [name, setName] = useState("");
@@ -1357,7 +1356,6 @@ export function App() {
   const exportPlaylist = async (id: string) => {
     if (busy) return;
     setBusy(true);
-    setProgress("Choose where to export your playlist…");
     setError("");
     try {
       const result = await api.exportPlaylist(id);
@@ -1371,9 +1369,51 @@ export function App() {
       fail(e);
     } finally {
       setBusy(false);
-      setProgress("");
     }
   };
+  const deletePlaylist = async (id: string) => {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      if (await api.deletePlaylist(id)) {
+        setHistory((entries) =>
+          entries.map((route) =>
+            route === `playlist:${id}` ? "Playlists" : route,
+          ),
+        );
+        if (stateRef.current.view === `playlist:${id}`) navigate("Playlists");
+        await refresh();
+      }
+    } catch (e) {
+      fail(e);
+    } finally {
+      setBusy(false);
+    }
+  };
+  playlistActionRef.current = (action) => {
+    if (action.command === "export") void exportPlaylist(action.playlistId);
+    else if (action.command === "delete")
+      void deletePlaylist(action.playlistId);
+    else if (action.command === "duplicate" && !busy)
+      void (async () => {
+        setBusy(true);
+        setError("");
+        try {
+          const duplicate = await api.duplicatePlaylist(action.playlistId);
+          await refresh();
+          setMessage(`Created “${duplicate.name}”.`);
+        } catch (e) {
+          fail(e);
+        } finally {
+          setBusy(false);
+        }
+      })();
+  };
+  useEffect(
+    () => api.onPlaylistAction((action) => playlistActionRef.current(action)),
+    [],
+  );
   playlistCommandRef.current = (command) => {
     if (!data?.libraryPath) {
       setError(
@@ -1758,6 +1798,19 @@ export function App() {
                 }
               }}
               onClick={() => navigate(`playlist:${p.id}`)}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                void api.showPlaylistMenu(p.id).catch(fail);
+              }}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "ContextMenu" ||
+                  (event.key === "F10" && event.shiftKey)
+                ) {
+                  event.preventDefault();
+                  void api.showPlaylistMenu(p.id).catch(fail);
+                }
+              }}
             >
               <Music2 />
               <span>{p.name}</span>
@@ -1925,7 +1978,7 @@ export function App() {
             </IconButton>
           </div>
         )}
-        {busy && (
+        {busy && progress && (
           <div className="notice" role="status">
             <LoaderCircle className="spin" size={18} />
             <span>{progress}</span>
@@ -2121,10 +2174,7 @@ export function App() {
                         </IconButton>
                         <IconButton
                           label="Delete playlist"
-                          onClick={() => {
-                            setEditPlaylist(activePlaylist);
-                            setModal("delete");
-                          }}
+                          onClick={() => void deletePlaylist(activePlaylist.id)}
                         >
                           <X />
                         </IconButton>
@@ -2788,34 +2838,6 @@ export function App() {
               </button>
             </div>
           </form>
-        </Modal>
-      )}
-      {modal === "delete" && editPlaylist && (
-        <Modal title="Delete playlist?" close={() => setModal(null)}>
-          <p>
-            Delete “{editPlaylist.name}” from Rhythm? Your music files and
-            library tracks stay in place.
-          </p>
-          <div className="dialog-actions">
-            <button className="quiet" onClick={() => setModal(null)}>
-              Keep playlist
-            </button>
-            <button
-              className="danger"
-              onClick={async () => {
-                try {
-                  await api.deletePlaylist(editPlaylist.id);
-                  navigate("Playlists");
-                  await refresh();
-                  setModal(null);
-                } catch (e) {
-                  fail(e);
-                }
-              }}
-            >
-              Delete playlist
-            </button>
-          </div>
         </Modal>
       )}
       {modal === "info" && actionTrack && (
