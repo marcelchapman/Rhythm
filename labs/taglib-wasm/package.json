@@ -1,0 +1,11 @@
+{
+  "name": "rhythm-taglib-writer-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "qualify": "node qualify.mjs"
+  },
+  "dependencies": {
+    "taglib-wasm": "2.4.0"
+  }
+}
