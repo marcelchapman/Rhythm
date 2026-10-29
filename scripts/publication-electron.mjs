@@ -1,19 +1,17 @@
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
+import { resolvePublicationPackage } from "./lib/publication-package.mjs";
 const packaged = process.argv.includes("--packaged");
-const executable = packaged
-  ? path.resolve(
-      process.platform === "darwin"
-        ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-        : "release/linux-unpacked/rhythm-desktop",
-    )
-  : createRequire(import.meta.url)("electron");
+const bundle = packaged ? await resolvePublicationPackage() : undefined;
+const executable =
+  bundle?.executable || createRequire(import.meta.url)("electron");
+if (bundle) console.log("Publication package:", JSON.stringify(bundle));
 const result = spawnSync(
   executable,
   [
     path.resolve("scripts/publication.mjs"),
-    ...(packaged ? ["--packaged"] : []),
+    ...(bundle ? ["--packaged", "--resources", bundle.resources] : []),
   ],
   {
     env: { ...process.env, ELECTRON_RUN_AS_NODE: "1" },

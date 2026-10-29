@@ -1,22 +1,74 @@
 import { createRequire } from "node:module";
-import { mkdtemp, realpath, rm } from "node:fs/promises";
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { mkdtemp, readFile, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   qualificationCases,
+  productionQualificationCases,
   withPublicationFixture,
   fingerprint,
 } from "./lib/publication-qualification.mjs";
 const packaged = process.argv.includes("--packaged");
-const resources =
-  process.platform === "darwin"
-    ? "release/mac/Rhythm.app/Contents/Resources"
-    : "release/linux-unpacked/resources";
+const resources = process.argv[process.argv.indexOf("--resources") + 1];
+if (packaged) {
+  assert(
+    process.argv.includes("--resources"),
+    "Launch through publication-electron.mjs --packaged",
+  );
+  assert(process.versions.electron, "Packaged qualification requires Electron");
+  assert.equal(
+    await realpath(resources),
+    await realpath(
+      path.resolve(
+        path.dirname(process.execPath),
+        process.platform === "darwin" ? "../Resources" : "resources",
+      ),
+    ),
+    "Qualification must use this executable's own resources",
+  );
+}
 const entry = packaged
   ? path.resolve(resources, "app.asar/dist/domain/publication.js")
   : path.resolve("dist/domain/publication.js");
 const api = await import(pathToFileURL(entry));
+const productionChecks = [];
+for (const [name, run] of productionQualificationCases(api)) {
+  await withPublicationFixture(api, run);
+  productionChecks.push(name);
+}
+const requireProduction = createRequire(entry);
+const productionPath = requireProduction.resolve("../native/publication.node");
+// The production checks above must have loaded the actual adjacent addon,
+// before any local instrumented addon is even loaded by this harness.
+assert(
+  requireProduction.cache[productionPath],
+  "Production addon was not exercised",
+);
+const native = requireProduction(productionPath);
+for (const hook of [
+  "exchangeWithInterleave",
+  "exchangeWithAfterInterleave",
+  "syncWithFailure",
+  "checkFilesystem",
+  "injectWorkspaceAcl",
+])
+  assert.equal(native[hook], undefined, "Production addon exposes test hooks");
+const manifest = requireProduction("../native/publication-build.json");
+const productionBinary = packaged
+  ? path.join(resources, "app.asar.unpacked/dist/native/publication.node")
+  : productionPath;
+assert.equal(manifest.testing, false);
+assert.equal(manifest.platform, process.platform);
+assert.equal(manifest.arch, process.arch);
+assert.equal(
+  createHash("sha256")
+    .update(await readFile(productionBinary))
+    .digest("hex"),
+  manifest.sha256,
+);
 const binding = createRequire(import.meta.url)(
   path.resolve("dist/native/testing/publication.node"),
 );
@@ -24,18 +76,6 @@ const checks = [];
 for (const [name, run] of qualificationCases(api, binding)) {
   await withPublicationFixture(api, run);
   checks.push(name);
-}
-if (packaged) {
-  const native = createRequire(entry)("../native/publication.node");
-  for (const hook of [
-    "exchangeWithInterleave",
-    "exchangeWithAfterInterleave",
-    "syncWithFailure",
-    "checkFilesystem",
-    "injectWorkspaceAcl",
-  ])
-    if (native[hook] !== undefined)
-      throw Error("Test hooks were included in the production package.");
 }
 // Separate policy observation on the workspace volume; never use a real Media folder.
 const probe = await realpath(
@@ -63,6 +103,12 @@ console.log(
       },
       packaged,
       fixtureParent: tmpdir(),
+      productionBinary,
+      productionSha256: manifest.sha256,
+      productionChecks,
+      // Includes local instrumented-addon boundary injection and crash children;
+      // these are not all claims about the packaged production binary.
+      instrumentedBinary: path.resolve("dist/native/testing/publication.node"),
       checks,
       workspaceVolume: volume,
     },

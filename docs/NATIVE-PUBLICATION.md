@@ -190,6 +190,31 @@ second volume is available (macOS workspace volume, Linux `/dev/shm`, or
 separately. Test cleanup recursively removes only the harness's disposable tree;
 that is deliberately distinct from the production adapter's cleanup behavior.
 
+The harness first runs three explicit production-only checks through the API's
+own lazy binding: successful probe/exchange/sync/reopen inspection/committed
+cleanup, abort cleanup, and refusal of a substituted target. It verifies that
+this loaded the adjacent production addon, checks its binary hash against its
+manifest, and rejects exposed test hooks **before loading the instrumented
+addon**. In packaged mode this is the actual `app.asar.unpacked` production binary
+with the API from the same package's ASAR and that package's Electron executable.
+
+The subsequent 32-case suite is mixed coverage: ordinary operations use the
+default production binding, while deterministic interleave/failure cases use the
+local `dist/native/testing/publication.node`. SIGKILL children use the local
+source wrapper and instrumented addon. Those cases qualify safety logic and
+boundary behavior, not 32 independent executions of the packaged production
+binary. JSON results identify both binaries and the three production checks.
+
+Packaged launch discovers actual unpacked outputs under the configured build
+output directory. It selects exactly one matching bundled platform/architecture
+manifest, verifies freshness against the current native build and the unpacked
+binary's SHA-256, and reads the macOS executable name from `Info.plist`. One
+resolved resource directory is passed to the child, which verifies it belongs to
+its own executable. It refuses missing, stale or ambiguous matches. Discovery
+tests cover Intel/arm64 macOS and Linux output layouts; they do not qualify native
+execution on architectures unavailable locally. ASAR/plist parsing uses tools
+already installed with electron-builder; no dependency was added.
+
 CI runs unit, Node, embedded-Electron and packaged-Electron qualifications on
 macOS/Ubuntu with bounded steps. Existing artifact uploads and `--publish never`
 remain in place.
@@ -204,17 +229,17 @@ file-provider behavior or actual power loss.
 
 Local validation completed:
 
-| Check                                              | Result                                                                                                              |
-| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Focused native/build unit coverage                 | 34 tests passed                                                                                                     |
-| Complete unit regression                           | 328 tests passed across 16 files, including all original 294                                                        |
-| Source Electron qualification                      | All 32 scenarios passed                                                                                             |
-| Packaged Intel Electron qualification              | All 32 scenarios passed from the actual ASAR/unpacked addon                                                         |
-| Existing `npm run test:desktop`                    | Passed completely, including playback, managed/recovery/deletion, selection, layout and playlist suites             |
-| Typecheck, Prettier, workflow YAML and diff checks | Passed                                                                                                              |
-| `npm run dist:mac -- --publish never`              | DMG and ZIP generated; no install/publish                                                                           |
-| ASAR/package integrity                             | Correct x64/Node-API-8 binary, matching manifest/source freshness, native file unpacked, test binary/hooks excluded |
-| Archive integrity                                  | ZIP CRC test and DMG `hdiutil verify` passed                                                                        |
+| Check                                               | Result                                                                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Focused native/build and package-discovery coverage | 46 tests passed                                                                                                     |
+| Complete unit regression                            | 340 tests passed across 17 files, including all original 294                                                        |
+| Source Electron qualification                       | Three production-only checks and the existing 32-case mixed suite passed                                            |
+| Packaged Intel Electron qualification               | Three checks through the actual packaged production addon, plus the 32-case mixed suite passed                      |
+| Existing `npm run test:desktop`                     | Passed completely, including playback, managed/recovery/deletion, selection, layout and playlist suites             |
+| Typecheck, Prettier, workflow YAML and diff checks  | Passed                                                                                                              |
+| `npm run dist:mac -- --publish never`               | DMG and ZIP generated; no install/publish                                                                           |
+| ASAR/package integrity                              | Correct x64/Node-API-8 binary, matching manifest/source freshness, native file unpacked, test binary/hooks excluded |
+| Archive integrity                                   | ZIP CRC test and DMG `hdiutil verify` passed                                                                        |
 
 Local artifacts: `release/Rhythm-0.1.0.dmg`,
 `release/Rhythm-0.1.0-mac.zip`, and `release/mac/Rhythm.app`. They use the existing

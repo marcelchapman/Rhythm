@@ -347,11 +347,13 @@ Lease& lease(napi_env e,napi_value v) {
   bool valid=false; js(napi_check_object_type_tag(e,v,&leaseTag,&valid));
   if(!valid) fail("Invalid publication capability", "invalid-input");
   void* p; js(napi_unwrap(e,v,&p)); auto& l=*static_cast<Lease*>(p);
-  if(!l.alive) fail("Closed publication capability", "invalid-input"); return l;
+  if(!l.alive) { fail("Closed publication capability", "invalid-input"); }
+  return l;
 }
 std::vector<napi_value> args(napi_env e,napi_callback_info info,size_t count) {
   size_t n=count; std::vector<napi_value> a(count); js(napi_get_cb_info(e,info,&n,a.data(),nullptr,nullptr));
-  if(n!=count)fail("Incorrect publication arguments", "invalid-input"); return a;
+  if(n!=count) { fail("Incorrect publication arguments", "invalid-input"); }
+  return a;
 }
 template<class F> napi_value protect(napi_env e,F fn) {
   try {return fn();}
@@ -428,7 +430,8 @@ napi_value reopen(napi_env e,napi_callback_info info) {return protect(e,[&]{
   l->workspace=field(e,a[0],"workspace");
   auto names=parts(l->workspace); if(names.size()!=1 || l->workspace.rfind(".rhythm-publication-",0)!=0)fail("Unsafe recorded workspace", "invalid-input");
   l->work=Fd(relativeOpen(l->parent(),l->workspace,O_RDONLY|O_DIRECTORY,true)); io(l->work.n>=0,"Opening recorded workspace"); l->workIdentity=stats(l->work.n);
-  if(!matches(e,get(e,a[0],"workspaceIdentity"),l->workIdentity,false))fail("Recorded workspace changed"); workspaceCheck(*l);
+  if(!matches(e,get(e,a[0],"workspaceIdentity"),l->workIdentity,false)) { fail("Recorded workspace changed"); }
+  workspaceCheck(*l);
   l->expected.st_dev=l->chain[l->rootIndex].identity.st_dev;
   // Recovery leases cannot exchange/cleanup. Workspace privacy may be reasserted.
   return handle(e,std::move(l));

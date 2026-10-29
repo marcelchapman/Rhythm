@@ -85,6 +85,60 @@ const slotPath = (f, lease) =>
   path.join(f.parent, lease.record.workspace, "slot");
 const rollbackPath = (f, lease) =>
   path.join(f.parent, lease.record.workspace, "rollback");
+// No createPublicationAdapter/test binding here: these exercise the API's own
+// lazy production binding, including when the API was imported from app.asar.
+export function productionQualificationCases(api) {
+  return [
+    [
+      "production probe, exchange, sync, reopen inspection and committed cleanup",
+      async (f) => {
+        assert.equal(api.probePublicationSupport(f.config).status, "supported");
+        const lease = await f.open();
+        const record = lease.record;
+        assert.equal(lease.exchangeAndObserve().status, "exchanged-expected");
+        assert.deepEqual(await fs.readFile(f.target), f.candidate);
+        assert.deepEqual(await fs.readFile(slotPath(f, lease)), f.original);
+        assert.deepEqual(await fs.readFile(rollbackPath(f, lease)), f.original);
+        assert.notEqual(record.rollbackIdentity.inode, record.expected.inode);
+        assert.equal(lease.syncPublication().status, "synced");
+        const observed = api.inspectInterruptedPublication(record);
+        assert.equal(observed.boundaryValid, true);
+        assert.equal(observed.target.sha256, record.candidateSha256);
+        assert.equal(observed.slot.sha256, record.originalSha256);
+        assert.equal(observed.rollback.sha256, record.originalSha256);
+        assert.equal(
+          lease.cleanupVerifiedArtifacts("committed").status,
+          "cleaned",
+        );
+        assert.deepEqual(await fs.readdir(f.parent), ["Track.flac"]);
+        assert.deepEqual(await fs.readFile(f.target), f.candidate);
+      },
+    ],
+    [
+      "production abort preserves original and removes only private artifacts",
+      async (f) => {
+        const lease = await f.open();
+        assert.equal(lease.cleanupVerifiedArtifacts("abort").status, "cleaned");
+        assert.deepEqual(await fs.readdir(f.parent), ["Track.flac"]);
+        assert.deepEqual(await fs.readFile(f.target), f.original);
+      },
+    ],
+    [
+      "production rejects a substituted target without deleting it",
+      async (f) => {
+        const lease = await f.open();
+        await fs.rename(f.target, path.join(f.directory, "saved-A"));
+        await fs.writeFile(f.target, "Unexpected B");
+        assert.equal(lease.exchangeAndObserve().status, "no-change");
+        assert.equal(
+          lease.cleanupVerifiedArtifacts("committed").status,
+          "cleanup-refused",
+        );
+        assert.equal(await fs.readFile(f.target, "utf8"), "Unexpected B");
+      },
+    ],
+  ];
+}
 export function qualificationCases(api, testBinding) {
   const interleave = (hook, after = false) =>
     api.createPublicationAdapter(

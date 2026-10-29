@@ -3,12 +3,15 @@ import { createRequire } from "node:module";
 import * as api from "../src/domain/publication";
 import {
   qualificationCases,
+  productionQualificationCases,
   withPublicationFixture,
 } from "../scripts/lib/publication-qualification.mjs";
 const binding = ["darwin", "linux"].includes(process.platform)
   ? createRequire(import.meta.url)("../dist/native/testing/publication.node")
   : undefined;
 for (const [name, run] of binding ? qualificationCases(api, binding) : [])
+  test(name, () => withPublicationFixture(api, run));
+for (const [name, run] of binding ? productionQualificationCases(api) : [])
   test(name, () => withPublicationFixture(api, run));
 test("production binding exposes no deterministic injection hooks", async () => {
   if (!binding) return;
