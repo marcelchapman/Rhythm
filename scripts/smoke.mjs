@@ -221,7 +221,21 @@ try {
     .click();
   await page.waitForFunction(() => {
     const a = document.querySelector("audio");
-    return a && !a.paused && a.currentTime > 0;
+    const slider = document.querySelector('input[aria-label="Seek"]');
+    // Observe real playback and its UI beyond two slider steps before pausing.
+    // Otherwise Home can see a stale zero value and emit no seek at all.
+    return (
+      a &&
+      slider &&
+      !a.paused &&
+      !a.ended &&
+      !a.seeking &&
+      a.error === null &&
+      a.readyState >= 2 &&
+      a.currentTime >= 0.2 &&
+      Number(slider.value) >= 0.2 &&
+      Math.abs(Number(slider.value) - a.currentTime) <= 0.05
+    );
   });
   assert((await page.locator("audio").evaluate((a) => a.duration)) >= 29);
   const playbackSource = await page
@@ -230,7 +244,27 @@ try {
   const playbackTrack = initial.tracks.find((t) => t.title === "Evening light");
   assert.equal(playbackSource, `rhythm-media://track/${playbackTrack.id}`);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
-  await page.waitForFunction(() => document.querySelector("audio").paused);
+  // paused flips before the queued timeupdate and React position update settle.
+  // Home must start from a synchronized, nonzero control value.
+  await page.waitForFunction(
+    (source) => {
+      const a = document.querySelector("audio");
+      const slider = document.querySelector('input[aria-label="Seek"]');
+      return (
+        a.currentSrc === source &&
+        a.paused &&
+        !a.ended &&
+        !a.seeking &&
+        a.error === null &&
+        a.readyState >= 2 &&
+        a.currentTime >= 0.2 &&
+        Number(slider.value) >= 0.2 &&
+        Math.abs(Number(slider.value) - a.currentTime) <= 0.05
+      );
+    },
+    playbackSource,
+    { timeout: 10000 },
+  );
   const seek = page.getByRole("slider", { name: "Seek", exact: true });
   const waitForSeek = (target) =>
     page.waitForFunction(
