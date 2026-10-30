@@ -1,3 +1,4 @@
+import { assertRelocationOpen } from "./library-relocation-marker.js";
 import { constants } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
@@ -105,12 +106,21 @@ export class Library {
 
   static async open(
     directory: string,
-    { setupMediaRoot = false } = {},
+    {
+      setupMediaRoot = false,
+      relocationToken,
+      relocationPreparing = false,
+    }: {
+      setupMediaRoot?: boolean;
+      relocationToken?: string;
+      relocationPreparing?: boolean;
+    } = {},
   ): Promise<Library> {
     if (!path.isAbsolute(directory))
       throw new Error("Choose an absolute library folder.");
     await mkdir(directory, { recursive: true });
     const canonical = await realpath(directory);
+    await assertRelocationOpen(canonical, relocationToken, relocationPreparing);
     const filename = path.join(canonical, "rio.sqlite");
     // Never claim an existing unrelated SQLite database as a Rio library.
     let exists = false;

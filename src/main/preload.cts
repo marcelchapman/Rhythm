@@ -58,6 +58,7 @@ const api: RioAPI = {
     return () => ipcRenderer.removeListener("track:action", listener);
   },
   snapshot: () => ipcRenderer.invoke("library:snapshot"),
+  moveLibrary: () => ipcRenderer.invoke("library:move"),
   chooseLibrary: () => ipcRenderer.invoke("library:choose"),
   importMusic: () => ipcRenderer.invoke("library:import"),
   rescan: () => ipcRenderer.invoke("library:rescan"),

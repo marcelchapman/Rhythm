@@ -18,6 +18,8 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { finishCommittedRelocation } from "../domain/library-relocation-marker.js";
+import { relocateLibrary } from "../domain/library-relocation.js";
 import { Library } from "../domain/library.js";
 import {
   defaultState,
@@ -65,6 +67,9 @@ let library: Library | null = null;
 let startupError: string | null = null;
 let playlistIO = false;
 let choosingLibrary = false;
+let movingLibrary = false;
+let quitAfterMove = false;
+let movingSnapshot: ReturnType<typeof snapshot> | null = null;
 let preferences: ViewPreferenceStore;
 let rendererReady = false;
 let pendingSettings = false;
@@ -233,6 +238,11 @@ async function importMusic() {
 function handlers() {
   const handle = (name: string, fn: (...args: any[]) => unknown) =>
     ipcMain.handle(name, (event, ...args) => {
+      if (
+        movingLibrary &&
+        !["library:snapshot", "desktop:ready"].includes(name)
+      )
+        throw new Error("Wait for the library move to finish.");
       if (event.senderFrame?.url !== "rio://app/index.html")
         throw new Error("Untrusted request.");
       return Promise.resolve(fn(...args)).finally(() => {
@@ -701,8 +711,73 @@ function handlers() {
           ]),
     ]).popup({ window: win! });
   }
-  handle("library:snapshot", snapshot);
+  handle("library:snapshot", () => movingSnapshot ?? snapshot());
   handle("library:choose", chooseLibrary);
+  handle("library:move", async () => {
+    if (library?.scanning || playlistIO || choosingLibrary)
+      throw new Error(
+        "Wait for the current operation before moving the library.",
+      );
+    const current = requireLibrary();
+    movingSnapshot = snapshot();
+    movingLibrary = true;
+    choosingLibrary = true;
+    try {
+      const selected = await dialog.showOpenDialog(win!, {
+        title: "Move Rio library",
+        buttonLabel: "Choose destination",
+        properties: ["openDirectory", "createDirectory"],
+        message:
+          "Choose the exact empty folder that will become the new library directory. Rio will put rio.sqlite and internal media directly inside it.",
+      });
+      if (selected.canceled) return null;
+      const destination = selected.filePaths[0];
+      const confirmation = await dialog.showMessageBox(win!, {
+        type: "question",
+        buttons: ["Cancel", "Move Library"],
+        defaultId: 0,
+        cancelId: 0,
+        message: "Move this entire Rio library?",
+        detail: `From: ${current.directory}\nTo: ${destination}\n\nThe whole library folder, including internal media and saved state, will be copied and verified. Referenced sources outside managed media and custom external media folders stay where they are. The original will be retained as a recovery copy after the move.`,
+      });
+      if (confirmation.response !== 1) return null;
+      const result = await relocateLibrary(
+        current,
+        selected.filePaths[0],
+        pointerPath(),
+      );
+      // Destination authority is already committed; never leave the original active
+      // because closing a retained original or taking a UI snapshot fails afterward.
+      library = result.library;
+      rendererReady = false;
+      let warning = result.warning;
+      try {
+        if (current.db.isOpen) current.close();
+      } catch {
+        warning = `RELOCATION RECOVERY REQUIRED. The committed destination ${library.directory} is active. The original is retained at ${result.retainedSource}. Keep both copies and restart Rio.`;
+      }
+      try {
+        return {
+          status: warning ? ("recovery-required" as const) : result.status,
+          snapshot: snapshot(),
+          retainedSource: result.retainedSource,
+          warning,
+        };
+      } catch {
+        throw new Error(
+          `RELOCATION RECOVERY REQUIRED. The committed destination ${library.directory} is active, but its state could not be loaded. The original is retained at ${result.retainedSource}. Keep both copies and restart Rio.`,
+        );
+      }
+    } finally {
+      movingSnapshot = null;
+      movingLibrary = false;
+      choosingLibrary = false;
+      if (quitAfterMove) {
+        quitAfterMove = false;
+        setImmediate(() => app.quit());
+      }
+    }
+  });
   handle("library:import", importMusic);
   handle("library:rescan", () => {
     if (playlistIO || choosingLibrary)
@@ -844,7 +919,12 @@ if (!app.requestSingleInstanceLock()) {
         await stat(path.join(pointer.libraryPath, "rio.sqlite"));
         library = await Library.open(pointer.libraryPath, {
           setupMediaRoot: true,
+          relocationToken: pointer.relocationToken,
         });
+        await finishCommittedRelocation(
+          library.directory,
+          pointer.relocationToken,
+        );
         await preferences.migrateLegacy(library.legacyViewPreferences());
       } catch (error) {
         if (
@@ -883,6 +963,7 @@ if (!app.requestSingleInstanceLock()) {
         }
       });
       protocol.handle("rio-media", async (request) => {
+        if (movingLibrary) return new Response(null, { status: 503 });
         const url = new URL(request.url);
         const id = url.pathname.slice(1);
         if (!/^[a-f0-9]{64}$/.test(id))
@@ -902,7 +983,7 @@ if (!app.requestSingleInstanceLock()) {
         if (!track) return new Response(null, { status: 404 });
         const owner = library!;
         const response = await mediaResponse(track.path, track.format, request);
-        if (response.status === 404 && owner === library)
+        if (response.status === 404 && owner === library && !movingLibrary)
           await owner.checkTrack(id);
         return response;
       });
@@ -1042,6 +1123,11 @@ if (!app.requestSingleInstanceLock()) {
   });
   let preferencesFlushed = false;
   app.on("before-quit", (event) => {
+    if (movingLibrary) {
+      quitAfterMove = true;
+      event.preventDefault();
+      return;
+    }
     if (preferencesFlushed || !preferences) return;
     event.preventDefault();
     void preferences.flush().then(() => {

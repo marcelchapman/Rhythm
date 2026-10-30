@@ -153,6 +153,12 @@ export interface RioAPI {
   ): Promise<{ count: number; unavailable: number } | null>;
   snapshot(): Promise<Snapshot>;
   chooseLibrary(): Promise<Snapshot | null>;
+  moveLibrary(): Promise<{
+    status: "moved" | "recovery-required";
+    snapshot: Snapshot;
+    retainedSource: string;
+    warning?: string;
+  } | null>;
   importMusic(): Promise<ScanResult | null>;
   rescan(): Promise<ScanResult>;
   importDroppedFiles(files: File[]): Promise<DropImportResult>;

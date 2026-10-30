@@ -97,11 +97,22 @@ try {
     "artist",
   ]);
   // Exercise an actual pointer drag, not an API replacement of preferences.
-  await page
-    .locator('[data-column-id="artist"]')
-    .dragTo(page.locator('[data-column-id="title"]'), {
-      targetPosition: { x: 5, y: 12 },
-    });
+  const artistHeader = page.locator('[data-column-id="artist"]');
+  const titleHeader = page.locator('[data-column-id="title"]');
+  const from = await artistHeader.boundingBox();
+  const to = await titleHeader.boundingBox();
+  assert(from && to);
+  await artistHeader.getByRole("button").hover();
+  await page.mouse.down();
+  await page.mouse.move(from.x + from.width / 2 + 10, from.y + 12, {
+    steps: 3,
+  });
+  // Wait for React's drag state before entering/dropping on the target.
+  await page.locator('[data-column-id="artist"].column-dragging').waitFor();
+  await page.mouse.move(to.x + 5, to.y + 12, { steps: 10 });
+  await page.mouse.move(to.x + 6, to.y + 12);
+  await page.locator('[data-column-id="title"].column-drop-before').waitFor();
+  await page.mouse.up();
   const moved = await waitSnapshot(
     page,
     (s) => s.preferences.trackList.columns.order[0] === "artist",

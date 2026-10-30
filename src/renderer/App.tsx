@@ -233,6 +233,7 @@ export function App() {
   const [progress, setProgress] = useState("");
   const [error, setError] = useState("");
   const [mediaError, setMediaError] = useState("");
+  const [relocationError, setRelocationError] = useState("");
   const [recoveryId, setRecoveryId] = useState<string | null>(null);
   const [consolidationReport, setConsolidationReport] =
     useState<ConsolidationResult | null>(null);
@@ -587,6 +588,7 @@ export function App() {
     }
   };
   const load = (snapshot: Snapshot) => {
+    setRelocationError("");
     setMediaError(snapshot.mediaSettings.setupError ?? "");
     if (snapshot.mediaSettings.setupError) setModal("settings");
     suppressSave.current = true;
@@ -627,7 +629,8 @@ export function App() {
   useEffect(() => {
     if (!data?.libraryPath || suppressSave.current) return;
     const timer = setTimeout(() => {
-      void api.saveState({ ...state, view }).catch(fail);
+      if (!suppressSave.current)
+        void api.saveState({ ...state, view }).catch(fail);
     }, 350);
     return () => clearTimeout(timer);
   }, [state, view, data?.libraryPath]);
@@ -868,6 +871,69 @@ export function App() {
     const track = dataRef.current?.tracks.find((t) => t.id === id);
     if (track)
       void requestPlayback(track, undefined, true, ended || playingRef.current);
+  };
+  const moveLibrary = async () => {
+    if (busy) return;
+    setBusy(true);
+    setRelocationError("");
+    setMessage("");
+    suppressSave.current = true;
+    const wasPlaying = playingRef.current;
+    const savedPosition =
+      audio.current?.currentTime || stateRef.current.position;
+    const before = { ...stateRef.current, position: savedPosition };
+    audio.current?.pause();
+    desiredPlay.current = false;
+    mediaSource.current?.clear();
+    setPlaying(false);
+    setProgress("Moving library… Keep Rio open until it finishes.");
+    let moved = false;
+    try {
+      await api.saveState(before);
+      const result = await api.moveLibrary();
+      if (result) {
+        moved = true;
+        load(result.snapshot);
+        setModal("settings");
+        if (result.status === "moved")
+          setMessage(
+            `Library moved to ${result.snapshot.libraryPath}. Original retained at ${result.retainedSource}.`,
+          );
+        else
+          setRelocationError(
+            result.warning ??
+              `RELOCATION RECOVERY REQUIRED. The destination ${result.snapshot.libraryPath} is active; keep both copies and restart Rio.`,
+          );
+      }
+    } catch (e) {
+      const detail =
+        e instanceof Error
+          ? e.message.replace(
+              /^Error invoking remote method '[^']+': (?:Error: )?/,
+              "",
+            )
+          : String(e);
+      if (detail.startsWith("RELOCATION RECOVERY REQUIRED")) moved = true;
+      setRelocationError(
+        detail.startsWith("MOVE FAILED") ||
+          detail.startsWith("RELOCATION RECOVERY REQUIRED")
+          ? detail
+          : `MOVE FAILED. The original library remains authoritative at ${dataRef.current?.libraryPath}. ${detail}`,
+      );
+    } finally {
+      suppressSave.current = false;
+      setBusy(false);
+      setProgress("");
+      if (!moved && before.currentId) {
+        const track = dataRef.current?.tracks.find(
+          (t) => t.id === before.currentId,
+        );
+        if (track) {
+          resume.current = savedPosition;
+          void requestPlayback(track, undefined, false, wasPlaying);
+        }
+      }
+    }
   };
   const chooseLibrary = async () => {
     try {
@@ -2604,6 +2670,29 @@ export function App() {
             <FolderOpen size={17} />
             Choose or switch library…
           </button>
+          <button
+            className="quiet"
+            style={{ marginLeft: 8 }}
+            disabled={busy || !data?.libraryPath}
+            onClick={() => void moveLibrary()}
+          >
+            <FolderOpen size={17} />
+            {busy ? "Working…" : "Move Library…"}
+          </button>
+          {relocationError && (
+            <p
+              className="error"
+              role="alert"
+              data-testid="library-relocation-error"
+            >
+              {relocationError}
+            </p>
+          )}
+          <p className="muted">
+            Choose the exact empty destination folder for the library. Move the
+            library folder, saved state and internal media together. External
+            music stays in place. Changing only the media folder is separate.
+          </p>
           <section
             className="media-settings"
             aria-labelledby="media-settings-title"
