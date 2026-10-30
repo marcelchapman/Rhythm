@@ -44,7 +44,14 @@ await source(b, "Beta", "Ensemble B");
 await source(c, "Gamma", "Ensemble A", "Jazz");
 const cold = path.join(root, "Cold start.m3u8");
 await playlist(cold, `#EXTM3U\n${c}\n${a}\n${b}\n`);
-const l = await Library.open(library);
+// Seed the same valid media configuration as desktop new-library creation.
+// A bare programmatic open intentionally leaves existing libraries needing recovery.
+const l = await Library.open(library, { setupMediaRoot: true });
+// Compare values across IPC, which normalizes SQLite row prototypes.
+const mediaSettings = structuredClone(l.mediaSettings());
+assert.equal(mediaSettings.setupError, undefined);
+assert.equal(mediaSettings.root?.path, path.join(l.directory, "Rio Media"));
+assert.equal(mediaSettings.copyOnAdd, false);
 await l.scan([music]);
 l.db.prepare("INSERT INTO settings VALUES('views',?)").run(
   JSON.stringify({
@@ -152,14 +159,38 @@ async function metadataOnly(page) {
     "Rows end at their final visible metadata cell",
   );
 }
+async function noModal(page) {
+  await page.locator(".modal-backdrop").waitFor({ state: "hidden" });
+  assert.equal(
+    await page.getByRole("dialog").count(),
+    0,
+    "No dialog may block table interaction",
+  );
+  assert.equal(
+    await page.locator(".modal-backdrop").count(),
+    0,
+    "Modal backdrop must be removed",
+  );
+}
+async function closeSettings(page) {
+  const modal = page.getByRole("dialog", {
+    name: "Library settings",
+    exact: true,
+  });
+  await modal
+    .getByRole("button", { name: "Close dialog", exact: true })
+    .click();
+  await noModal(page);
+}
 async function settings(page) {
   await page
     .getByRole("button", { name: "Library settings", exact: true })
     .first()
     .click();
   await page
-    .getByRole("heading", { name: "Library settings", exact: true })
+    .getByRole("dialog", { name: "Library settings", exact: true })
     .waitFor();
+  assert.equal(await page.getByRole("dialog").count(), 1);
 }
 async function openFile(filename) {
   const canonical = await realpath(filename);
@@ -177,7 +208,13 @@ try {
     s.playlists.some((p) => p.name === "Cold start"),
   );
   const coldList = state.playlists.find((p) => p.name === "Cold start");
+  assert.deepEqual(
+    state.mediaSettings,
+    mediaSettings,
+    "Cold-start library reuses its persisted valid media root",
+  );
   await page.getByRole("table", { name: "Cold start", exact: true }).waitFor();
+  await noModal(page);
   await page
     .locator(".song-row")
     .first()
@@ -269,7 +306,7 @@ try {
       s.preferences.trackList.columns.hidden.includes("comments"),
   );
   await page.screenshot({ path: path.join(review, "tracklist-settings.png") });
-  await page.getByRole("button", { name: "Close dialog", exact: true }).click();
+  await closeSettings(page);
   assert.equal(await page.locator('[data-column-id="album"]').count(), 0);
   const sharedOrder = await headerOrder(page);
   await page.getByRole("button", { name: "Songs", exact: true }).click();
@@ -298,7 +335,7 @@ try {
     page,
     (s) => !s.preferences.trackList.columns.hidden.includes("album"),
   );
-  await page.getByRole("button", { name: "Close dialog", exact: true }).click();
+  await closeSettings(page);
   assert.equal((await headerOrder(page))[0], "album");
   assert.equal(
     Math.round(
@@ -418,6 +455,8 @@ try {
   app = undefined;
   page = await launch();
   state = await snapshot(page);
+  assert.deepEqual(state.mediaSettings, mediaSettings);
+  await noModal(page);
   assert.deepEqual(state.preferences, presentation);
   assert.deepEqual(state.playlists.find((p) => p.id === coldList.id).trackIds, [
     ids.Gamma,
@@ -501,6 +540,11 @@ try {
     state.playlists.find((p) => p.name === "Cold start (2)").trackIds,
     [ids.Gamma, ids.Alpha, ids.Beta],
   );
+  assert.deepEqual(state.mediaSettings, mediaSettings);
+  await page
+    .getByRole("table", { name: "Cold start (2)", exact: true })
+    .waitFor();
+  await noModal(page);
   for (const [filename, hash] of sources)
     assert.equal(
       createHash("sha256")
@@ -513,6 +557,8 @@ try {
       {
         passed: true,
         checks: [
+          "valid persisted media root at cold start, restart and first-run selection",
+          "Settings open/close removes dialog and backdrop before table interaction",
           "legacy global preference migration",
           "pointer resize without sort",
           "global order/width/visibility",
