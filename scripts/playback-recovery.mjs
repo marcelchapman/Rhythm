@@ -19,7 +19,7 @@ import { wavFixture } from "../tests/fixtures.ts";
 
 // Generated sacrificial files only. No real library, preferences or music is opened.
 const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-playback-recovery-")),
+  await mkdtemp(path.join(tmpdir(), "rio-playback-recovery-")),
 );
 const library = path.join(root, "Library"),
   media = path.join(root, "Media"),
@@ -36,7 +36,7 @@ const fingerprint = async (file) => ({
 });
 const protect = async (file) =>
   protectedFiles.set(file, await fingerprint(file));
-const snapshot = (page) => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = (page) => page.evaluate(() => window.rio.snapshot());
 const row = (page, id) => page.locator(`.song-row[data-track-id="${id}"]`);
 const select = (file) =>
   app.evaluate(({ dialog }, file) => {
@@ -49,19 +49,19 @@ const shot = (page, name) =>
   page.screenshot({ path: path.join(review, `playback-recovery-${name}.png`) });
 async function launch() {
   const executable =
-    process.env.RHYTHM_EXECUTABLE ||
+    process.env.RIO_EXECUTABLE ||
     (process.argv.includes("--packaged")
       ? path.resolve(
           process.platform === "darwin"
-            ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-            : "release/linux-unpacked/rhythm-desktop",
+            ? "release/mac/Rio.app/Contents/MacOS/Rio"
+            : "release/linux-unpacked/rio-desktop",
         )
       : undefined);
   app = await electron.launch({
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "Profile") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "Profile") },
   });
   const page = await app.firstWindow();
   page.on("console", (m) => {
@@ -256,22 +256,20 @@ try {
     .getByRole("button", { name: "Add music folders", exact: true })
     .click();
   await page.waitForFunction(
-    async () => (await window.rhythm.snapshot()).tracks.length === 1,
+    async () => (await window.rio.snapshot()).tracks.length === 1,
   );
   await page.getByRole("status").filter({ hasText: "1 added" }).waitFor();
   await select(media);
-  await page.evaluate(() => window.rhythm.chooseMediaRoot());
-  await page.evaluate(() =>
-    window.rhythm.saveMediaSettings({ copyOnAdd: true }),
-  );
+  await page.evaluate(() => window.rio.chooseMediaRoot());
+  await page.evaluate(() => window.rio.saveMediaSettings({ copyOnAdd: true }));
   await select(managedSource);
   await page.getByRole("button", { name: "Add music", exact: true }).click();
   await page.waitForFunction(
-    async () => (await window.rhythm.snapshot()).tracks.length === 2,
+    async () => (await window.rio.snapshot()).tracks.length === 2,
   );
   await page
     .getByRole("status")
-    .filter({ hasText: "1 copied to Rhythm Media" })
+    .filter({ hasText: "1 copied to Rio Media" })
     .waitFor();
   await page.getByRole("button", { name: "Songs", exact: true }).click();
   const initial = await snapshot(page),
@@ -280,9 +278,9 @@ try {
   assert(ref && managed);
   const playlist = await page.evaluate(
     async (ids) => {
-      const p = await window.rhythm.createPlaylist("Recovery stable state");
-      await window.rhythm.playlistTracks(p.id, ids);
-      for (const id of ids) await window.rhythm.favorite(id);
+      const p = await window.rio.createPlaylist("Recovery stable state");
+      await window.rio.playlistTracks(p.id, ids);
+      for (const id of ids) await window.rio.favorite(id);
       return p;
     },
     [ref.id, managed.id],
@@ -361,7 +359,7 @@ try {
       .waitFor();
     await noRawErrors(page);
   }
-  assert(warnings.some((w) => w.includes("Rhythm playback failed")));
+  assert(warnings.some((w) => w.includes("Rio playback failed")));
   // A rejected Play from an older request must not overwrite a newer success.
   await page.evaluate(() => {
     const original = HTMLMediaElement.prototype.play;

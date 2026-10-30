@@ -1,18 +1,18 @@
 <p align="center">
-  <img src="assets/rhythm-github-banner.png" alt="Rhythm — Your Music. Everywhere." width="100%">
+  <img src="assets/rio-github-banner.png" alt="Rio — Your Music. Everywhere." width="100%">
 </p>
 
-# Rhythm 0.1
+# Rio 0.1
 
-A local personal music library and player for macOS and Linux, built around music you own. The desktop interface follows `artfiles/desktop_prototype.png`.
+A local personal music library and player for macOS and Linux, built around music you own. The desktop interface follows `artfiles/rio-desktop-prototype.png`.
 
-Rhythm’s long-term scope includes macOS, Windows, Linux, Android, iOS, and cloud synchronization/access across your devices. Version 0.1 implements local desktop functionality. [PRODUCT.md](PRODUCT.md) is the product authority; the promotional landing page is not an implementation specification.
+Rio’s long-term scope includes macOS, Windows, Linux, Android, iOS, and cloud synchronization/access across your devices. Version 0.1 implements local desktop functionality. [PRODUCT.md](PRODUCT.md) is the product authority; the promotional landing page is not an implementation specification.
 
 ## What works
 
 - First-run library setup with a folder you explicitly choose; no preconfigured music or sample database.
 - Recursive music indexing with metadata and embedded artwork; source originals remain read-only.
-- Optional managed copying into a user-selected Rhythm Media folder, with new-copy organization and explicit referenced/managed ownership.
+- Optional managed copying into a configured Rio Media folder, with new-copy organization and explicit referenced/managed ownership.
 - Persistent Albums, Artists, Songs, Genres, Recently Added, Favourites, and Playlists views.
 - Shared virtualized Track List in Songs, playlist contents, Artist/Genre track views, Favourites, search, and library list mode. Sortable metadata includes title, duration, artist, album, genre, BPM, bit rate, format, disc, track, comments, and year. Column order, widths, and visibility are global and persistent.
 - Search across title, artist, album, album artist, genre, comments, and codec; album sorting and genre filtering.
@@ -39,22 +39,24 @@ npm run dev
 
 `dev` makes a production build and launches it. It does not run a hot-reload server. After editing, rerun it. `npm start` launches the last build. Nothing is committed or pushed by these commands.
 
-Quit any running Rhythm application before launching a source build, including an installed copy in Applications. Closing its window on macOS does not quit it. Source and installed builds share the default profile and single-instance lock; a blocked source launch now exits with an explanatory error rather than silently leaving you in the older running app. For manual verification after edits, run `npm run build` and then `npm start`; confirm that the terminal stays attached to the new app. `RHYTHM_DATA_DIR` may select a separate disposable profile for isolated testing.
+Quit any running Rio application before launching a source build, including an installed copy in Applications. Closing its window on macOS does not quit it. Source and installed builds share the default profile and single-instance lock; a blocked source launch now exits with an explanatory error rather than silently leaving you in the older running app. For manual verification after edits, run `npm run build` and then `npm start`; confirm that the terminal stays attached to the new app. `RIO_DATA_DIR` may select a separate disposable profile for isolated testing.
 
 ## First launch
 
-1. Select **Choose library folder**. Create or select an ordinary folder for Rhythm’s database. It can be separate from your music. Select an existing Rhythm folder to reopen that library.
-2. Select **Add music folders** and choose one or more music directories. Rhythm indexes them in place by default. To copy new additions instead, first choose a Rhythm Media folder and enable copying in Library settings.
+1. Select **Choose library folder**. Create or select an ordinary folder for Rio’s database. It can be separate from your music. New libraries automatically get a **Rio Media** folder inside the library folder. Select an existing Rio folder to reuse its saved media location.
+2. Select **Add music folders** and choose one or more music directories. Rio indexes them in place by default. To copy new additions instead, enable copying in Library settings.
 3. Select an album for its track list, or use its play button. In Songs, click to select, Shift-click for a range, Command/Ctrl-click to toggle, and double-click to play. Right-click a track for actions. Drag headers to rearrange metadata columns; click a header to sort. Drag column boundaries to resize; use Library Settings → Track List columns to show/hide metadata. Presentation is shared globally; playlist order and each view's sort/selection remain independent. The first column stays visible when it fits, and horizontal scrolling exposes the rest.
 4. Use **Library settings** to add music, rescan folders, or switch libraries. Rescan after external changes, or use Locate File for a missing track.
 
-Rhythm never writes to, moves, renames or deletes your external source audio files. Copying is opt-in. Confirmed Delete from Library removes a referenced track from Rhythm only; a verified managed copy moves to the OS Trash. No permanent audio deletion, tag editing or existing-file reorganization is implemented. Deleting a playlist only deletes its database records.
+New-library media setup creates/configures `Rio Media` inside the library folder, with copying still off by default. Existing libraries reuse their saved root only after directory, recorded device/inode, canonical-path and access validation. An unavailable drive, missing/unsafe root or absent configuration opens Library settings for recovery; Rio retains the saved location and never recreates or substitutes an existing library's unavailable media root. Reconnect the drive and reopen the library, or explicitly choose a folder in Settings. Changing roots does not move files or adopt unknown files as managed. See [library setup](docs/LIBRARY-SETUP.md) for the setup and recovery contract.
 
-To exchange playlists, use **File → Import Playlist…** or **File → Export Playlist…**. M3U/M3U8 can also be dropped into the app or opened with Rhythm from Finder. On a first launch without a library, file-open requests wait until one is chosen. Export uses the current playlist; from another view it asks which playlist to export. Relative import paths resolve beside the playlist file. Export uses relative paths for audio inside the export folder's tree and absolute paths for external locations. Spaces/Unicode and local `file:` URLs are supported; streaming URLs are reported and skipped. Missing or invalid entries produce a report while available songs retain their order. Existing playlist names receive a numeric suffix; repeated references use Rhythm's existing unique-membership rule. Audio remains in place. Legacy non-UTF-8 M3U files must be resaved as UTF-8 before import.
+Rio never writes to, moves, renames or deletes your external source audio files. Copying is opt-in. Confirmed Delete from Library removes a referenced track from Rio only; a verified managed copy moves to the OS Trash. No permanent audio deletion, tag editing or existing-file reorganization is implemented. Deleting a playlist only deletes its database records.
+
+To exchange playlists, use **File → Import Playlist…** or **File → Export Playlist…**. M3U/M3U8 can also be dropped into the app or opened with Rio from Finder. On a first launch without a library, file-open requests wait until one is chosen. Export uses the current playlist; from another view it asks which playlist to export. Relative import paths resolve beside the playlist file. Export uses relative paths for audio inside the export folder's tree and absolute paths for external locations. Spaces/Unicode and local `file:` URLs are supported; streaming URLs are reported and skipped. Missing or invalid entries produce a report while available songs retain their order. Existing playlist names receive a numeric suffix; repeated references use Rio's existing unique-membership rule. Audio remains in place. Legacy non-UTF-8 M3U files must be resaved as UTF-8 before import.
 
 ## Optional managed copies
 
-In **Library settings**, choose a dedicated **Rhythm Media folder**, then enable **Copy files to Rhythm Media folder when adding to library**. Originals stay unchanged; Add Music and audio/folder drops index verified copies. **Keep Rhythm Media folder organized** puts new copies under Album Artist/Album with track-number filenames. Turning it off uses sanitized original filenames in the root. Neither changing the folder nor toggling organization moves existing files.
+In **Library settings**, use the automatically configured **Rio Media folder** or choose another dedicated folder, then enable **Copy files to Rio Media folder when adding to library**. Originals stay unchanged; Add Music and audio/folder drops index verified copies. **Keep Rio Media folder organized** puts new copies under Album Artist/Album with track-number filenames. Turning it off uses sanitized original filenames in the root. Neither changing the folder nor toggling organization moves existing files.
 
 The default is reference-in-place. Playlist imports and rescans never initiate copying. Unknown files already inside the media folder stay referenced rather than being adopted as managed. Settings show managed/referenced counts; the existing track file-information dialog shows its relationship and current path.
 
@@ -62,11 +64,11 @@ Collisions receive numbered suffixes without overwriting audio. Re-adding the sa
 
 ## Recover and consolidate
 
-A missing track exposes **Locate File…** in its playback error and native track context menu. Referenced tracks relink to the selected supported audio file without copying it. Managed tracks restore a verified copy into the selected Rhythm Media folder; the selected recovery source stays unchanged. A file returned to its expected managed path can be revalidated there. Recovery retains track identity, playlists, favourites and listening state. Rescanning/restoring also resets an errored decoder so the same track can play again. Rhythm does not search your filesystem automatically.
+A missing track exposes **Locate File…** in its playback error and native track context menu. Referenced tracks relink to the selected supported audio file without copying it. Managed tracks restore a verified copy into the selected Rio Media folder; the selected recovery source stays unchanged. A file returned to its expected managed path can be revalidated there. Recovery retains track identity, playlists, favourites and listening state. Rescanning/restoring also resets an errored decoder so the same track can play again. Rio does not search your filesystem automatically.
 
-Right-click referenced tracks (including a mixed multi-selection) for **Consolidate to Rhythm Media**, or an album for **Consolidate Album to Rhythm Media**. **File → Consolidate Library…** and the matching Library Settings action explain the copy operation and require confirmation. These explicitly requested copies work independently of copy-on-add. Already-managed tracks are skipped, so repeated consolidation creates no duplicate copies. Each successful track commits separately; failures remain referenced, with aggregate counts and retry details. Locate a missing original and run consolidation again to retry remaining referenced tracks. **Rescan Folders never consolidates.**
+Right-click referenced tracks (including a mixed multi-selection) for **Consolidate to Rio Media**, or an album for **Consolidate Album to Rio Media**. **File → Consolidate Library…** and the matching Library Settings action explain the copy operation and require confirmation. These explicitly requested copies work independently of copy-on-add. Already-managed tracks are skipped, so repeated consolidation creates no duplicate copies. Each successful track commits separately; failures remain referenced, with aggregate counts and retry details. Locate a missing original and run consolidation again to retry remaining referenced tracks. **Rescan Folders never consolidates.**
 
-Rhythm's management authority ends at its configured media environment. External files remain user-owned: Locate and consolidation allow reading/copying, never moving, renaming, deleting, reorganizing or tag-writing the external original. See the Iteration 3 report for sacrificial-media-only acceptance and limitations.
+Rio's management authority ends at its configured media environment. External files remain user-owned: Locate and consolidation allow reading/copying, never moving, renaming, deleting, reorganizing or tag-writing the external original. See the Iteration 3 report for sacrificial-media-only acceptance and limitations.
 
 ## Track information
 
@@ -78,7 +80,7 @@ Locate updates the existing referenced track, including when copy-on-add is enab
 
 ## Removing tracks
 
-Right-click a track in a playlist for **Remove from Playlist** (membership only) or **Delete from Library…** (complete Rhythm identity). Other track contexts offer only Delete from Library. These commands act on the current selection. Command-click on macOS (Control-click on Linux/Windows) toggles rows; Shift-click selects a range. Right-click inside a selection preserves it, while right-click outside it selects that row. Track Info and Show in Finder remain single-row actions.
+Right-click a track in a playlist for **Remove from Playlist** (membership only) or **Delete from Library…** (complete Rio identity). Other track contexts offer only Delete from Library. These commands act on the current selection. Command-click on macOS (Control-click on Linux/Windows) toggles rows; Shift-click selects a range. Right-click inside a selection preserves it, while right-click outside it selects that row. Track Info and Show in Finder remain single-row actions.
 
 Delete from Library asks once for the entire selection, explicitly counting managed copies that will move to Trash and references whose originals stay untouched. Referenced audio stays at its original location. A managed copy is moved to the operating system Trash only after root/path, file identity and import-receipt validation; a database pathname alone grants no Trash authority. All playlist memberships, favourite state and queue references are removed. Deleting the current track stops playback and clears the player. Cancellation changes nothing; a Trash failure retains the identity. A database failure after Trash explicitly reports the partial outcome and retains the entry for recovery using Trash or Locate File. Missing, replaced or unverifiable managed copies are retained with an error rather than silently removed. Bulk execution continues with other tracks, reports the removed/retained counts and failure reasons, and cleans queue/player state only for successful deletions. An affected current file already moved to Trash is paused even if its identity had to be retained.
 
@@ -86,7 +88,7 @@ Only dedicated sacrificial media should be used for initial manual acceptance. S
 
 Right-click an album card or its opened details artwork/heading for **Delete Album…**. It removes every track in that exact album identity, with one album-named confirmation counting managed copies and references. It uses the same safety, partial-failure and playback-cleanup rules as track removal. On macOS, album **Show in Finder** reveals its actual audio directory; multiple directories or partially missing files first show an explicit folder/count summary. All-missing albums show an error without revealing a fallback folder. Track-row right-clicks keep their selection-aware track actions. See [ALBUM-ACTIONS.md](docs/ALBUM-ACTIONS.md) for identity, location and acceptance details.
 
-After successful managed album deletion, Rhythm removes the resulting genuinely empty managed directory chain, including album/disc and artist folders, using non-recursive cleanup. Other albums, unknown files or subdirectories stop upward cleanup. The sole exception is a recognized regular Finder `.DS_Store` file: if it is the directory’s only remaining entry, Rhythm moves it to native Trash before attempting empty-directory removal. A filename alone is insufficient; linked, malformed or changed files are retained. Referenced/external trees and registered media roots—including nested/historical roots—are never removed. Cleanup warnings are reported separately and do not change successful track-deletion results.
+After successful managed album deletion, Rio removes the resulting genuinely empty managed directory chain, including album/disc and artist folders, using non-recursive cleanup. Other albums, unknown files or subdirectories stop upward cleanup. The sole exception is a recognized regular Finder `.DS_Store` file: if it is the directory’s only remaining entry, Rio moves it to native Trash before attempting empty-directory removal. A filename alone is insufficient; linked, malformed or changed files are retained. Referenced/external trees and registered media roots—including nested/historical roots—are never removed. Cleanup warnings are reported separately and do not change successful track-deletion results.
 
 ## Formats and artwork
 
@@ -96,15 +98,15 @@ Embedded JPEG, PNG, and WebP artwork up to 10 MB is cached. Missing artwork gets
 
 ## Data storage and safety
 
-The folder you select contains `rhythm.sqlite` plus SQLite WAL/SHM sidecars while open. It holds tracks, source paths, cached artwork, playlists, favourites, and player settings. Close Rhythm before backing up or copying the library folder. The database contains absolute paths and is not a portable synchronization format.
+The folder you select contains `rio.sqlite` plus SQLite WAL/SHM sidecars while open. It holds tracks, source paths, cached artwork, playlists, favourites, and player settings. Close Rio before backing up or copying the library folder. The database contains absolute paths and is not a portable synchronization format.
 
 Global Track List settings are stored in `view-preferences.json` beside the application-data pointer. Existing library-scoped Songs order migrates once when no global layout exists.
 
-A `library.json` pointer is stored in Electron’s user-data directory: normally `~/Library/Application Support/Rhythm` on macOS and `$XDG_CONFIG_HOME/Rhythm` (usually `~/.config/Rhythm`) on Linux. `RHYTHM_DATA_DIR` overrides only the pointer/application-data location for isolated development and testing; it does not preconfigure a music library.
+A `library.json` pointer is stored in Electron’s user-data directory: normally `~/Library/Application Support/Rio` on macOS and `$XDG_CONFIG_HOME/Rio` (usually `~/.config/Rio`) on Linux. `RIO_DATA_DIR` overrides only the pointer/application-data location for isolated development and testing; it does not preconfigure a music library.
 
-An existing unrelated SQLite database is rejected. Disconnected or unreadable roots produce errors rather than erasing library records. Symlinks and hidden entries are skipped. Same canonical paths are indexed once; content-duplicate detection is not implemented. Unreconciled external file moves produce a missing old entry and a new record; new IDs are independent of local paths. Rhythm does not repair playlists across moves automatically.
+An existing unrelated SQLite database is rejected. Disconnected or unreadable roots produce errors rather than erasing library records. Symlinks and hidden entries are skipped. Same canonical paths are indexed once; content-duplicate detection is not implemented. Unreconciled external file moves produce a missing old entry and a new record; new IDs are independent of local paths. Rio does not repair playlists across moves automatically.
 
-Existing Rhythm 0.1 libraries migrate automatically to schema 3, marking prior tracks as referenced and preserving playlists, favourites, track identities, and listening state. Use **Library settings → Rescan folders** after upgrading to populate BPM, comments, bit rate, and codec for previously indexed tracks. Missing tags display an em dash. Close the app and back up the library folder before upgrading; older schema-1/2 applications cannot open a migrated library.
+Rio retains the schema-1/2 to schema-3 migration for databases carrying its own application identifier, marking prior tracks as referenced and preserving playlists, favourites, track identities, and listening state. This pre-release rename starts with a separate Rio profile and `rio.sqlite`; it does not import the earlier working-name application data. Use **Library settings → Rescan folders** after upgrading to populate BPM, comments, bit rate, and codec for previously indexed tracks. Missing tags display an em dash. Close the app and back up the library folder before upgrading; older schema-1/2 applications cannot open a migrated library.
 
 No telemetry, streaming service, login, or cloud connection is implemented. The sandboxed UI loads local resources and indexed audio only.
 
@@ -139,15 +141,15 @@ npm ci
 npm run dist:mac -- --publish never
 ```
 
-On Intel macOS this produces `release/mac/Rhythm.app`, `release/Rhythm-0.1.0.dmg`, and `release/Rhythm-0.1.0-mac.zip`. Apple Silicon hosts build their native architecture; filenames gain architecture suffixes where required by the packager. You can also request a specific architecture with the packager CLI after building.
+On Intel macOS this produces `release/mac/Rio.app`, `release/Rio-0.1.0.dmg`, and `release/Rio-0.1.0-mac.zip`. Apple Silicon hosts build their native architecture; filenames gain architecture suffixes where required by the packager. You can also request a specific architecture with the packager CLI after building.
 
-Open the DMG and drag Rhythm into Applications, then launch it. Alternatively copy `release/mac/Rhythm.app` to Applications. Development packages are **unsigned and unnotarized**. On your own trusted build, macOS may require the Finder **Open** action or **System Settings → Privacy & Security → Open Anyway**. No signing identity was provided. The installer does not alter security settings.
+Open the DMG and drag Rio into Applications, then launch it. Alternatively copy `release/mac/Rio.app` to Applications. Development packages are **unsigned and unnotarized**. On your own trusted build, macOS may require the Finder **Open** action or **System Settings → Privacy & Security → Open Anyway**. No signing identity was provided. The installer does not alter security settings.
 
 `npm run pack` creates a directory bundle without distribution archives. The app bundles Electron; users do not need Node.js or FFmpeg installed.
 
 ## Build and install on Linux
 
-AppImage and DEB artifacts were cross-built on macOS, but were not run on Linux. To rebuild and test natively on Linux:
+Build Linux packages natively so the publication addon matches the target OS and architecture. The existing Ubuntu workflow runs this validation; Linux runtime execution is unavailable on the current macOS host:
 
 ```sh
 npm ci
@@ -159,18 +161,18 @@ npm run dist:linux -- --publish never
 On an x64 Linux host, install with either:
 
 ```sh
-chmod +x release/Rhythm-0.1.0.AppImage
-./release/Rhythm-0.1.0.AppImage
+chmod +x release/Rio-0.1.0.AppImage
+./release/Rio-0.1.0.AppImage
 ```
 
 or:
 
 ```sh
-sudo apt install ./release/rhythm-desktop_0.1.0_amd64.deb
-rhythm-desktop
+sudo apt install ./release/rio-desktop_0.1.0_amd64.deb
+rio-desktop
 ```
 
-AppImage requires FUSE on some distributions; with a compatible runtime, `--appimage-extract-and-run` is an alternative. Do not run Rhythm as root or disable Chromium’s sandbox. Electron’s sandbox may require appropriate distribution user-namespace settings. `.github/workflows/build.yml` runs checks and packaging natively on macOS and Ubuntu when triggered; it does not publish releases.
+AppImage requires FUSE on some distributions; with a compatible runtime, `--appimage-extract-and-run` is an alternative. Do not run Rio as root or disable Chromium’s sandbox. Electron’s sandbox may require appropriate distribution user-namespace settings. `.github/workflows/build.yml` runs checks and packaging natively on macOS and Ubuntu when triggered; it does not publish releases.
 
 This iteration was developed and run on macOS. The user reports the preceding checkpoint passed macOS and Ubuntu CI; the new suites must now pass there too. See [ITERATION-3.md](docs/ITERATION-3.md) for current results and [VALIDATION.md](docs/VALIDATION.md) for the original checkpoint. macOS is the active Phase 1 development target; the existing Ubuntu workflow remains a portability canary.
 
@@ -203,3 +205,9 @@ This iteration was developed and run on macOS. The user reports the preceding ch
 ## Useful real-world evaluation
 
 Try a small folder first, with tagged and untagged files, compilations, multiple discs, different codecs, and embedded artwork. Check audible output, seek/next behavior, long titles, search, playlists and restart. Disconnect an external drive and rescan, then reconnect and rescan. For very large libraries, evaluate import time, responsiveness, and database size before indexing the whole collection.
+
+## Branding
+
+Original owner-supplied artwork: `artfiles/rio-logo-white.png`. The desktop/mobile design references are `artfiles/rio-desktop-prototype.png` and `artfiles/rio-mobile-prototype.png`. The README uses `assets/rio-github-banner.png`. Run `npm run icons` to regenerate the separate UI wordmark and PNG application icon; on macOS it also regenerates ICNS using system tools. Node handles the PNG derivatives without a new image dependency. Never overwrite the original artwork. The repository directory and GitHub repository name are unchanged by the pre-release product rename.
+
+See [the rename report](docs/RIO-RENAME.md) for identifiers, validation, preserved historical records and the complete file manifest.

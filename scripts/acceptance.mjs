@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { Library } from "../dist/domain/library.js";
 import { wavFixture } from "../tests/fixtures.ts";
-const root = await mkdtemp(path.join(tmpdir(), "rhythm-acceptance-"));
+const root = await mkdtemp(path.join(tmpdir(), "rio-acceptance-"));
 const library = path.join(root, "Library"),
   music = path.join(root, "Audio"),
   appData = path.join(root, "AppData"),
@@ -61,12 +61,12 @@ await writeFile(
 );
 let app;
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 async function launch(files = [], data = appData) {
@@ -74,14 +74,14 @@ async function launch(files = [], data = appData) {
     ...(executable
       ? { executablePath: executable, args: files }
       : { args: [".", ...files] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: data },
+    env: { ...process.env, RIO_DATA_DIR: data },
     timeout: 30000,
   });
   const page = await app.firstWindow();
   await page.waitForSelector("h1");
   return page;
 }
-const snapshot = (page) => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = (page) => page.evaluate(() => window.rio.snapshot());
 async function waitSnapshot(page, predicate) {
   for (let i = 0; i < 100; i++) {
     const state = await snapshot(page);

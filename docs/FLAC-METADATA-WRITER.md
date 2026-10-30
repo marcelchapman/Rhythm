@@ -20,7 +20,7 @@ data before its first asynchronous operation and returns an independently owned
 candidate buffer only after verification. Results include effective changed
 fields, original/candidate/audio SHA-256 hashes, frame/audio-byte counts, and
 preservation counts. `engineVersion` is null for a verified no-op that never
-loads the writer. Errors have Rhythm-owned codes: `invalid-input`,
+loads the writer. Errors have Rio-owned codes: `invalid-input`,
 `unsupported-input`, `invalid-patch`, `unsafe-artwork`, `verification-failed`,
 `writer-failed`, and `resource-limit`.
 
@@ -151,7 +151,7 @@ electron-builder packages can include it even before an editor is exposed.
 
 The JS wrapper is MIT; its embedded TagLib/WASM carries **LGPL-2.1-or-later**
 obligations. The published package's MIT license file alone does not complete
-Rhythm's distribution obligations. Before distributing a package containing it,
+Rio's distribution obligations. Before distributing a package containing it,
 provide the applicable notices/license texts, corresponding source/build
 materials and a workable library replacement/relink route, including macOS
 signature implications, consistent with the lab findings. This mission does not

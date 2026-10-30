@@ -7,11 +7,9 @@ import path from "node:path";
 
 // Exercise the user's actual npm start entry point, not a direct Electron launch.
 // All profile data is disposable; an installed/user instance is never stopped.
-const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-startup-")),
-);
+const root = await realpath(await mkdtemp(path.join(tmpdir(), "rio-startup-")));
 const cwd = process.cwd();
-const env = { ...process.env, RHYTHM_DATA_DIR: path.join(root, "Profile") };
+const env = { ...process.env, RIO_DATA_DIR: path.join(root, "Profile") };
 let app;
 try {
   const launcher = path.join(root, "npm-start.sh");
@@ -33,6 +31,7 @@ try {
     path: app.getAppPath(),
     profile: app.getPath("userData"),
     packaged: app.isPackaged,
+    name: app.getName(),
     menu: Menu.getApplicationMenu().items[0].submenu.items.map((item) => ({
       id: item.id,
       label: item.label,
@@ -42,8 +41,17 @@ try {
     })),
   }));
   assert.equal(await realpath(running.path), await realpath(cwd));
-  assert.equal(running.profile, env.RHYTHM_DATA_DIR);
+  assert.equal(running.profile, env.RIO_DATA_DIR);
   assert.equal(running.packaged, false);
+  assert.equal(running.name, "Rio");
+  assert.equal(await page.title(), "Rio");
+  await page
+    .getByRole("img", { name: "Rio", exact: true })
+    .first()
+    .evaluate(async (image) => {
+      await image.decode();
+      if (!image.naturalWidth) throw Error("Rio wordmark did not load");
+    });
   if (process.platform === "darwin") {
     assert.deepEqual(
       running.menu.map((i) =>
@@ -69,7 +77,7 @@ try {
   const blocked = await new Promise((resolve, reject) => {
     // Playwright adds --no-sandbox to its Linux Electron launches above and in
     // the other desktop suites. Match that test-only strategy for this raw child
-    // so runner sandbox setup cannot abort Electron before Rhythm's lock check.
+    // so runner sandbox setup cannot abort Electron before Rio's lock check.
     const args =
       process.platform === "linux"
         ? ["start", "--", "--no-sandbox"]
@@ -96,9 +104,9 @@ try {
     });
   });
   assert.equal(blocked.code, 1, blocked.output);
-  assert.match(blocked.output, /Rhythm source build did not start/);
-  assert.match(blocked.output, /Quit the running Rhythm application/);
-  assert(blocked.output.includes(env.RHYTHM_DATA_DIR));
+  assert.match(blocked.output, /Rio source build did not start/);
+  assert.match(blocked.output, /Quit the running Rio application/);
+  assert(blocked.output.includes(env.RIO_DATA_DIR));
   assert.equal(await app.evaluate(() => process.pid), running.pid);
   assert.equal(
     await app.evaluate(

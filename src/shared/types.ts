@@ -28,6 +28,8 @@ export interface Track {
   mediaRelativePath: string | null;
 }
 export interface MediaSettings {
+  /** Transient setup validation error; never persisted as media configuration. */
+  setupError?: string;
   root: { id: string; path: string } | null;
   copyOnAdd: boolean;
   keepOrganized: boolean;
@@ -121,7 +123,7 @@ export interface PlaylistAction {
   command: "export" | "duplicate" | "delete";
   playlistId: string;
 }
-export interface RhythmAPI {
+export interface RioAPI {
   showPlaylistMenu(id: string): Promise<void>;
   onPlaylistAction(callback: (action: PlaylistAction) => void): () => void;
   duplicatePlaylist(id: string): Promise<Playlist>;

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-10-20T22:19:29.331935+00:00",
-  "title": "Design System: Rhythm",
+  "title": "Design System: Rio",
   "extensions": {
     "colorMeta": {
       "primary": {
@@ -460,7 +460,7 @@
   ],
   "narrative": {
     "northStar": "The personal music library",
-    "overview": "Rhythm uses the user-approved desktop prototype as its visual authority: a navy and charcoal workspace in which album artwork leads and controls remain restrained. White titles, muted metadata, thin dividers, and blue state cues keep a dense personal collection readable.\n\nThis record describes the implemented desktop app in src/renderer/style.css and src/renderer/App.tsx. It captures reusable visual behavior rather than extending the identity to future mobile or marketing surfaces.",
+    "overview": "Rio uses the user-approved desktop prototype as its visual authority: a navy and charcoal workspace in which album artwork leads and controls remain restrained. White titles, muted metadata, thin dividers, and blue state cues keep a dense personal collection readable.\n\nThis record describes the implemented desktop app in src/renderer/style.css and src/renderer/App.tsx. It captures reusable visual behavior rather than extending the identity to future mobile or marketing surfaces.",
     "keyCharacteristics": [
       "Artwork leads the library view.",
       "Persistent navigation, contextual album details or queue, and playback share one desktop shell.",

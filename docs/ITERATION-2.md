@@ -1,3 +1,5 @@
+> Current behavior is described using the Rio name. Recorded pre-rename artifact paths and CI evidence retain the original working name Rhythm; they are historical records, not current package instructions.
+
 # Iteration 2 — shared Track List and desktop playlist interchange
 
 Developed from clean `main` at **5373ab1 — Add songs view and library interactions**. Local validation date: **2026-10-22**, Intel macOS, Electron 44.9.2. macOS is the active Phase 1 product target; Ubuntu CI remains a portability canary. Work continues in the current uncommitted worktree. No prior implementation was reverted, and no commit or push was made.
@@ -6,7 +8,7 @@ Developed from clean `main` at **5373ab1 — Add songs view and library interact
 
 ### Acceptance failure and correction
 
-Manual testing of the first Iteration 2 package exposed missing desktop integration: an M3U8 dropped into Rhythm went through the audio-only scanner and was skipped, while Finder Open With had neither an Electron file-open handler nor a document association. The existing parser/import/export domain logic was correct and is preserved. All three entry paths now reach that same importer: File → Import Playlist, direct M3U/M3U8 drops (including mixed audio/folder drops), and macOS file-open delivery.
+Manual testing of the first Iteration 2 package exposed missing desktop integration: an M3U8 dropped into Rio went through the audio-only scanner and was skipped, while Finder Open With had neither an Electron file-open handler nor a document association. The existing parser/import/export domain logic was correct and is preserved. All three entry paths now reach that same importer: File → Import Playlist, direct M3U/M3U8 drops (including mixed audio/folder drops), and macOS file-open delivery.
 
 Playlist documents are never indexed as audio. Multi-file drops process playlists sequentially, keep each playlist's order, index unknown referenced audio safely, and show combined import reports. Audio/folder drops continue using the existing read-only scanner; an explicitly dropped folder is scanned for audio, not recursively for playlist documents.
 
@@ -70,7 +72,7 @@ Only presentation is shared. Each mounted content view owns its sort, selection 
 - `#EXTM3U`, `#EXTINF`, and other comments/directives do not become tracks. Actual indexed audio supplies metadata.
 - Relative entries resolve beside the input playlist; absolute entries remain absolute. Spaces, Unicode, literal percent signs, and `#` inside paths are not URL-decoded accidentally. Unsupported remote protocols are reported, never fetched.
 - Available supported audio is matched by canonical path. The existing read-only scanner indexes unknown files. Missing, unsupported, or unindexable entries are reported and skipped; available entries keep their first-occurrence order.
-- Rhythm's existing unique-membership rule applies: repeated references collapse to one entry. New playlist creation and ordered membership commit together, with rollback on failure.
+- Rio's existing unique-membership rule applies: repeated references collapse to one entry. New playlist creation and ordered membership commit together, with rollback on failure.
 - Export is UTF-8 `#EXTM3U`, followed by useful `#EXTINF` artist/title/duration and path entries in playlist order. Labels cannot inject new lines. Audio inside the export folder's tree gets `./` relative references; external locations use absolute references. The destination folder is canonicalized so symlinked folders do not produce incorrect relative references.
 - Known unavailable tracks retain their stored path on export and are counted in the completion notice. A later import reports/skips files still unavailable; otherwise round trips preserve order and membership.
 - Newline/NUL or ambiguous trailing-whitespace track paths fail export explicitly instead of producing a corrupt playlist. Legacy non-UTF-8 M3U encodings require conversion to UTF-8.
@@ -78,7 +80,7 @@ Only presentation is shared. Each mounted content view owns its sort, selection 
 
 ### Source safety
 
-Audio is never moved, renamed, copied, deleted, or tag-edited. Imports write only Rhythm's database. Export writes an exclusive temporary `.tmp` file beside the destination, flushes/closes it, then renames it over the chosen playlist file. Direct audio destinations, symlink destinations, and hard links to indexed audio are rejected. Existing ordinary playlist files may be replaced after the native save dialog. Test music/libraries are isolated temporary fixtures; no real collection is used.
+Audio is never moved, renamed, copied, deleted, or tag-edited. Imports write only Rio's database. Export writes an exclusive temporary `.tmp` file beside the destination, flushes/closes it, then renames it over the chosen playlist file. Direct audio destinations, symlink destinations, and hard links to indexed audio are rejected. Existing ordinary playlist files may be replaced after the native save dialog. Test music/libraries are isolated temporary fixtures; no real collection is used.
 
 ## Files changed
 
@@ -154,12 +156,12 @@ Rebuilt Intel x64 outputs:
 
 They remain unsigned and unnotarized. The built Info.plist confirms M3U/M3U8 Viewer/Alternate document metadata. No installed app, default handler, or system security setting was changed. Linux was not rebuilt or launched locally for this macOS-focused iteration; any pre-existing local Linux artifacts belong to an earlier build. Rerun the unchanged macOS/Ubuntu GitHub Actions workflow before accepting this iteration's CI status. Apple Silicon packaging/runtime was not exercised locally.
 
-Manual macOS acceptance with the **newly rebuilt app** (replace/select the intended app copy if several Rhythm bundles exist):
+Manual macOS acceptance with the **newly rebuilt app** (replace/select the intended app copy if several Rio bundles exist):
 
 1. File → Import Playlist and export/save/cancel/round trip.
-2. Drag one or multiple M3U8/M3U files into Rhythm, including a mixed audio/folder drop.
-3. Finder Open With → Rhythm while the app is fully quit.
-4. Finder Open With → Rhythm while running, minimized, or with its last window closed.
+2. Drag one or multiple M3U8/M3U files into Rio, including a mixed audio/folder drop.
+3. Finder Open With → Rio while the app is fully quit.
+4. Finder Open With → Rio while running, minimized, or with its last window closed.
 5. Drag headers to reorder, including distant/off-screen columns.
 6. Drag resize boundaries on the normal mouse/trackpad; confirm no accidental sort/reorder.
 7. Toggle Track List columns in Library Settings; Title stays visible.

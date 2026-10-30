@@ -18,23 +18,23 @@ import { parseM3U } from "../dist/domain/m3u.js";
 import { wavFixture } from "../tests/fixtures.ts";
 
 const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-playlist-menu-")),
+  await mkdtemp(path.join(tmpdir(), "rio-playlist-menu-")),
 );
 const folder = path.join(root, "Library"),
   media = path.join(root, "Media"),
   review = path.resolve(".impeccable/review");
 const originals = new Map();
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 let app, page, l;
-const snapshot = () => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = () => page.evaluate(() => window.rio.snapshot());
 const sidebar = (name) =>
   page.locator(".playlist-nav").getByRole("button", { name, exact: true });
 const row = (id) => page.locator(`.song-row[data-track-id="${id}"]`);
@@ -58,7 +58,7 @@ async function launch() {
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "Profile") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "Profile") },
     timeout: 30000,
   });
   page = await app.firstWindow();
@@ -227,7 +227,7 @@ async function deleted(source, accept = true, toolbar = false) {
   assert.deepEqual((await snapshot()).tracks, before.tracks);
   // The existing operation lock also protects the native confirmation's library.
   await assert.rejects(
-    page.evaluate(() => window.rhythm.chooseLibrary()),
+    page.evaluate(() => window.rio.chooseLibrary()),
     /Wait for/,
   );
   await app.evaluate(
@@ -241,7 +241,7 @@ async function deleted(source, accept = true, toolbar = false) {
       (await snapshot()).playlists,
       before.playlists.filter((p) => p.id !== source.id),
     );
-    const db = new DatabaseSync(path.join(folder, "rhythm.sqlite"), {
+    const db = new DatabaseSync(path.join(folder, "rio.sqlite"), {
       readOnly: true,
     });
     try {
@@ -495,11 +495,11 @@ try {
     assert.equal(await app.evaluate(() => globalThis.playlistMenu), null);
   }
   await assert.rejects(
-    page.evaluate(() => window.rhythm.duplicatePlaylist("stale-playlist")),
+    page.evaluate(() => window.rio.duplicatePlaylist("stale-playlist")),
     /no longer exists/,
   );
   await assert.rejects(
-    page.evaluate(() => window.rhythm.showPlaylistMenu("stale-playlist")),
+    page.evaluate(() => window.rio.showPlaylistMenu("stale-playlist")),
     /no longer exists/,
   );
   await nav(copies[0].name);

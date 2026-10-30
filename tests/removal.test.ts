@@ -21,7 +21,7 @@ let root: string, media: string, folder: string, library: Library;
 const originals = new Map<string, { bytes: Buffer; mtime: number }>();
 beforeEach(async () => {
   originals.clear();
-  root = await realpath(await mkdtemp(path.join(tmpdir(), "rhythm-removal-")));
+  root = await realpath(await mkdtemp(path.join(tmpdir(), "rio-removal-")));
   media = path.join(root, "Media");
   folder = path.join(root, "Library");
   await mkdir(media);

@@ -1,3 +1,5 @@
+> Archived pre-rename record: this milestone/specification used the working name Rhythm. Names, commands and artifact paths below describe that historical checkpoint. Use the current README and PRODUCT.md for Rio.
+
 # Rhythm 0.1 — implementation and validation
 
 Current development results and the evolved source-safety contract are in [ITERATION-3.md](ITERATION-3.md). That foundation adds explicit ownership, opt-in managed copying, identity-preserving Locate File, explicit copy-only consolidation, read-only Track Info and first-Play recovery with decoder-ready completion; tag writing, existing-file reorganization, track deletion and Trash were deferred at that checkpoint. The subsequent single-track removal implementation and its current validation/acceptance record are in [TRACK-REMOVAL.md](TRACK-REMOVAL.md). The following initial-checkpoint record is historical. The user confirmed macOS/Ubuntu CI green at the Iteration 3 baseline `0aedfdd`; this iteration requires its own CI rerun.

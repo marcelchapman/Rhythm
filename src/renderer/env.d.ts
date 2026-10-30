@@ -1,6 +1,6 @@
-import type { RhythmAPI } from "../shared/types";
+import type { RioAPI } from "../shared/types";
 declare global {
   interface Window {
-    rhythm: RhythmAPI;
+    rio: RioAPI;
   }
 }

@@ -1,3 +1,4 @@
+import { constants } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
 import {
@@ -15,6 +16,7 @@ import {
   fileDigest,
   prepareManagedCopy,
   finishManagedCopy,
+  validateMediaRoot,
   validateManagedLocation,
   validateManagedTrash,
   planManagedAlbumCleanup,
@@ -34,6 +36,9 @@ import {
   type ConsolidationResult,
   type TrackRemovalResult,
 } from "../shared/types.js";
+
+// Application identity, independent of schema version: ASCII "RIO\0".
+const LIBRARY_APPLICATION_ID = 0x52494f00;
 
 class TrashedTrackRemovalError extends Error {}
 
@@ -86,10 +91,11 @@ export function normalizeState(
   };
 }
 
-/** SQLite belongs to Rhythm. External source audio is only ever opened for reading. */
+/** SQLite belongs to Rio. External source audio is only ever opened for reading. */
 export class Library {
   readonly db: DatabaseSync;
   scanning = false;
+  private mediaSetupError?: string;
   private constructor(
     readonly directory: string,
     db: DatabaseSync,
@@ -97,13 +103,16 @@ export class Library {
     this.db = db;
   }
 
-  static async open(directory: string): Promise<Library> {
+  static async open(
+    directory: string,
+    { setupMediaRoot = false } = {},
+  ): Promise<Library> {
     if (!path.isAbsolute(directory))
       throw new Error("Choose an absolute library folder.");
     await mkdir(directory, { recursive: true });
     const canonical = await realpath(directory);
-    const filename = path.join(canonical, "rhythm.sqlite");
-    // Never claim an existing unrelated SQLite database as a Rhythm library.
+    const filename = path.join(canonical, "rio.sqlite");
+    // Never claim an existing unrelated SQLite database as a Rio library.
     let exists = false;
     try {
       await access(filename);
@@ -117,15 +126,15 @@ export class Library {
         const result = check.prepare("PRAGMA application_id").get() as {
           application_id: number;
         };
-        if (result.application_id !== 1380471885)
+        if (result.application_id !== LIBRARY_APPLICATION_ID)
           throw new Error(
-            "This folder contains a database that is not a Rhythm library. Choose another folder.",
+            "This folder contains a database that is not a Rio library. Choose another folder.",
           );
         const version = check.prepare("PRAGMA user_version").get() as {
           user_version: number;
         };
         if (version.user_version > 3)
-          throw new Error("This library needs a newer version of Rhythm.");
+          throw new Error("This library needs a newer version of Rio.");
       } finally {
         check.close();
       }
@@ -148,7 +157,7 @@ export class Library {
         PRIMARY KEY(playlistId, trackId)
       );
       CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL);
-      PRAGMA application_id=1380471885;`);
+      PRAGMA application_id=${LIBRARY_APPLICATION_ID};`);
     // Additive, atomic migration: preserve track IDs, playlists, and all user state.
     const version = db.prepare("PRAGMA user_version").get()!
       .user_version as number;
@@ -188,7 +197,9 @@ export class Library {
         throw error;
       }
     }
-    return new Library(canonical, db);
+    const library = new Library(canonical, db);
+    if (setupMediaRoot) await library.setupMediaRoot(!exists);
+    return library;
   }
 
   tracks(id?: string): Track[] {
@@ -279,6 +290,7 @@ export class Library {
         : undefined;
     return {
       root: root ?? null,
+      ...(this.mediaSetupError ? { setupError: this.mediaSetupError } : {}),
       copyOnAdd: !!root && saved.copyOnAdd === true,
       keepOrganized: saved.keepOrganized !== false,
       pendingImports: Number(
@@ -289,6 +301,54 @@ export class Library {
           .get()!.n,
       ),
     };
+  }
+  /** Desktop setup uses the persisted root; only a genuinely new DB gets a default. */
+  private async setupMediaRoot(isNew: boolean) {
+    try {
+      if (isNew) {
+        const directory = path.join(this.directory, "Rio Media");
+        // Never follow a pre-existing symlink or create missing ancestor volumes.
+        try {
+          await mkdir(directory);
+        } catch (error) {
+          if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+        }
+        const info = await lstat(directory);
+        if (
+          !info.isDirectory() ||
+          info.isSymbolicLink() ||
+          (await realpath(directory)) !== directory
+        )
+          throw new Error(
+            "The default Rio Media path is not a safe directory.",
+          );
+        await access(
+          directory,
+          constants.R_OK | constants.W_OK | constants.X_OK,
+        );
+        await this.chooseMediaRoot(directory);
+      } else {
+        const root = this.selectedMediaRoot();
+        // Validate recorded identity, never reselect/recreate an unavailable root.
+        await validateMediaRoot(root);
+        if (
+          (await realpath(root.path)) !== root.path ||
+          root.path === path.parse(root.path).root ||
+          root.path === this.directory ||
+          inside(root.path, this.directory)
+        )
+          throw new Error("The stored Rio Media path is not a safe directory.");
+        await access(
+          root.path,
+          constants.R_OK | constants.W_OK | constants.X_OK,
+        );
+      }
+      this.mediaSetupError = undefined;
+    } catch {
+      this.mediaSetupError = isNew
+        ? "Rio couldn't configure Rio Media inside your library. Choose a media folder in Library settings."
+        : "Your saved Rio Media folder is unavailable or isn't configured safely. Reconnect its drive and reopen the library, or choose a media folder in Library settings. Your saved location has not changed.";
+    }
   }
   private writeMediaSettings(value: MediaSettings) {
     this.db
@@ -320,7 +380,7 @@ export class Library {
       throw new Error("Invalid media settings.");
     const value = { ...this.mediaSettings(), ...patch };
     if (value.copyOnAdd && !value.root)
-      throw new Error("Choose a Rhythm Media folder before enabling copying.");
+      throw new Error("Choose a Rio Media folder before enabling copying.");
     this.writeMediaSettings(value);
     return this.mediaSettings();
   }
@@ -328,7 +388,7 @@ export class Library {
     if (this.scanning)
       throw new Error("Wait for the current import to finish.");
     if (!path.isAbsolute(directory))
-      throw new Error("Choose an absolute Rhythm Media folder.");
+      throw new Error("Choose an absolute Rio Media folder.");
     this.scanning = true;
     try {
       const canonical = await realpath(directory),
@@ -363,6 +423,7 @@ export class Library {
         this.db.exec("ROLLBACK");
         throw e;
       }
+      this.mediaSetupError = undefined;
       return this.mediaSettings();
     } finally {
       this.scanning = false;
@@ -406,9 +467,7 @@ export class Library {
   private selectedMediaRoot(): MediaRoot {
     const root = this.mediaSettings().root;
     if (!root)
-      throw new Error(
-        "Choose a Rhythm Media folder in Library settings first.",
-      );
+      throw new Error("Choose a Rio Media folder in Library settings first.");
     return this.db
       .prepare(
         "SELECT rootId AS id,path,device,inode FROM media_root_locations WHERE rootId=?",

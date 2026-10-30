@@ -264,8 +264,8 @@ for (const source of manifest) {
       }))
         f.setProperty(k, v);
       if (source.ext === "m4a")
-        f.setMP4Item("----:org.rhythm.lab:MiXeD", "Unedited sentinel ü 音楽");
-      else f.setProperty("RHYTHM_LAB_UNKNOWN", "Unedited sentinel ü 音楽");
+        f.setMP4Item("----:org.rio.lab:MiXeD", "Unedited sentinel ü 音楽");
+      else f.setProperty("RIO_LAB_UNKNOWN", "Unedited sentinel ü 音楽");
       f.setProperty("LYRICS", "Unedited lyrics ü 音楽");
     });
     try {
@@ -351,7 +351,7 @@ for (const source of manifest) {
         check.passed = false;
       }
     }
-    // Absent fields stay absent: do not seed from Rhythm's display fallbacks.
+    // Absent fields stay absent: do not seed from Rio's display fallbacks.
     const missing = path.join(out, `missing-fields.${source.ext}`);
     await copyFile(base, missing);
     await edit(missing, (f) => {

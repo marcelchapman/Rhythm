@@ -5,7 +5,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { wavFixture } from "../tests/fixtures.ts";
-const root = await mkdtemp(path.join(tmpdir(), "rhythm-column-playlist-test-"));
+const root = await mkdtemp(path.join(tmpdir(), "rio-column-playlist-test-"));
 const library = path.join(root, "Library"),
   music = path.join(root, "Audio files"),
   review = path.resolve(".impeccable/review");
@@ -26,12 +26,12 @@ await source(second, "Second song", "A ensemble");
 await source(third, "New recording", "B ensemble");
 let app;
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 async function launch() {
@@ -39,14 +39,14 @@ async function launch() {
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "AppData") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "AppData") },
     timeout: 30000,
   });
   const page = await app.firstWindow();
   await page.waitForSelector("h1");
   return page;
 }
-const snapshot = (page) => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = (page) => page.evaluate(() => window.rio.snapshot());
 async function waitSnapshot(page, predicate) {
   for (let i = 0; i < 100; i++) {
     const s = await snapshot(page);
@@ -170,13 +170,13 @@ try {
   // Native context infrastructure still accepts the reordered rows.
   await app.evaluate(({ Menu }) => {
     Menu.prototype.popup = function () {
-      globalThis.__rhythmTestMenu = this;
+      globalThis.__rioTestMenu = this;
     };
   });
   await rows.first().click({ button: "right" });
   assert(
     await app.evaluate(
-      () => !!globalThis.__rhythmTestMenu.getMenuItemById("track-playlist"),
+      () => !!globalThis.__rioTestMenu.getMenuItemById("track-playlist"),
     ),
   );
   for (const label of ["Dismiss import report", "Dismiss message"])

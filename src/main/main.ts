@@ -37,12 +37,12 @@ import type { DesktopPlaylistEvent } from "../shared/types.js";
 import type { TrackListPatch } from "../shared/preferences.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-app.setName("Rhythm");
-if (process.env.RHYTHM_DATA_DIR)
-  app.setPath("userData", path.resolve(process.env.RHYTHM_DATA_DIR));
+app.setName("Rio");
+if (process.env.RIO_DATA_DIR)
+  app.setPath("userData", path.resolve(process.env.RIO_DATA_DIR));
 protocol.registerSchemesAsPrivileged([
   {
-    scheme: "rhythm",
+    scheme: "rio",
     privileges: {
       standard: true,
       secure: true,
@@ -51,7 +51,7 @@ protocol.registerSchemesAsPrivileged([
     },
   },
   {
-    scheme: "rhythm-media",
+    scheme: "rio-media",
     privileges: {
       standard: true,
       secure: true,
@@ -148,7 +148,7 @@ const snapshot = () => ({
   },
 });
 function requireLibrary() {
-  if (!library) throw new Error("Set up your Rhythm library first.");
+  if (!library) throw new Error("Set up your Rio library first.");
   return library;
 }
 function send(command: string) {
@@ -173,18 +173,20 @@ async function chooseLibrary() {
   choosingLibrary = true;
   try {
     const result = await dialog.showOpenDialog(win!, {
-      title: "Choose where to store your Rhythm library",
+      title: "Choose where to store your Rio library",
       buttonLabel: "Use this folder",
       properties: ["openDirectory", "createDirectory"],
       message:
-        "Rhythm stores its database here. Your music can stay in another folder.",
+        "Rio stores its database here. Your music can stay in another folder.",
     });
     if (result.canceled) return null;
     if (library?.scanning || playlistIO)
       throw new Error(
         "Wait for the current import/export before switching libraries.",
       );
-    const next = await Library.open(result.filePaths[0]);
+    const next = await Library.open(result.filePaths[0], {
+      setupMediaRoot: true,
+    });
     try {
       await preferences.migrateLegacy(next.legacyViewPreferences());
       await mkdir(app.getPath("userData"), { recursive: true });
@@ -216,8 +218,8 @@ async function importMusic() {
     buttonLabel: "Add music",
     properties: ["openFile", "openDirectory", "multiSelections"],
     message: current.mediaSettings().copyOnAdd
-      ? "Rhythm copies new music into your Rhythm Media folder. Originals stay unchanged."
-      : "Files stay where they are. Rhythm only reads and indexes your music.",
+      ? "Rio copies new music into your Rio Media folder. Originals stay unchanged."
+      : "Files stay where they are. Rio only reads and indexes your music.",
   });
   if (result.canceled) return null;
   if (playlistIO || current !== library)
@@ -231,7 +233,7 @@ async function importMusic() {
 function handlers() {
   const handle = (name: string, fn: (...args: any[]) => unknown) =>
     ipcMain.handle(name, (event, ...args) => {
-      if (event.senderFrame?.url !== "rhythm://app/index.html")
+      if (event.senderFrame?.url !== "rio://app/index.html")
         throw new Error("Untrusted request.");
       return Promise.resolve(fn(...args)).finally(() => {
         setImmediate(() => void flushPlaylistFiles());
@@ -248,7 +250,7 @@ function handlers() {
   handle("media:choose-root", () =>
     playlistOperation(async (l) => {
       const result = await dialog.showOpenDialog(win!, {
-        title: "Choose a Rhythm Media folder",
+        title: "Choose a Rio Media folder",
         buttonLabel: "Use this folder",
         properties: ["openDirectory", "createDirectory"],
         message:
@@ -270,7 +272,7 @@ function handlers() {
     const file = await stat(track.path).catch(() => null);
     if (!file?.isFile())
       throw new Error(
-        "Rhythm can't find this audio file at its recorded location. Use Locate File to reconnect this track.",
+        "Rio can't find this audio file at its recorded location. Use Locate File to reconnect this track.",
       );
     if (l !== library || l.media(id)?.path !== track.path)
       throw new Error(
@@ -285,7 +287,7 @@ function handlers() {
       const locations = await l.albumLocations(id);
       if (!locations.folders.length)
         throw new Error(
-          `Rhythm can't find any audio files for “${locations.name}” at their recorded locations. Use Locate File on the missing tracks.`,
+          `Rio can't find any audio files for “${locations.name}” at their recorded locations. Use Locate File on the missing tracks.`,
         );
       if (locations.folders.length > 1 || locations.missing.length) {
         const result = await dialog.showMessageBox(win!, {
@@ -350,14 +352,14 @@ function handlers() {
       detail:
         single && !albumId
           ? managed
-            ? `“${single.title}” will be removed from Rhythm and its managed audio file moved to the Trash.\n\n${single.path}`
-            : `“${single.title}” will be removed from Rhythm, but remains at its original location.\n\n${single.path}`
+            ? `“${single.title}” will be removed from Rio and its managed audio file moved to the Trash.\n\n${single.path}`
+            : `“${single.title}” will be removed from Rio, but remains at its original location.\n\n${single.path}`
           : [
               managed
-                ? `${managed} managed track${managed === 1 ? "" : "s"} will be removed from Rhythm and moved to the Trash.`
+                ? `${managed} managed track${managed === 1 ? "" : "s"} will be removed from Rio and moved to the Trash.`
                 : "",
               referenced
-                ? `${referenced} referenced track${referenced === 1 ? "" : "s"} will be removed from Rhythm but remain at their original locations.`
+                ? `${referenced} referenced track${referenced === 1 ? "" : "s"} will be removed from Rio but remain at their original locations.`
                 : "",
             ]
               .filter(Boolean)
@@ -435,7 +437,7 @@ function handlers() {
         ],
         message:
           track.locationKind === "managed"
-            ? "Rhythm will restore a copy into Rhythm Media. The selected original stays unchanged."
+            ? "Rio will restore a copy into Rio Media. The selected original stays unchanged."
             : "Relink this track to the selected file. It stays in place and is not copied.",
       });
       if (result.canceled) return false;
@@ -628,8 +630,8 @@ function handlers() {
             {
               id: "track-consolidate",
               label: album
-                ? "Consolidate Album to Rhythm Media"
-                : "Consolidate to Rhythm Media",
+                ? "Consolidate Album to Rio Media"
+                : "Consolidate to Rio Media",
               enabled: !!l.mediaSettings().root && !playlistIO && !l.scanning,
               click: dispatch("consolidate"),
             },
@@ -783,7 +785,7 @@ async function createWindow() {
   if (win && !win.isDestroyed()) return;
   rendererReady = false;
   win = new BrowserWindow({
-    title: "Rhythm",
+    title: "Rio",
     width: 1464,
     height: 940,
     minWidth: 980,
@@ -803,9 +805,9 @@ async function createWindow() {
     rendererReady = false;
   });
   win.webContents.on("will-navigate", (event, url) => {
-    if (url !== "rhythm://app/index.html") event.preventDefault();
+    if (url !== "rio://app/index.html") event.preventDefault();
   });
-  await win.loadURL("rhythm://app/index.html");
+  await win.loadURL("rio://app/index.html");
   if (startupError) {
     dialog.showErrorBox(
       "Library unavailable",
@@ -818,7 +820,7 @@ if (!app.requestSingleInstanceLock()) {
   if (app.isPackaged) app.quit();
   else {
     console.error(
-      `Rhythm source build did not start: another Rhythm instance owns the profile ${app.getPath("userData")}. Quit the running Rhythm application, then run npm start again.`,
+      `Rio source build did not start: another Rio instance owns the profile ${app.getPath("userData")}. Quit the running Rio application, then run npm start again.`,
     );
     app.exit(1);
   }
@@ -839,8 +841,10 @@ if (!app.requestSingleInstanceLock()) {
         const pointer = JSON.parse(await readFile(pointerPath(), "utf8"));
         rememberedLibrary = true;
         // A remembered missing drive must never silently become a fresh library.
-        await stat(path.join(pointer.libraryPath, "rhythm.sqlite"));
-        library = await Library.open(pointer.libraryPath);
+        await stat(path.join(pointer.libraryPath, "rio.sqlite"));
+        library = await Library.open(pointer.libraryPath, {
+          setupMediaRoot: true,
+        });
         await preferences.migrateLegacy(library.legacyViewPreferences());
       } catch (error) {
         if (
@@ -849,7 +853,7 @@ if (!app.requestSingleInstanceLock()) {
         )
           startupError = String(error);
       }
-      protocol.handle("rhythm", async (request) => {
+      protocol.handle("rio", async (request) => {
         const url = new URL(request.url);
         const relative =
           decodeURIComponent(url.pathname).replace(/^\//, "") || "index.html";
@@ -878,7 +882,7 @@ if (!app.requestSingleInstanceLock()) {
           return new Response(null, { status: 404 });
         }
       });
-      protocol.handle("rhythm-media", async (request) => {
+      protocol.handle("rio-media", async (request) => {
         const url = new URL(request.url);
         const id = url.pathname.slice(1);
         if (!/^[a-f0-9]{64}$/.test(id))
@@ -907,7 +911,7 @@ if (!app.requestSingleInstanceLock()) {
       );
       session.defaultSession.webRequest.onBeforeRequest((details, callback) =>
         callback({
-          cancel: !["rhythm:", "rhythm-media:", "devtools:"].includes(
+          cancel: !["rio:", "rio-media:", "devtools:"].includes(
             new URL(details.url).protocol,
           ),
         }),
@@ -918,7 +922,7 @@ if (!app.requestSingleInstanceLock()) {
           ...(process.platform === "darwin"
             ? [
                 {
-                  label: "Rhythm",
+                  label: "Rio",
                   submenu: [
                     { role: "about" as const },
                     {
@@ -1020,7 +1024,7 @@ if (!app.requestSingleInstanceLock()) {
       });
     })
     .catch((error) => {
-      dialog.showErrorBox("Rhythm could not start", String(error));
+      dialog.showErrorBox("Rio could not start", String(error));
       app.quit();
     });
   app.on("window-all-closed", () => {

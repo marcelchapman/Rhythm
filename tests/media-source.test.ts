@@ -39,11 +39,11 @@ const setup = () => {
 test("effect and transport share one pending source, and readiness requires decodable future data", async () => {
   const { audio, loader } = setup();
   let ready = false;
-  const one = loader.ensure("track", "rhythm-media://track/id", 0);
+  const one = loader.ensure("track", "rio-media://track/id", 0);
   one.then(() => {
     ready = true;
   });
-  const two = loader.ensure("track", "rhythm-media://track/id", 0);
+  const two = loader.ensure("track", "rio-media://track/id", 0);
   expect(two).toBe(one);
   expect(audio.loads).toBe(1);
   audio.metadata();
@@ -57,11 +57,11 @@ test("effect and transport share one pending source, and readiness requires deco
 });
 test("forced recovery invalidates the old waiter and cannot resolve from a stale event with no ready decoder", async () => {
   const { audio, loader } = setup();
-  const old = loader.ensure("same ID old path", "rhythm-media://track/id", 0);
+  const old = loader.ensure("same ID old path", "rio-media://track/id", 0);
   const rejected = expect(old).rejects.toMatchObject({ name: "AbortError" });
   const restored = loader.ensure(
     "same ID new path",
-    "rhythm-media://track/id",
+    "rio-media://track/id",
     4,
     true,
   );
@@ -83,7 +83,7 @@ test("forced recovery invalidates the old waiter and cannot resolve from a stale
 test("restored seek position waits for seek completion and canplay", async () => {
   const { audio, loader } = setup();
   let ready = false;
-  const restored = loader.ensure("track", "rhythm-media://track/id", 7);
+  const restored = loader.ensure("track", "rio-media://track/id", 7);
   restored.then(() => {
     ready = true;
   });
@@ -99,7 +99,7 @@ test("restored seek position waits for seek completion and canplay", async () =>
 });
 test("genuine decoder error rejects readiness and a later explicit retry reloads", async () => {
   const { audio, loader } = setup();
-  const pending = loader.ensure("track", "rhythm-media://track/id", 0);
+  const pending = loader.ensure("track", "rio-media://track/id", 0);
   const rejected = expect(pending).rejects.toThrow("code 4");
   audio.error = { code: 4 };
   audio.dispatchEvent(new Event("error"));
@@ -112,7 +112,7 @@ test("genuine decoder error rejects readiness and a later explicit retry reloads
 });
 test("unavailable/library clear cancels pending preparation and releases the old source", async () => {
   const { audio, loader } = setup();
-  const pending = loader.ensure("track", "rhythm-media://track/id", 0);
+  const pending = loader.ensure("track", "rio-media://track/id", 0);
   const rejected = expect(pending).rejects.toMatchObject({
     name: "AbortError",
   });
@@ -126,7 +126,7 @@ test("readiness timeout is diagnosable rather than a false success", async () =>
   vi.useFakeTimers();
   try {
     const { loader } = setup();
-    const pending = loader.ensure("track", "rhythm-media://track/id", 0);
+    const pending = loader.ensure("track", "rio-media://track/id", 0);
     const rejected = expect(pending).rejects.toThrow("timed out");
     await vi.advanceTimersByTimeAsync(30000);
     await rejected;

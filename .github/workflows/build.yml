@@ -39,7 +39,7 @@ jobs:
         if: failure() && runner.os == 'Linux'
         uses: actions/upload-artifact@v4
         with:
-          name: Rhythm-ubuntu-24.04-diagnostics
+          name: Rio-ubuntu-24.04-diagnostics
           path: .impeccable/review/
           include-hidden-files: true
           if-no-files-found: ignore
@@ -53,7 +53,7 @@ jobs:
         run: node scripts/publication-electron.mjs --packaged
       - uses: actions/upload-artifact@v4
         with:
-          name: Rhythm-${{ matrix.os }}
+          name: Rio-${{ matrix.os }}
           path: |
             release/*.dmg
             release/*.zip

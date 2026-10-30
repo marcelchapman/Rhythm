@@ -7,19 +7,21 @@ import {
   readFile,
   rm,
   realpath,
+  rename,
+  access,
 } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { tmpdir } from "node:os";
 import { wavFixture } from "../tests/fixtures.ts";
 const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-managed-desktop-")),
+  await mkdtemp(path.join(tmpdir(), "rio-managed-desktop-")),
 );
 const library = path.join(root, "Library"),
-  media = path.join(root, "Rhythm Media"),
+  media = path.join(library, "Rio Media"),
   sources = path.join(root, "Original music"),
   review = path.resolve(".impeccable/review");
-for (const directory of [library, media, sources, review])
+for (const directory of [library, sources, review])
   await mkdir(directory, { recursive: true });
 const hashes = new Map();
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -43,12 +45,12 @@ const b = await fixture("second.wav", {
 const c = await fixture("playlist-only.wav", { title: "Playlist reference" });
 let app;
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 async function launch() {
@@ -56,7 +58,7 @@ async function launch() {
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "AppData") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "AppData") },
     timeout: 30000,
   });
   const page = await app.firstWindow();
@@ -70,7 +72,7 @@ const select = (folder) =>
       filePaths: folder ? [folder] : [],
     });
   }, folder);
-const snapshot = (page) => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = (page) => page.evaluate(() => window.rio.snapshot());
 async function settled(page, predicate) {
   for (let i = 0; i < 100; i++) {
     const state = await snapshot(page);
@@ -90,12 +92,12 @@ async function settings(page) {
 }
 const copy = (page) =>
   page.getByRole("checkbox", {
-    name: "Copy files to Rhythm Media folder when adding to library",
+    name: "Copy files to Rio Media folder when adding to library",
     exact: true,
   });
 const organized = (page) =>
   page.getByRole("checkbox", {
-    name: "Keep Rhythm Media folder organized",
+    name: "Keep Rio Media folder organized",
     exact: true,
   });
 async function drop(page, files) {
@@ -130,8 +132,11 @@ try {
   await page
     .getByRole("heading", { name: "Your library starts here." })
     .waitFor();
+  assert.equal(await page.getByRole("dialog").count(), 0);
+  assert.equal((await snapshot(page)).mediaSettings.root.path, media);
+  await access(media);
   await settings(page);
-  assert(await copy(page).isDisabled());
+  assert(!(await copy(page).isDisabled()));
   assert(!(await copy(page).isChecked()));
   await page.screenshot({
     path: path.join(review, "managed-settings-empty.png"),
@@ -139,12 +144,12 @@ try {
   // Native chooser cancellation leaves settings intact.
   await select(null);
   await page
-    .getByRole("button", { name: "Choose Rhythm Media folder…", exact: true })
+    .getByRole("button", { name: "Change Rio Media folder…", exact: true })
     .click();
-  assert.equal((await snapshot(page)).mediaSettings.root, null);
+  assert.equal((await snapshot(page)).mediaSettings.root.path, media);
   await select(library);
   await page
-    .getByRole("button", { name: "Choose Rhythm Media folder…", exact: true })
+    .getByRole("button", { name: "Change Rio Media folder…", exact: true })
     .click();
   await page.getByRole("dialog").getByRole("alert").waitFor();
   assert(
@@ -152,13 +157,13 @@ try {
       "Error invoking remote method",
     ),
   );
-  assert.equal((await snapshot(page)).mediaSettings.root, null);
+  assert.equal((await snapshot(page)).mediaSettings.root.path, media);
   await page.screenshot({
     path: path.join(review, "managed-settings-error.png"),
   });
   await select(media);
   await page
-    .getByRole("button", { name: "Choose Rhythm Media folder…", exact: true })
+    .getByRole("button", { name: "Change Rio Media folder…", exact: true })
     .click();
   await settled(page, (s) => s.mediaSettings.root?.path === media);
   await copy(page).check();
@@ -228,6 +233,7 @@ try {
   app = undefined;
   page = await launch();
   state = await snapshot(page);
+  assert.equal(await page.getByRole("dialog").count(), 0);
   assert.deepEqual(state.mediaSettings, {
     root: { id: managed.mediaRootId, path: media },
     copyOnAdd: false,
@@ -255,7 +261,7 @@ try {
   );
   await page.waitForFunction(() => innerWidth === 1050);
   await page
-    .getByRole("heading", { name: "Rhythm Media folder", exact: true })
+    .getByRole("heading", { name: "Rio Media folder", exact: true })
     .scrollIntoViewIfNeeded();
   await page.screenshot({
     path: path.join(review, "managed-settings-1050.png"),
@@ -275,6 +281,88 @@ try {
     state.tracks.find((t) => t.title === "Added in place").locationKind,
     "referenced",
   );
+  // Missing stored media opens recovery, never recreates or substitutes its root.
+  const savedRoot = (await snapshot(page)).mediaSettings.root;
+  await app.close();
+  app = undefined;
+  const disconnected = path.join(root, "Reconnected media");
+  await rename(media, disconnected);
+  page = await launch();
+  await page
+    .getByRole("dialog", { name: "Library settings", exact: true })
+    .waitFor();
+  await page.getByRole("dialog").getByRole("alert").waitFor();
+  state = await snapshot(page);
+  assert.deepEqual(state.mediaSettings.root, savedRoot);
+  assert(state.mediaSettings.setupError);
+  await assert.rejects(access(media));
+  await select(disconnected);
+  await page
+    .getByRole("button", { name: "Change Rio Media folder…", exact: true })
+    .click();
+  state = await settled(
+    page,
+    (s) => s.mediaSettings.root?.path === disconnected,
+  );
+  assert.equal(state.mediaSettings.setupError, undefined);
+  assert.equal(await page.getByRole("dialog").getByRole("alert").count(), 0);
+  await page.screenshot({
+    path: path.join(review, "managed-settings-recovered.png"),
+  });
+  // Exercise real library switching in one profile/renderer, including a custom root.
+  async function switchLibrary(directory) {
+    if (!(await page.getByRole("dialog").count())) await settings(page);
+    await mkdir(directory, { recursive: true });
+    await select(directory);
+    await page
+      .getByRole("button", { name: "Choose or switch library…", exact: true })
+      .click();
+    const next = await settled(page, (s) => s.libraryPath === directory);
+    await page.waitForFunction(
+      (directory) =>
+        document.body.innerText.includes("Your library starts here."),
+      directory,
+    );
+    assert.equal(next.mediaSettings.setupError, undefined);
+    assert.equal(await page.getByRole("dialog").count(), 0);
+    return next;
+  }
+  const aDirectory = path.join(root, "A");
+  const bDirectory = path.join(root, "Rhythm 2");
+  const cDirectory = path.join(root, "C");
+  const aSettings = (await switchLibrary(aDirectory)).mediaSettings;
+  assert.equal(aSettings.root.path, path.join(aDirectory, "Rio Media"));
+  const bSettings = (await switchLibrary(bDirectory)).mediaSettings;
+  assert.equal(bSettings.root.path, path.join(bDirectory, "Rio Media"));
+  assert.notEqual(bSettings.root.id, aSettings.root.id);
+  assert.deepEqual((await switchLibrary(aDirectory)).mediaSettings, aSettings);
+  await settings(page);
+  const custom = path.join(root, "A custom media");
+  await mkdir(custom);
+  await select(custom);
+  await page
+    .getByRole("button", { name: "Change Rio Media folder…", exact: true })
+    .click();
+  await settled(page, (s) => s.mediaSettings.root?.path === custom);
+  await page.getByText(custom, { exact: true }).waitFor();
+  await page.getByRole("button", { name: "Close dialog", exact: true }).click();
+  await switchLibrary(bDirectory);
+  assert.equal(
+    (await switchLibrary(aDirectory)).mediaSettings.root.path,
+    custom,
+  );
+  assert.equal(
+    (await switchLibrary(cDirectory)).mediaSettings.root.path,
+    path.join(cDirectory, "Rio Media"),
+  );
+  // The renderer displays this library's configuration too, not cached A settings.
+  await settings(page);
+  await page
+    .getByText(path.join(cDirectory, "Rio Media"), { exact: true })
+    .waitFor();
+  await page.screenshot({
+    path: path.join(review, "managed-independent-library.png"),
+  });
   for (const [file, hash] of hashes)
     assert.equal(sha(await readFile(file)), hash);
   console.log(
@@ -282,6 +370,11 @@ try {
       {
         passed: true,
         checks: [
+          "automatic internal Rio Media creation, copying remains opt-in",
+          "A/B/C isolation in one profile and renderer, including custom A root",
+          "existing library reuses saved root without setup prompt",
+          "missing root retains configuration and opens Settings recovery",
+          "Settings can explicitly change the media root",
           "native media folder choose/cancel",
           "opt-in settings and restart",
           "Add Music managed copy",

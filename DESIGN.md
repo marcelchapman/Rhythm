@@ -1,5 +1,5 @@
 ---
-name: Rhythm
+name: Rio
 description: A personal music library with an artwork-led desktop workspace.
 colors:
   primary: "#85c3ff"
@@ -137,13 +137,13 @@ components:
     padding: "26px"
     width: "520px"
 ---
-# Design System: Rhythm
+# Design System: Rio
 
 ## Overview
 
 **Creative North Star: "The personal music library"**
 
-Rhythm uses the user-approved desktop prototype as its visual authority: a navy and charcoal workspace in which album artwork leads and controls remain restrained. White titles, muted metadata, thin dividers, and blue state cues keep a dense personal collection readable.
+Rio uses the user-approved desktop prototype as its visual authority: a navy and charcoal workspace in which album artwork leads and controls remain restrained. White titles, muted metadata, thin dividers, and blue state cues keep a dense personal collection readable.
 
 This record describes the implemented desktop app in src/renderer/style.css and src/renderer/App.tsx. It captures reusable visual behavior rather than extending the identity to future mobile or marketing surfaces.
 
@@ -160,7 +160,7 @@ The palette is a quiet navy and charcoal ground with cool white text and restrai
 
 ### Primary
 
-- **Library blue** (`primary`): active icon controls, selected artwork outlines, and the brand mark.
+- **Library blue** (`primary`): active icon controls and selected artwork outlines. The brand wordmark uses the owner-supplied white handwriting.
 - **Selected blue** (`selected`): the filled active navigation row.
 - **Focus blue** (`focus`): the visible keyboard outline.
 - **Action blue** (`action`, `action-hover`): primary text buttons and their hover state.
@@ -277,3 +277,7 @@ The loading spinner rotates over (1.1s linear). Reduced-motion preference disabl
 - **Don't** use accent-filled backgrounds as decoration across library content.
 - **Don't** promote the desktop shell measurements into rules for unimplemented mobile surfaces.
 - **Don't** replace real album artwork with a new branded illustration system.
+
+## Brand assets
+
+Use `artfiles/rio-logo-white.png` as the original wordmark artwork; do not recreate it with type. `assets/rio-wordmark.png` is the UI derivative. `npm run icons` regenerates it and `build/rio.png` (plus `build/rio.icns` on macOS) without modifying the source. The current visual references are `artfiles/rio-desktop-prototype.png` and `artfiles/rio-mobile-prototype.png`; the rename preserves the implemented layout and does not begin a prototype redesign.

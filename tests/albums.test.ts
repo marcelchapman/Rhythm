@@ -18,7 +18,7 @@ import { wavFixture } from "./fixtures";
 let root: string, l: Library;
 const originals = new Map<string, { bytes: Buffer; mtime: number }>();
 beforeEach(async () => {
-  root = await realpath(await mkdtemp(path.join(tmpdir(), "rhythm-albums-")));
+  root = await realpath(await mkdtemp(path.join(tmpdir(), "rio-albums-")));
   l = await Library.open(path.join(root, "Library"));
 });
 afterEach(async () => {

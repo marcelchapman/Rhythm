@@ -43,6 +43,11 @@ export async function resolvePublicationPackage({
     }
     const bundled = JSON.parse(extractFile(archive, "package.json"));
     if (bundled.name !== metadata.name) continue;
+    assert.equal(
+      bundled.desktopName,
+      metadata.desktopName,
+      "Packaged desktop identity does not match package metadata",
+    );
     const manifest = JSON.parse(
       extractFile(archive, "dist/native/publication-build.json"),
     );
@@ -72,6 +77,11 @@ export async function resolvePublicationPackage({
     if (platform === "darwin") {
       const info = plist.parse(
         await readFile(path.join(resources, "../Info.plist"), "utf8"),
+      );
+      assert.equal(
+        info.CFBundleIdentifier,
+        metadata.build.appId,
+        "Packaged bundle identifier does not match configured appId",
       );
       executable = path.resolve(resources, "../MacOS", info.CFBundleExecutable);
     } else {

@@ -30,7 +30,7 @@ import { wavFixture } from "./fixtures";
 let root: string, library: Library;
 const bytes = (text: string) => Buffer.from(text, "utf8");
 beforeEach(async () => {
-  root = await mkdtemp(path.join(tmpdir(), "rhythm-interchange-"));
+  root = await mkdtemp(path.join(tmpdir(), "rio-interchange-"));
   library = await Library.open(path.join(root, "Library"));
 });
 afterEach(async () => {

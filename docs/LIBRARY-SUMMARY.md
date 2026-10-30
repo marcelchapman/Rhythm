@@ -1,3 +1,5 @@
+> Current behavior is described using the Rio name. Recorded pre-rename artifact paths and CI evidence retain the original working name Rhythm; they are historical records, not current package instructions.
+
 # Context-sensitive library summary
 
 Baseline: `81f30a7` (album actions and managed cleanup). This mission adds passive collection information; it does not change album identity, search/filter semantics, selection, playback, ownership, deletion or the SQLite schema.

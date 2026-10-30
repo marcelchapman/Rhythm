@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { wavFixture } from "../tests/fixtures.ts";
 
 // Optional FFmpeg-backed codec check. Fixtures stay outside the repository/app.
-const root = await mkdtemp(path.join(tmpdir(), "rhythm-codecs-"));
+const root = await mkdtemp(path.join(tmpdir(), "rio-codecs-"));
 const music = path.join(root, "Music");
 const library = path.join(root, "Library");
 const results = [];
@@ -48,16 +48,16 @@ try {
     ]);
   }
   const executablePath =
-    process.env.RHYTHM_EXECUTABLE ||
+    process.env.RIO_EXECUTABLE ||
     path.resolve(
       process.platform === "darwin"
-        ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-        : "release/linux-unpacked/rhythm-desktop",
+        ? "release/mac/Rio.app/Contents/MacOS/Rio"
+        : "release/linux-unpacked/rio-desktop",
     );
   app = await electron.launch({
     executablePath,
     args: [],
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "UserData") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "UserData") },
   });
   const page = await app.firstWindow();
   const select = (folder) =>
@@ -82,14 +82,14 @@ try {
     .getByRole("button", { name: "Add music folders", exact: true })
     .click();
   await page.waitForFunction(
-    async () => (await window.rhythm.snapshot()).tracks.length === 5,
+    async () => (await window.rio.snapshot()).tracks.length === 5,
   );
   await page
     .getByRole("heading", { name: "Recently Added", exact: true })
     .waitFor();
   await page.getByRole("slider", { name: "Volume", exact: true }).press("Home");
   await page.getByRole("button", { name: "Songs", exact: true }).click();
-  const tracks = (await page.evaluate(() => window.rhythm.snapshot())).tracks;
+  const tracks = (await page.evaluate(() => window.rio.snapshot())).tracks;
   assert.equal(tracks.length, 5);
   for (const [extension] of cases) {
     const track = tracks.find((t) => t.format === extension);

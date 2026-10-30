@@ -17,7 +17,7 @@ import { wavFixture } from "../tests/fixtures.ts";
 
 // Only generated, disposable media can reach the real OS Trash in this suite.
 const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-removal-app-")),
+  await mkdtemp(path.join(tmpdir(), "rio-removal-app-")),
 );
 const library = path.join(root, "Library"),
   media = path.join(root, "Media"),
@@ -51,12 +51,12 @@ for (const [directory, titles] of [
 }
 let app;
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 async function launch() {
@@ -66,7 +66,7 @@ async function launch() {
       : { args: ["."] }),
     env: {
       ...process.env,
-      RHYTHM_DATA_DIR: path.join(root, "Profile"),
+      RIO_DATA_DIR: path.join(root, "Profile"),
       ...(process.platform === "linux"
         ? { XDG_DATA_HOME: path.join(root, "xdg-data") }
         : {}),
@@ -104,7 +104,7 @@ async function launch() {
   }, media);
   return p;
 }
-const snapshot = (p) => p.evaluate(() => window.rhythm.snapshot());
+const snapshot = (p) => p.evaluate(() => window.rio.snapshot());
 const select = (file) =>
   app.evaluate(({ dialog }, file) => {
     dialog.showOpenDialog = async () => ({
@@ -225,13 +225,13 @@ async function confirm(
     if (managedCount)
       assert(
         options.detail.includes(
-          `${managedCount} managed track${managedCount === 1 ? "" : "s"} will be removed from Rhythm and moved to the Trash.`,
+          `${managedCount} managed track${managedCount === 1 ? "" : "s"} will be removed from Rio and moved to the Trash.`,
         ),
       );
     if (referenceCount)
       assert(
         options.detail.includes(
-          `${referenceCount} referenced track${referenceCount === 1 ? "" : "s"} will be removed from Rhythm but remain at their original locations.`,
+          `${referenceCount} referenced track${referenceCount === 1 ? "" : "s"} will be removed from Rio but remain at their original locations.`,
         ),
       );
   }
@@ -297,7 +297,7 @@ async function stopped(p) {
   assert.equal(s.state.position, 0);
 }
 function sql(statement, ...args) {
-  const db = new DatabaseSync(path.join(library, "rhythm.sqlite"));
+  const db = new DatabaseSync(path.join(library, "rio.sqlite"));
   try {
     return args.length
       ? db.prepare(statement).run(...args)
@@ -307,7 +307,7 @@ function sql(statement, ...args) {
   }
 }
 function noRelationships(id) {
-  const db = new DatabaseSync(path.join(library, "rhythm.sqlite"), {
+  const db = new DatabaseSync(path.join(library, "rio.sqlite"), {
     readOnly: true,
   });
   try {
@@ -374,7 +374,7 @@ async function bulkAcceptance(p, { c, d }) {
       });
     }
     await p.evaluate(
-      (managed) => window.rhythm.saveMediaSettings({ copyOnAdd: managed }),
+      (managed) => window.rio.saveMediaSettings({ copyOnAdd: managed }),
       managed,
     );
     await select(directory);
@@ -427,9 +427,9 @@ async function bulkAcceptance(p, { c, d }) {
   }, r2.id);
   const bulkList = await p.evaluate(
     async (ids) => {
-      const list = await window.rhythm.createPlaylist("Bulk selection");
-      await window.rhythm.playlistTracks(list.id, ids);
-      for (const id of ids) await window.rhythm.favorite(id);
+      const list = await window.rio.createPlaylist("Bulk selection");
+      await window.rio.playlistTracks(list.id, ids);
+      for (const id of ids) await window.rio.favorite(id);
       return list;
     },
     [r1.id, r2.id, r3.id, r4.id, g1.id, g2.id, g3.id, bad.id, dbbad.id],
@@ -603,11 +603,11 @@ try {
   );
   const lists = await p.evaluate(
     async ({ a, b, c }) => {
-      const first = await window.rhythm.createPlaylist("Removal first"),
-        second = await window.rhythm.createPlaylist("Removal second");
-      await window.rhythm.playlistTracks(first.id, [a, b, c]);
-      await window.rhythm.playlistTracks(second.id, [c, a, b]);
-      await window.rhythm.favorite(a);
+      const first = await window.rio.createPlaylist("Removal first"),
+        second = await window.rio.createPlaylist("Removal second");
+      await window.rio.playlistTracks(first.id, [a, b, c]);
+      await window.rio.playlistTracks(second.id, [c, a, b]);
+      await window.rio.favorite(a);
       return [first, second];
     },
     { a: a.id, b: b.id, c: c.id },
@@ -713,8 +713,8 @@ try {
   // Configure through the real main/preload APIs; no test-only production bypass.
   await select(media);
   await p.evaluate(async () => {
-    await window.rhythm.chooseMediaRoot();
-    await window.rhythm.saveMediaSettings({ copyOnAdd: true });
+    await window.rio.chooseMediaRoot();
+    await window.rio.saveMediaSettings({ copyOnAdd: true });
   });
   await nav(p, "Songs");
   await select(managedInputs);
@@ -730,8 +730,8 @@ try {
   await p.evaluate(
     async ({ ids, lists }) => {
       for (const id of ids) {
-        await window.rhythm.favorite(id);
-        for (const list of lists) await window.rhythm.addToPlaylist(list, [id]);
+        await window.rio.favorite(id);
+        for (const list of lists) await window.rio.addToPlaylist(list, [id]);
       }
     },
     { ids: [m1.id, m2.id], lists: lists.map((l) => l.id) },

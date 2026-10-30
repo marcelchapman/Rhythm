@@ -71,7 +71,7 @@ export async function fileDigest(filename: string): Promise<string> {
     await f.close();
   }
 }
-async function rootCheck(root: MediaRoot) {
+export async function validateMediaRoot(root: MediaRoot) {
   const info = await lstat(root.path);
   if (
     !info.isDirectory() ||
@@ -80,7 +80,7 @@ async function rootCheck(root: MediaRoot) {
     String(info.ino) !== root.inode
   )
     throw new Error(
-      "Rhythm Media folder changed or is unavailable. Choose it again in Library settings.",
+      "Rio Media folder changed or is unavailable. Choose it again in Library settings.",
     );
 }
 async function syncDirectory(directory: string) {
@@ -93,7 +93,7 @@ async function syncDirectory(directory: string) {
 }
 /** Walk each component. Never traverse symlink parents or recreate an unavailable media root. */
 async function directories(root: MediaRoot, relative: string, create: boolean) {
-  await rootCheck(root);
+  await validateMediaRoot(root);
   const destination = path.resolve(root.path, relative);
   if (
     !inside(root.path, destination) ||
@@ -115,9 +115,7 @@ async function directories(root: MediaRoot, relative: string, create: boolean) {
     }
     const info = await lstat(parent);
     if (!info.isDirectory() || info.isSymbolicLink())
-      throw new Error(
-        "Rhythm Media contains a symbolic link or unsafe folder.",
-      );
+      throw new Error("Rio Media contains a symbolic link or unsafe folder.");
     if (created) await syncDirectory(path.dirname(parent));
   }
   return destination;
@@ -163,7 +161,7 @@ export async function validateManagedTrash(
     receipt.digest !== (await fileDigest(target))
   )
     throw new Error(
-      "This file no longer matches Rhythm's managed copy receipt. It has not been moved to Trash.",
+      "This file no longer matches Rio's managed copy receipt. It has not been moved to Trash.",
     );
   // Recheck the root, parents and leaf after hashing, immediately before handoff.
   await directories(root, relative, false);
@@ -293,11 +291,7 @@ export async function removeEmptyManagedAlbumDirectory(
     throw new Error("Unsafe managed album cleanup boundary.");
   const target = path.resolve(plan.root.path, plan.relative);
   const recheck = async () => {
-    await directories(
-      plan.root,
-      `${plan.relative}/.rhythm-cleanup-check`,
-      false,
-    );
+    await directories(plan.root, `${plan.relative}/.rio-cleanup-check`, false);
     const parts = plan.relative.split("/");
     for (let i = 0; i < plan.parents.length; i++) {
       const expected = plan.parents[i];
@@ -364,7 +358,7 @@ const getJob = (db: DatabaseSync, id: string) =>
     .prepare("SELECT * FROM managed_imports WHERE id=?")
     .get(id) as unknown as Job;
 async function ownedStage(root: MediaRoot, job: Job) {
-  if (!/^\.rhythm-imports\/[a-f0-9-]+\.partial$/.test(job.stage))
+  if (!/^\.rio-imports\/[a-f0-9-]+\.partial$/.test(job.stage))
     throw new Error("Unsafe staging receipt.");
   const stage = await directories(root, job.stage, false);
   const info = await lstat(stage);
@@ -419,7 +413,7 @@ export async function prepareManagedCopy(
   expectedDigest?: string,
   recovery = false,
 ): Promise<ManagedLocation> {
-  await rootCheck(root);
+  await validateMediaRoot(root);
   const digest = await fileDigest(source);
   if (expectedDigest && expectedDigest !== digest)
     throw new Error(
@@ -469,7 +463,7 @@ export async function prepareManagedCopy(
       digest,
       root.id,
       planned.relative,
-      `.rhythm-imports/${randomUUID()}.partial`,
+      `.rio-imports/${randomUUID()}.partial`,
       "copying",
       existingId ?? createHash("sha256").update(randomUUID()).digest("hex"),
     );
@@ -485,7 +479,7 @@ export async function prepareManagedCopy(
         if ((e as NodeJS.ErrnoException).code !== "ENOENT") throw e;
       }
     }
-    const stageRelative = `.rhythm-imports/${randomUUID()}.partial`;
+    const stageRelative = `.rio-imports/${randomUUID()}.partial`;
     const stage = await directories(root, stageRelative, true);
     const output = await open(stage, "wx", 0o600);
     try {
@@ -614,7 +608,7 @@ export async function prepareManagedCopy(
       )
         continue;
     }
-    await rootCheck(root);
+    await validateMediaRoot(root);
     await syncDirectory(path.dirname(target));
     return publishedLocation(db, root, getJob(db, job.id), target);
   }

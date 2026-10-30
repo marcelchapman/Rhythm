@@ -50,7 +50,7 @@ export function mediaDestination(
   collision = 1,
 ) {
   if (!path.isAbsolute(root))
-    throw new Error("Choose an absolute Rhythm Media folder.");
+    throw new Error("Choose an absolute Rio Media folder.");
   if (!/^\.[a-z0-9]{1,8}$/i.test(extension))
     throw new Error("Invalid audio extension.");
   if (!Number.isInteger(collision) || collision < 1 || collision > 10000)
@@ -80,6 +80,6 @@ export function mediaDestination(
     : [filename];
   const destination = path.resolve(root, ...segments);
   if (!inside(root, destination))
-    throw new Error("Destination is outside Rhythm Media.");
+    throw new Error("Destination is outside Rio Media.");
   return { path: destination, relative: segments.join("/") };
 }

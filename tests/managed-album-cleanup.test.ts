@@ -29,7 +29,7 @@ let root: string, media: string, l: Library;
 const originals = new Map<string, { bytes: Buffer; mtime: number }>();
 beforeEach(async () => {
   root = await realpath(
-    await mkdtemp(path.join(tmpdir(), "rhythm-album-cleanup-")),
+    await mkdtemp(path.join(tmpdir(), "rio-album-cleanup-")),
   );
   media = path.join(root, "Media");
   await mkdir(media);
@@ -475,7 +475,7 @@ test.each(["flat", "artist", "unrecognized nesting"])(
     if (layout === "flat") l.saveMediaSettings({ keepOrganized: false });
     let a = await add("a");
     if (layout === "flat") {
-      const staging = path.join(media, ".rhythm-imports");
+      const staging = path.join(media, ".rio-imports");
       expect(await readdir(staging)).toEqual([]);
       await rmdir(staging); // Test setup: make the root genuinely empty after Trash.
     }

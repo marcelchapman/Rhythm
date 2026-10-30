@@ -17,7 +17,7 @@ import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { wavFixture } from "../tests/fixtures.ts";
 const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-locate-info-")),
+  await mkdtemp(path.join(tmpdir(), "rio-locate-info-")),
 );
 const library = path.join(root, "Library"),
   media = path.join(root, "Media"),
@@ -57,12 +57,12 @@ await writeFile(
 await protect(first);
 let app;
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 async function launch() {
@@ -70,17 +70,17 @@ async function launch() {
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "Profile") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "Profile") },
   });
   const page = await app.firstWindow();
   await page.waitForSelector("h1");
   await app.evaluate(({ Menu, shell }) => {
     Menu.prototype.popup = function () {
-      globalThis.rhythmInfoMenu = this;
+      globalThis.rioInfoMenu = this;
     };
     // Observe the real main-process API handoff without opening Finder during tests.
-    globalThis.rhythmReveals = [];
-    shell.showItemInFolder = (file) => globalThis.rhythmReveals.push(file);
+    globalThis.rioReveals = [];
+    shell.showItemInFolder = (file) => globalThis.rioReveals.push(file);
   });
   return page;
 }
@@ -88,7 +88,7 @@ const select = (f) =>
   app.evaluate(({ dialog }, f) => {
     dialog.showOpenDialog = async () => ({ canceled: false, filePaths: [f] });
   }, f);
-const snapshot = (p) => p.evaluate(() => window.rhythm.snapshot());
+const snapshot = (p) => p.evaluate(() => window.rio.snapshot());
 async function settled(p, check) {
   for (let n = 0; n < 150; n++) {
     const s = await snapshot(p);
@@ -100,13 +100,13 @@ async function settled(p, check) {
 const row = (p, id) => p.locator(`.song-row[data-track-id="${id}"]`);
 async function nativeMenu(p, target) {
   await app.evaluate(() => {
-    globalThis.rhythmInfoMenu = null;
+    globalThis.rioInfoMenu = null;
   });
   await target.click({ button: "right" });
   for (let n = 0; n < 50; n++) {
-    if (await app.evaluate(() => !!globalThis.rhythmInfoMenu)) {
+    if (await app.evaluate(() => !!globalThis.rioInfoMenu)) {
       const reveal = await app.evaluate(() => {
-        const item = globalThis.rhythmInfoMenu.getMenuItemById("track-reveal");
+        const item = globalThis.rioInfoMenu.getMenuItemById("track-reveal");
         return item ? { label: item.label, enabled: item.enabled } : null;
       });
       assert.deepEqual(
@@ -123,7 +123,7 @@ async function nativeMenu(p, target) {
 }
 async function menuClick(id) {
   await app.evaluate((_, id) => {
-    const item = globalThis.rhythmInfoMenu.getMenuItemById(id);
+    const item = globalThis.rioInfoMenu.getMenuItemById(id);
     if (!item?.enabled) throw Error(`Missing/disabled native action ${id}`);
     item.click(undefined, undefined, {});
   }, id);
@@ -140,19 +140,16 @@ async function revealFromMenu(p, id, expected) {
     paused: a.paused,
     volume: a.volume,
   }));
-  const count = await app.evaluate(() => globalThis.rhythmReveals.length);
+  const count = await app.evaluate(() => globalThis.rioReveals.length);
   await menuClick("track-reveal");
   for (let n = 0; n < 100; n++) {
     if (
-      await app.evaluate(
-        (count) => globalThis.rhythmReveals.length > count,
-        count,
-      )
+      await app.evaluate((count) => globalThis.rioReveals.length > count, count)
     )
       break;
     await p.waitForTimeout(50);
   }
-  const reveals = await app.evaluate(() => globalThis.rhythmReveals);
+  const reveals = await app.evaluate(() => globalThis.rioReveals);
   assert.equal(reveals.length, count + 1);
   assert.equal(reveals.at(-1), file);
   assert.equal(sha(await readFile(file)), bytes);
@@ -174,19 +171,16 @@ async function unavailableReveal(p, id) {
   const dismiss = p.getByRole("button", { name: "Dismiss error", exact: true });
   if (await dismiss.count()) await dismiss.click();
   await nativeMenu(p, row(p, id));
-  const count = await app.evaluate(() => globalThis.rhythmReveals.length);
+  const count = await app.evaluate(() => globalThis.rioReveals.length);
   await menuClick("track-reveal");
   await p
     .getByRole("alert")
     .filter({
       hasText:
-        "Rhythm can't find this audio file at its recorded location. Use Locate File to reconnect this track.",
+        "Rio can't find this audio file at its recorded location. Use Locate File to reconnect this track.",
     })
     .waitFor();
-  assert.equal(
-    await app.evaluate(() => globalThis.rhythmReveals.length),
-    count,
-  );
+  assert.equal(await app.evaluate(() => globalThis.rioReveals.length), count);
 }
 const info = (p) => p.getByRole("dialog", { name: "Track Info", exact: true });
 const field = (p, label) =>
@@ -283,20 +277,20 @@ try {
   const initial = await settled(p, (s) => s.tracks.length === 1),
     a = initial.tracks[0];
   const playlist = await p.evaluate(async (id) => {
-    await window.rhythm.favorite(id);
-    const list = await window.rhythm.createPlaylist("Info identity");
-    await window.rhythm.playlistTracks(list.id, [id]);
+    await window.rio.favorite(id);
+    const list = await window.rio.createPlaylist("Info identity");
+    await window.rio.playlistTracks(list.id, [id]);
     return list;
   }, a.id);
   await settings(p);
   await select(media);
   await p
-    .getByRole("button", { name: "Choose Rhythm Media folder…", exact: true })
+    .getByRole("button", { name: "Change Rio Media folder…", exact: true })
     .click();
   await p.getByText(media, { exact: true }).waitFor();
   await p
     .getByRole("checkbox", {
-      name: "Copy files to Rhythm Media folder when adding to library",
+      name: "Copy files to Rio Media folder when adding to library",
       exact: true,
     })
     .check();
@@ -305,13 +299,13 @@ try {
   await p.getByRole("button", { name: "Songs", exact: true }).click();
   await nativeMenu(p, row(p, a.id));
   await revealFromMenu(p, a.id, first);
-  const revealCount = await app.evaluate(() => globalThis.rhythmReveals.length);
+  const revealCount = await app.evaluate(() => globalThis.rioReveals.length);
   for (const invalid of ["", "/tmp/not-a-track.wav", "f".repeat(64)])
     await assert.rejects(
-      p.evaluate((id) => window.rhythm.revealTrack(id), invalid),
+      p.evaluate((id) => window.rio.revealTrack(id), invalid),
     );
   assert.equal(
-    await app.evaluate(() => globalThis.rhythmReveals.length),
+    await app.evaluate(() => globalThis.rioReveals.length),
     revealCount,
   );
   await play(p, a);
@@ -397,7 +391,7 @@ try {
   await settings(p);
   await p
     .getByRole("checkbox", {
-      name: "Copy files to Rhythm Media folder when adding to library",
+      name: "Copy files to Rio Media folder when adding to library",
       exact: true,
     })
     .uncheck();
@@ -522,7 +516,7 @@ try {
   await inspect(p, a.id, a.title);
   assert.equal(
     await field(p, "Ownership").innerText(),
-    "Managed copy in Rhythm Media",
+    "Managed copy in Rio Media",
   );
   assert(
     (await field(p, "File location").innerText()).startsWith(media + path.sep),

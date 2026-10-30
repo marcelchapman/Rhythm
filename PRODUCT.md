@@ -1,10 +1,10 @@
-# Rhythm
+# Rio
 
 <!-- impeccable:product-schema 1 -->
 
 ## Platform
 
-Desktop for Rhythm 0.1: macOS and Linux.
+Desktop for Rio 0.1: macOS and Linux.
 
 Current development phase: macOS desktop. Ubuntu checks/builds remain a portability canary; this phase does not begin Linux, Windows, or mobile product work.
 
@@ -24,7 +24,7 @@ People who own digital music files and want to browse, organize, inspect, edit m
 
 ## Product Purpose
 
-Rhythm is an open-source personal music library and player built around the user's own music files. The library is central; playback is an essential part of the experience.
+Rio is an open-source personal music library and player built around the user's own music files. The library is central; playback is an essential part of the experience.
 
 ### Long-Term Product Scope
 
@@ -32,13 +32,13 @@ A cross-platform personal music library with synchronization and access across t
 
 The intended direction favors user-controlled storage or services users already subscribe to. Specific providers, storage responsibilities, synchronization mechanisms, and architecture remain undecided.
 
-### Rhythm 0.1 Implementation Scope
+### Rio 0.1 Implementation Scope
 
 A local personal music library and player for macOS and Linux, using the user's own music files. No cloud or mobile implementation is required for 0.1. Cross-platform and cloud requirements inform future decisions without making cloud the immediate implementation priority.
 
 ## Positioning
 
-Personal-library-first: organize a collection the user owns while preserving control over files, metadata, playlists, and library information. Rhythm is not a streaming service or a feature-for-feature clone of an existing music application.
+Personal-library-first: organize a collection the user owns while preserving control over files, metadata, playlists, and library information. Rio is not a streaming service or a feature-for-feature clone of an existing music application.
 
 ## Operating Context
 
@@ -48,11 +48,11 @@ Music may be distributed across folders, disks, and devices. Handling external s
 
 ## Capabilities and Constraints
 
-Iteration 3 introduces an opt-in Managed Rhythm Media foundation: referenced tracks remain in place; managed additions copy into an explicitly selected media folder and index the copy. Ownership is recorded explicitly. Folder selection and copy/organization settings are per library; organization affects new copies only. Playlist interchange and rescans remain non-copying. Locate File preserves identity: referenced files relink in place; managed files restore through copying. Explicit track/album/library consolidation copies referenced files with per-track retry and skips already-managed tracks. Read-only Track Info exposes stored metadata and ownership through the native track context menu, without a trailing action column. Source originals remain untouched. Metadata/tag writing, existing-file reorganization, CD import and equalizer are deferred. See `docs/ITERATION-3.md` for the implemented rules and acceptance procedure.
+Iteration 3 introduces an opt-in Managed Rio Media foundation: referenced tracks remain in place; managed additions copy into the configured media folder and index the copy. New desktop libraries automatically create/configure an internal `Rio Media` folder; existing libraries reuse their persisted root after validation, with Settings recovery for unavailable or unconfigured roots. Ownership is recorded explicitly. Folder selection and copy/organization settings are per library; organization affects new copies only. Playlist interchange and rescans remain non-copying. Locate File preserves identity: referenced files relink in place; managed files restore through copying. Explicit track/album/library consolidation copies referenced files with per-track retry and skips already-managed tracks. Read-only Track Info exposes stored metadata and ownership through the native track context menu, without a trailing action column. Source originals remain untouched. Metadata/tag writing, existing-file reorganization, CD import and equalizer are deferred. See `docs/ITERATION-3.md` for the implemented rules and acceptance procedure.
 
-The safety contract is: Rhythm never mutates, moves or deletes source media unless the user explicitly invokes a feature whose documented purpose requires it. Destructive operations must be scoped, confirmed where appropriate, tested and recoverable where reasonably possible. Rhythm's management authority ends at its configured media environment; external files remain user-owned. The copy foundation authorizes copying through the opted-in add policy or explicit recovery/consolidation commands. The selection-based removal workflow adds confirmed library removal: referenced originals remain untouched; receipt-validated managed copies move to the OS Trash. No permanent audio deletion is implemented. Playlist-only removal changes membership alone. See `docs/TRACK-REMOVAL.md` for authority, failure and acceptance rules.
+The safety contract is: Rio never mutates, moves or deletes source media unless the user explicitly invokes a feature whose documented purpose requires it. Destructive operations must be scoped, confirmed where appropriate, tested and recoverable where reasonably possible. Rio's management authority ends at its configured media environment; external files remain user-owned. The copy foundation authorizes copying through the opted-in add policy or explicit recovery/consolidation commands. The selection-based removal workflow adds confirmed library removal: referenced originals remain untouched; receipt-validated managed copies move to the OS Trash. No permanent audio deletion is implemented. Playlist-only removal changes membership alone. See `docs/TRACK-REMOVAL.md` for authority, failure and acceptance rules.
 
-- Rhythm 0.1 prioritizes the smallest useful local desktop library and playback experience.
+- Rio 0.1 prioritizes the smallest useful local desktop library and playback experience.
 - Implemented formats, identity, persistence, playlist interchange and playback are documented in the README and architecture report. Album context actions add read-only macOS folder reveal and confirmed removal through the existing guarded multi-track pipeline; see `docs/ALBUM-ACTIONS.md`. Metadata writing, synchronization identity reconciliation and other future destructive-operation behavior remain undecided.
 - Cloud implementation, synchronization, mobile clients, accounts, social features, recommendations, and elaborate infrastructure are outside the initial implementation scope.
 - Keep music files, embedded metadata, library records, playlists, configuration, and eventual synchronization state conceptually distinct.
@@ -61,16 +61,16 @@ The safety contract is: Rhythm never mutates, moves or deletes source media unle
 
 ## Brand Commitments
 
-The product name is Rhythm. Rhythmbox is a source of ideas, not a requirement to reproduce its interface or functionality.
+The product name is Rio. The owner-supplied handwritten wordmark is `artfiles/rio-logo-white.png`; retain this original artwork and derive separate assets for UI/build use. The current presentation banner is `assets/rio-github-banner.png`. Rhythmbox is a source of ideas, not a requirement to reproduce its interface or functionality.
 
-The authoritative desktop visual reference is `artfiles/desktop_prototype.png`. Preserve its authority when evaluating future desktop UX work; init does not establish additional visual rules.
+The authoritative desktop visual reference is `artfiles/rio-desktop-prototype.png`. Preserve its authority when evaluating future desktop UX work; init does not establish additional visual rules.
 
 ## Evidence on Hand
 
-- `artfiles/desktop_prototype.png`: user-confirmed authoritative desktop visual reference and approved UX prototype.
+- `artfiles/rio-desktop-prototype.png`: user-confirmed authoritative desktop visual reference and approved UX prototype.
 - `README.md`: early product specification and discovery questions. Statements treating cross-platform, mobile, and cloud scope as optional are outdated and superseded by this record.
-- `artfiles/index.html`: promotional material with older or broader messaging. It does not define Rhythm 0.1 implementation or UX. Claims implying that cloud functionality already exists or is the immediate implementation priority are inaccurate.
-- `artfiles/mobile_prototype.png`: existing artifact; its presence does not bring mobile implementation into 0.1 or establish approved mobile UX.
+- `artfiles/index.html`: promotional material with older or broader messaging. It does not define Rio 0.1 implementation or UX. Claims implying that cloud functionality already exists or is the immediate implementation priority are inaccurate.
+- `artfiles/rio-mobile-prototype.png`: existing artifact; its presence does not bring mobile implementation into 0.1 or establish approved mobile UX.
 
 ## Product Principles
 

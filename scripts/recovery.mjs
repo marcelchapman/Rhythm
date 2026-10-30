@@ -17,7 +17,7 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { wavFixture } from "../tests/fixtures.ts";
 const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-recovery-app-")),
+  await mkdtemp(path.join(tmpdir(), "rio-recovery-app-")),
 );
 const incoming = path.join(root, "Incoming"),
   media = path.join(root, "Media"),
@@ -47,12 +47,12 @@ await writeFile(invalid, "not audio");
 await protect(invalid);
 let app;
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 async function launch() {
@@ -60,14 +60,14 @@ async function launch() {
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "Profile") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "Profile") },
     timeout: 30000,
   });
   const page = await app.firstWindow();
   await page.waitForSelector("h1");
   await app.evaluate(({ Menu }) => {
     Menu.prototype.popup = function () {
-      globalThis.rhythmRecoveryMenu = this;
+      globalThis.rioRecoveryMenu = this;
     };
   });
   return page;
@@ -79,7 +79,7 @@ const select = (f) =>
       filePaths: f ? [f] : [],
     });
   }, f);
-const snapshot = (page) => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = (page) => page.evaluate(() => window.rio.snapshot());
 async function settled(page, predicate) {
   for (let i = 0; i < 150; i++) {
     const s = await snapshot(page);
@@ -93,15 +93,15 @@ const shot = (page, name) =>
 const row = (page, id) => page.locator(`.song-row[data-track-id="${id}"]`);
 async function menuFor(locator) {
   await app.evaluate(() => {
-    globalThis.rhythmRecoveryMenu = null;
+    globalThis.rioRecoveryMenu = null;
   });
   await locator.click({ button: "right" });
   for (let n = 0; n < 50; n++) {
-    if (await app.evaluate(() => !!globalThis.rhythmRecoveryMenu)) break;
+    if (await app.evaluate(() => !!globalThis.rioRecoveryMenu)) break;
     await locator.page().waitForTimeout(50);
   }
   return app.evaluate(() =>
-    globalThis.rhythmRecoveryMenu.items.map((i) => ({
+    globalThis.rioRecoveryMenu.items.map((i) => ({
       id: i.id,
       label: i.label,
       enabled: i.enabled,
@@ -110,7 +110,7 @@ async function menuFor(locator) {
 }
 async function menuClick(id) {
   await app.evaluate((_, id) => {
-    const menu = globalThis.rhythmRecoveryMenu,
+    const menu = globalThis.rioRecoveryMenu,
       item = menu.getMenuItemById(id);
     if (!item?.enabled) throw Error(`Missing/disabled native command ${id}`);
     item.click(undefined, undefined, {});
@@ -200,9 +200,9 @@ try {
     d = named("D");
   await page.getByRole("button", { name: "Songs", exact: true }).click();
   const playlist = await page.evaluate(async (id) => {
-    const p = await window.rhythm.createPlaylist("Recovery identities");
-    await window.rhythm.playlistTracks(p.id, [id]);
-    await window.rhythm.favorite(id);
+    const p = await window.rio.createPlaylist("Recovery identities");
+    await window.rio.playlistTracks(p.id, [id]);
+    await window.rio.favorite(id);
     return p;
   }, a.id);
   await play(page, a);
@@ -243,7 +243,7 @@ try {
   await settings(page);
   await select(media);
   await page
-    .getByRole("button", { name: "Choose Rhythm Media folder…", exact: true })
+    .getByRole("button", { name: "Change Rio Media folder…", exact: true })
     .click();
   await page.getByText(media, { exact: true }).waitFor();
   await page.getByRole("button", { name: "Close dialog", exact: true }).click();
@@ -325,7 +325,7 @@ try {
     }),
   });
   menu = await menuFor(album);
-  assert(menu.some((i) => i.label === "Consolidate Album to Rhythm Media"));
+  assert(menu.some((i) => i.label === "Consolidate Album to Rio Media"));
   await menuClick("track-consolidate");
   await settled(
     page,
@@ -410,7 +410,7 @@ try {
   await app.close();
   const alternate = path.join(root, "Alternate library");
   await cp(library, alternate, { recursive: true });
-  const db = new DatabaseSync(path.join(alternate, "rhythm.sqlite"));
+  const db = new DatabaseSync(path.join(alternate, "rio.sqlite"));
   const player = JSON.parse(
     db.prepare("SELECT value FROM settings WHERE key='player'").get().value,
   );

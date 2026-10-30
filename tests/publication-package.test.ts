@@ -1,5 +1,12 @@
 import { test, expect } from "vitest";
-import { mkdtemp, mkdir, writeFile, rm, unlink } from "node:fs/promises";
+import {
+  mkdtemp,
+  mkdir,
+  writeFile,
+  readFile,
+  rm,
+  unlink,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createHash } from "node:crypto";
@@ -8,15 +15,18 @@ import plist from "plist";
 import { resolvePublicationPackage } from "../scripts/lib/publication-package.mjs";
 
 async function fixture(run: (f: any) => Promise<void>) {
-  const project = await mkdtemp(
-    path.join(tmpdir(), "rhythm-package-discovery-"),
-  );
+  const project = await mkdtemp(path.join(tmpdir(), "rio-package-discovery-"));
   const binary = Buffer.from(
     "Disposable package-discovery fixture, not executable native code",
   );
   const metadata = {
-    name: "rhythm-desktop",
-    build: { directories: { output: "release" }, linux: {} },
+    name: "rio-desktop",
+    desktopName: "io.github.marcelchapman.rio.desktop",
+    build: {
+      appId: "io.github.marcelchapman.rio",
+      directories: { output: "release" },
+      linux: {},
+    },
   };
   await writeFile(path.join(project, "package.json"), JSON.stringify(metadata));
   await mkdir(path.join(project, "dist/native"), { recursive: true });
@@ -26,7 +36,7 @@ async function fixture(run: (f: any) => Promise<void>) {
       "release",
       directory,
       ...(platform === "darwin"
-        ? ["Rhythm.app", "Contents", "Resources"]
+        ? ["Rio.app", "Contents", "Resources"]
         : ["resources"]),
     );
     const manifest = {
@@ -62,14 +72,17 @@ async function fixture(run: (f: any) => Promise<void>) {
     // Deliberately differ from productName: discovery must read CFBundleExecutable.
     const executable = path.resolve(
       resources,
-      platform === "darwin" ? "../MacOS/FixtureRuntime" : "../rhythm-desktop",
+      platform === "darwin" ? "../MacOS/FixtureRuntime" : "../rio-desktop",
     );
     await mkdir(path.dirname(executable), { recursive: true });
     await writeFile(executable, "fixture", { mode: 0o755 });
     if (platform === "darwin")
       await writeFile(
         path.resolve(resources, "../Info.plist"),
-        plist.build({ CFBundleExecutable: "FixtureRuntime" }),
+        plist.build({
+          CFBundleExecutable: "FixtureRuntime",
+          CFBundleIdentifier: metadata.build.appId,
+        }),
       );
     return { executable, resources, native, manifest };
   }
@@ -158,4 +171,48 @@ test("does not run a different architecture when the requested package is absent
       resolvePublicationPackage({ project, platform: "darwin", arch: "arm64" }),
     ).rejects.toThrow(/found 0/);
   });
+});
+
+test("refuses an incorrect packaged bundle identifier", async () => {
+  await fixture(async ({ project, bundle }) => {
+    const { resources } = await bundle("darwin", "x64", "mac");
+    await writeFile(
+      path.resolve(resources, "../Info.plist"),
+      plist.build({
+        CFBundleExecutable: "FixtureRuntime",
+        CFBundleIdentifier: "invalid.bundle.identity",
+      }),
+    );
+    await expect(
+      resolvePublicationPackage({ project, platform: "darwin", arch: "x64" }),
+    ).rejects.toThrow(/bundle identifier/);
+  });
+});
+
+test("current package identity drives Linux desktop metadata", async () => {
+  const metadata = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  );
+  expect(metadata.build.appId).toBe("io.github.marcelchapman.rio");
+  expect(metadata.desktopName).toBe("io.github.marcelchapman.rio.desktop");
+  expect(metadata.build.linux.syncDesktopName).toBe(true);
+  const { LinuxTargetHelper } =
+    await import("app-builder-lib/out/targets/LinuxTargetHelper.js");
+  const helper = Object.create(LinuxTargetHelper.prototype);
+  helper.packager = {
+    info: { metadata },
+    config: metadata.build,
+    platformSpecificBuildOptions: metadata.build.linux,
+    executableName: metadata.name,
+    fileAssociations: [],
+    appInfo: {
+      productName: metadata.build.productName,
+      sanitizedProductName: metadata.build.productName,
+      description: metadata.description,
+    },
+  };
+  expect(helper.getDesktopFileName() + ".desktop").toBe(metadata.desktopName);
+  expect(await helper.computeDesktopEntry(metadata.build.linux)).toContain(
+    "StartupWMClass=io.github.marcelchapman.rio\n",
+  );
 });

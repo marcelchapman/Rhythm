@@ -19,18 +19,18 @@ import { finderStoreFixture, wavFixture } from "../tests/fixtures.ts";
 
 // All files and native Trash handoffs are restricted to this disposable tree.
 const root = await realpath(
-  await mkdtemp(path.join(tmpdir(), "rhythm-album-app-")),
+  await mkdtemp(path.join(tmpdir(), "rio-album-app-")),
 );
 const library = path.join(root, "Library");
 const originals = new Map();
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 let app, p;
@@ -41,7 +41,7 @@ async function launch() {
       : { args: ["."] }),
     env: {
       ...process.env,
-      RHYTHM_DATA_DIR: path.join(root, "Profile"),
+      RIO_DATA_DIR: path.join(root, "Profile"),
       ...(process.platform === "linux"
         ? { XDG_DATA_HOME: path.join(root, "xdg") }
         : {}),
@@ -94,7 +94,7 @@ async function launch() {
     { root, originals: [...originals.keys()] },
   );
 }
-const snapshot = () => p.evaluate(() => window.rhythm.snapshot());
+const snapshot = () => p.evaluate(() => window.rio.snapshot());
 const select = (file) =>
   app.evaluate(({ dialog }, file) => {
     dialog.showOpenDialog = async () => ({
@@ -134,12 +134,12 @@ async function source(folder, name, tags = {}) {
 }
 async function importFiles(files, managed = false) {
   await p.evaluate(
-    (managed) => window.rhythm.saveMediaSettings({ copyOnAdd: managed }),
+    (managed) => window.rio.saveMediaSettings({ copyOnAdd: managed }),
     managed,
   );
   for (const file of files) {
     await select(file);
-    const result = await p.evaluate(() => window.rhythm.importMusic());
+    const result = await p.evaluate(() => window.rio.importMusic());
     assert.deepEqual(result.errors, []);
   }
   await p.reload();
@@ -238,13 +238,13 @@ async function deletion(track, managed, referenced, response = 1) {
   if (managed)
     assert(
       options.detail.includes(
-        `${managed} managed track${managed === 1 ? "" : "s"} will be removed from Rhythm and moved to the Trash.`,
+        `${managed} managed track${managed === 1 ? "" : "s"} will be removed from Rio and moved to the Trash.`,
       ),
     );
   if (referenced)
     assert(
       options.detail.includes(
-        `${referenced} referenced track${referenced === 1 ? "" : "s"} will be removed from Rhythm but remain at their original locations.`,
+        `${referenced} referenced track${referenced === 1 ? "" : "s"} will be removed from Rio but remain at their original locations.`,
       ),
     );
   assert.equal(options.detail.includes("managed track"), !!managed);
@@ -319,7 +319,7 @@ async function reveal(track, expected, missing = 0, cancel = false) {
   else
     // An enabled album command observes release of the existing operation lock.
     await until(async () => {
-      await p.evaluate((id) => window.rhythm.showAlbumMenu(id), track.albumId);
+      await p.evaluate((id) => window.rio.showAlbumMenu(id), track.albumId);
       return app.evaluate(
         () => globalThis.albumMenu.getMenuItemById("album-delete").enabled,
       );
@@ -334,7 +334,7 @@ async function reveal(track, expected, missing = 0, cancel = false) {
   assert.deepEqual((await snapshot()).tracks, before.tracks);
 }
 function sql(statement, ...args) {
-  const db = new DatabaseSync(path.join(library, "rhythm.sqlite"));
+  const db = new DatabaseSync(path.join(library, "rio.sqlite"));
   try {
     return args.length
       ? db.prepare(statement).run(...args)
@@ -345,11 +345,9 @@ function sql(statement, ...args) {
 }
 async function relationships(ids) {
   await p.evaluate(async (ids) => {
-    const list = await window.rhythm.createPlaylist(
-      `Album collection ${ids[0]}`,
-    );
-    await window.rhythm.playlistTracks(list.id, ids);
-    for (const id of ids) await window.rhythm.favorite(id);
+    const list = await window.rio.createPlaylist(`Album collection ${ids[0]}`);
+    await window.rio.playlistTracks(list.id, ids);
+    for (const id of ids) await window.rio.favorite(id);
   }, ids);
   await p.reload();
   await nav("Albums");
@@ -377,7 +375,7 @@ async function absent(tracks) {
     assert(!s.playlists.some((p) => p.trackIds.includes(track.id)));
     assert(!s.state.queue.includes(track.id));
     assert.notEqual(s.state.currentId, track.id);
-    const db = new DatabaseSync(path.join(library, "rhythm.sqlite"), {
+    const db = new DatabaseSync(path.join(library, "rio.sqlite"), {
       readOnly: true,
     });
     try {
@@ -576,13 +574,13 @@ async function directoryCleanupAcceptance(media) {
   const rootFinder = path.join(nestedRoot, ".DS_Store");
   await writeFile(rootFinder, finderStoreFixture());
   await select(nestedRoot);
-  await p.evaluate(() => window.rhythm.chooseMediaRoot());
+  await p.evaluate(() => window.rio.chooseMediaRoot());
   await deletion(nested, 1, 0);
   await absent([nested]);
   assert.deepEqual(await readdir(nestedRoot), [".DS_Store"]);
   assert.deepEqual(await readFile(rootFinder), finderStoreFixture());
   await select(media);
-  await p.evaluate(() => window.rhythm.chooseMediaRoot());
+  await p.evaluate(() => window.rio.chooseMediaRoot());
 
   const [warning] = await batch("Cleanup warning", ["Cleanup warning track"]);
   const directory = path.dirname(warning.path);
@@ -606,7 +604,7 @@ try {
   await mkdir(library);
   await launch();
   await select(library);
-  await p.evaluate(() => window.rhythm.chooseLibrary());
+  await p.evaluate(() => window.rio.chooseLibrary());
   const r1 = await source("References", "Ref one", {
     album: "Same title",
     albumArtist: "Owner One",
@@ -647,7 +645,7 @@ try {
   const stale = await p.evaluate(
     async ({ id, ids }) => {
       try {
-        await window.rhythm.deleteAlbum(id, ids);
+        await window.rio.deleteAlbum(id, ids);
         return "unexpected success";
       } catch (e) {
         return e.message;
@@ -707,7 +705,7 @@ try {
   const media = path.join(root, "Media Managed");
   await mkdir(media);
   await select(media);
-  await p.evaluate(() => window.rhythm.chooseMediaRoot());
+  await p.evaluate(() => window.rio.chooseMediaRoot());
   const m1file = await source("Managed originals", "Managed one", {
     album: "Managed",
   });
@@ -738,9 +736,9 @@ try {
   const mixMedia = path.join(root, "Media Mixed");
   await mkdir(mixMedia);
   await select(mixMedia);
-  await p.evaluate(() => window.rhythm.chooseMediaRoot());
+  await p.evaluate(() => window.rio.chooseMediaRoot());
   await p.evaluate(() =>
-    window.rhythm.saveMediaSettings({ keepOrganized: false }),
+    window.rio.saveMediaSettings({ keepOrganized: false }),
   );
   const goodSource = await source("Mixed originals", "Mixed good", {
     album: "Mixed",

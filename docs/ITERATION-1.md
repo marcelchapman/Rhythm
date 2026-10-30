@@ -1,3 +1,5 @@
+> Archived pre-rename record: this milestone/specification used the working name Rhythm. Names, commands and artifact paths below describe that historical checkpoint. Use the current README and PRODUCT.md for Rio.
+
 # First feature iteration after Rhythm 0.1
 
 Historical iteration record. The next bounded iteration is documented in [ITERATION-2.md](ITERATION-2.md).

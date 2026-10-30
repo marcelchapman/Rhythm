@@ -133,16 +133,13 @@ button {
 }
 .brand {
   display: flex;
-  gap: 12px;
   align-items: center;
-  font-size: 22px;
-  font-weight: 650;
+  height: 33px;
+  flex-shrink: 0;
   margin: 2px 16px 26px;
 }
-.brand svg {
-  color: var(--accent);
-  width: 24px;
-  height: 28px;
+.brand img {
+  object-fit: contain;
 }
 .nav-item {
   display: flex;
@@ -804,7 +801,6 @@ input[type="range"]:disabled {
   padding-bottom: 35px;
 }
 .setup-mark {
-  color: var(--accent);
   margin-bottom: 2px;
 }
 .setup-step {

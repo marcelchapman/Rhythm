@@ -17,7 +17,7 @@ import { sortTracks, dragTrackIds } from "../src/renderer/track-columns";
 let root: string;
 let l: Library | undefined;
 beforeEach(async () => {
-  root = await mkdtemp(path.join(tmpdir(), "rhythm-features-"));
+  root = await mkdtemp(path.join(tmpdir(), "rio-features-"));
 });
 afterEach(async () => {
   l?.close();

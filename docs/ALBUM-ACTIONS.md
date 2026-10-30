@@ -1,3 +1,5 @@
+> Current behavior is described using the Rio name. Recorded pre-rename artifact paths and CI evidence retain the original working name Rhythm; they are historical records, not current package instructions.
+
 # Album context actions
 
 Baseline: `8bab79f`, following multi-selection and Track Info test stabilization. No schema, grouping, managed-file authority, playback policy or track-selection changes are introduced.

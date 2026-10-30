@@ -8,18 +8,18 @@ import { deflateSync } from "node:zlib";
 import { execFileSync } from "node:child_process";
 import { wavFixture } from "../tests/fixtures.ts";
 
-const fixture = await mkdtemp(path.join(tmpdir(), "rhythm-desktop-test-"));
+const fixture = await mkdtemp(path.join(tmpdir(), "rio-desktop-test-"));
 const music = path.join(fixture, "Music with spaces ü");
 const library = path.join(fixture, "Library");
 const userData = path.join(fixture, "UserData");
 const review = path.resolve(".impeccable/review");
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 await mkdir(music);
@@ -158,7 +158,7 @@ const launch = async () => {
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: userData },
+    env: { ...process.env, RIO_DATA_DIR: userData },
     timeout: 30000,
   });
   application.process().stderr.on("data", (data) => process.stderr.write(data));
@@ -171,7 +171,7 @@ const launch = async () => {
   await page.waitForSelector("h1");
   return page;
 };
-const snapshot = (page) => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = (page) => page.evaluate(() => window.rio.snapshot());
 const dialogFolder = (folder) =>
   application.evaluate(({ dialog }, selected) => {
     dialog.showOpenDialog = async () => ({
@@ -197,7 +197,7 @@ try {
     .getByRole("button", { name: "Add music folders", exact: true })
     .click();
   await page.waitForFunction(
-    async () => (await window.rhythm.snapshot()).tracks.length === 20,
+    async () => (await window.rio.snapshot()).tracks.length === 20,
   );
   await page
     .getByRole("heading", { name: "Recently Added", exact: true })
@@ -242,7 +242,7 @@ try {
     .locator("audio")
     .evaluate((a) => a.currentSrc);
   const playbackTrack = initial.tracks.find((t) => t.title === "Evening light");
-  assert.equal(playbackSource, `rhythm-media://track/${playbackTrack.id}`);
+  assert.equal(playbackSource, `rio-media://track/${playbackTrack.id}`);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   // paused flips before the queued timeupdate and React position update settle.
   // Home must start from a synchronized, nonzero control value.
@@ -353,12 +353,12 @@ try {
   // Exercise the native context commands without automating the OS menu surface.
   await application.evaluate(({ Menu }) => {
     Menu.prototype.popup = function () {
-      globalThis.__rhythmSmokeMenu = this;
+      globalThis.__rioSmokeMenu = this;
     };
   });
   const contextCommand = (id) =>
     application.evaluate((_electron, id) => {
-      const item = globalThis.__rhythmSmokeMenu?.getMenuItemById(id);
+      const item = globalThis.__rioSmokeMenu?.getMenuItemById(id);
       if (!item) throw Error(`Context command ${id} missing`);
       item.click();
     }, id);
@@ -371,7 +371,7 @@ try {
   await contextCommand(`playlist-${smokePlaylist.id}`);
   await page.waitForFunction(
     async () =>
-      (await window.rhythm.snapshot()).playlists[0]?.trackIds.length === 1,
+      (await window.rio.snapshot()).playlists[0]?.trackIds.length === 1,
   );
   const blueHour = initial.tracks.find((t) => t.title === "Blue hour");
   await page
@@ -391,7 +391,7 @@ try {
     .waitFor({ state: "visible", timeout: 10000 });
   await page.getByRole("button", { name: "Next track", exact: true }).click();
   await page.waitForFunction(
-    async () => (await window.rhythm.snapshot()).state.currentId !== null,
+    async () => (await window.rio.snapshot()).state.currentId !== null,
   );
   await page.getByRole("button", { name: "Smoke mix", exact: true }).click();
   await page.getByRole("heading", { name: "Smoke mix", exact: true }).waitFor();
@@ -426,7 +426,7 @@ try {
   application = undefined;
   page = await launch();
   await page.waitForFunction(
-    async () => (await window.rhythm.snapshot()).tracks.length === 20,
+    async () => (await window.rio.snapshot()).tracks.length === 20,
   );
   const after = await snapshot(page);
   assert.equal(after.tracks.length, 20);

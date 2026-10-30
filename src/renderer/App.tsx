@@ -1,4 +1,5 @@
 import { MediaSource } from "./media-source";
+import rioWordmark from "../../assets/rio-wordmark.png";
 import { TrackList } from "./TrackList";
 import { CollectionSummary } from "./CollectionSummary";
 import { useTrackSelection } from "./use-track-selection";
@@ -60,12 +61,12 @@ import {
   type ScanResult,
 } from "../shared/types";
 
-const api = window.rhythm;
+const api = window.rio;
 const time = (seconds: number) => {
   const n = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
   return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, "0")}`;
 };
-const media = (t: Track) => `rhythm-media://track/${t.id}`;
+const media = (t: Track) => `rio-media://track/${t.id}`;
 const nav = [
   ["Albums", Disc3],
   ["Artists", UserRound],
@@ -86,7 +87,7 @@ function Art({ track, className = "" }: { track?: Track; className?: string }) {
   return track?.hasArtwork ? (
     <img
       className={`art ${className}`}
-      src={`rhythm-media://artwork/${track.id}`}
+      src={`rio-media://artwork/${track.id}`}
       alt={`${track.album} artwork`}
       loading="lazy"
     />
@@ -368,7 +369,7 @@ export function App() {
     );
     setRecoveryId(track.id);
     setError(
-      `Rhythm can't find “${track.title}” at its recorded location. Locate the file to reconnect this track.`,
+      `Rio can't find “${track.title}” at its recorded location. Locate the file to reconnect this track.`,
     );
   };
   const playbackFailure = async (
@@ -383,7 +384,7 @@ export function App() {
       generation !== mediaSource.current?.generation ||
       !playbackMounted.current;
     if (stale || (name === "AbortError" && !desiredPlay.current)) {
-      console.debug("Rhythm playback superseded", {
+      console.debug("Rio playback superseded", {
         id,
         generation,
         request,
@@ -394,7 +395,7 @@ export function App() {
     const key = `${generation}/${request}`;
     if (reportedPlaybackError.current === key) return;
     reportedPlaybackError.current = key;
-    console.warn("Rhythm playback failed", { id, generation, request, cause });
+    console.warn("Rio playback failed", { id, generation, request, cause });
     try {
       const result = await api.checkTrack(id);
       if (
@@ -417,7 +418,7 @@ export function App() {
         );
       }
     } catch (e) {
-      console.warn("Rhythm playback availability check failed", {
+      console.warn("Rio playback availability check failed", {
         id,
         cause: e,
       });
@@ -427,7 +428,7 @@ export function App() {
         playbackMounted.current
       )
         setError(
-          "Rhythm could not check this file. Try Play again or check its drive.",
+          "Rio could not check this file. Try Play again or check its drive.",
         );
     }
   };
@@ -493,7 +494,7 @@ export function App() {
       } else await refresh();
     } catch (e) {
       if (located) {
-        console.warn("Rhythm recovery playback preparation", { id, cause: e });
+        console.warn("Rio recovery playback preparation", { id, cause: e });
         if (e instanceof Error && e.name === "AbortError") {
           if (dataRef.current?.libraryPath === libraryPath)
             setMessage("File located. Its original stays unchanged.");
@@ -512,7 +513,7 @@ export function App() {
   const consolidate = async (ids?: string[]) => {
     if (busy) return;
     setBusy(true);
-    setProgress("Copying referenced tracks to Rhythm Media…");
+    setProgress("Copying referenced tracks to Rio Media…");
     setError("");
     setModal(null);
     try {
@@ -561,10 +562,12 @@ export function App() {
       const mediaSettings = patch
         ? await api.saveMediaSettings(patch)
         : await api.chooseMediaRoot();
-      if (mediaSettings)
+      if (mediaSettings) {
+        setMediaError(mediaSettings.setupError ?? "");
         setData((previous) =>
           previous ? { ...previous, mediaSettings } : previous,
         );
+      }
     } catch (e) {
       if (previousSettings)
         setData((previous) =>
@@ -584,6 +587,8 @@ export function App() {
     }
   };
   const load = (snapshot: Snapshot) => {
+    setMediaError(snapshot.mediaSettings.setupError ?? "");
+    if (snapshot.mediaSettings.setupError) setModal("settings");
     suppressSave.current = true;
     desiredPlay.current = false;
     playRequest.current++;
@@ -792,10 +797,10 @@ export function App() {
         await playbackFailure(e, track.id, generation, request);
       }
     } catch (e) {
-      console.warn("Rhythm Play request failed", { id: track.id, cause: e });
+      console.warn("Rio Play request failed", { id: track.id, cause: e });
       if (request === playRequest.current)
         setError(
-          "Rhythm could not check this file. Try Play again or check its drive.",
+          "Rio could not check this file. Try Play again or check its drive.",
         );
     }
   };
@@ -1732,8 +1737,7 @@ export function App() {
       <aside className="sidebar">
         <div className="window-drag" />
         <div className="brand">
-          <Activity />
-          <span>Rhythm</span>
+          <img src={rioWordmark} alt="Rio" width={104} height={60} />
         </div>
         <nav aria-label="Music library">
           <button
@@ -1990,7 +1994,7 @@ export function App() {
             <span>
               {report.added} added · {report.updated} updated ·{" "}
               {report.unchanged} unchanged
-              {!!report.copied && ` · ${report.copied} copied to Rhythm Media`}
+              {!!report.copied && ` · ${report.copied} copied to Rio Media`}
               {report.errors.length > 0 && ` · ${report.errors.length} issues`}
               {report.errors.length > 0 && (
                 <details>
@@ -2047,12 +2051,12 @@ export function App() {
           {!data ? (
             <div className="empty-state">
               <LoaderCircle className="spin" />
-              <h1>Opening Rhythm…</h1>
+              <h1>Opening Rio…</h1>
             </div>
           ) : !data.libraryPath ? (
             <div className="setup empty-state">
               <div className="setup-mark">
-                <Activity size={42} />
+                <img src={rioWordmark} alt="Rio" width={92} height={53} />
               </div>
               <h1>A home for your music.</h1>
               <p>
@@ -2065,8 +2069,9 @@ export function App() {
                 <div>
                   <h3>Choose a library folder</h3>
                   <p>
-                    Pick where Rhythm stores its library database, playlists,
-                    and listening state. This can be separate from your music.
+                    Pick where Rio stores its library database, playlists, and
+                    listening state. New libraries get a Rio Media folder inside
+                    the library folder. You can change it in Settings.
                   </p>
                 </div>
               </div>
@@ -2075,8 +2080,8 @@ export function App() {
                 <div>
                   <h3>Add your music</h3>
                   <p>
-                    Select music folders to index. Rhythm reads your files
-                    without moving, copying, or changing them.
+                    Select music folders to index. Rio reads your files without
+                    moving, copying, or changing them.
                   </p>
                 </div>
               </div>
@@ -2085,7 +2090,7 @@ export function App() {
                 Choose library folder
               </button>
               <small>
-                Already have a Rhythm library? Choose its existing folder.
+                Already have a Rio library? Choose its existing folder.
               </small>
             </div>
           ) : !tracks.length ? (
@@ -2585,7 +2590,7 @@ export function App() {
       </footer>
       {modal === "settings" && (
         <Modal title="Library settings" close={() => setModal(null)}>
-          <p className="muted">Rhythm 0.1 · Local music, under your control.</p>
+          <p className="muted">Rio 0.1 · Local music, under your control.</p>
           <h3>Library database</h3>
           <p className="path">{data?.libraryPath ?? "No library configured"}</p>
           <button
@@ -2603,7 +2608,7 @@ export function App() {
             className="media-settings"
             aria-labelledby="media-settings-title"
           >
-            <h3 id="media-settings-title">Rhythm Media folder</h3>
+            <h3 id="media-settings-title">Rio Media folder</h3>
             <p className="path">
               {data?.mediaSettings.root?.path ?? "No folder chosen"}
             </p>
@@ -2614,8 +2619,8 @@ export function App() {
             >
               <FolderOpen size={17} />
               {data?.mediaSettings.root
-                ? "Change Rhythm Media folder…"
-                : "Choose Rhythm Media folder…"}
+                ? "Change Rio Media folder…"
+                : "Choose Rio Media folder…"}
             </button>
             <label className="media-option">
               <input
@@ -2627,9 +2632,7 @@ export function App() {
                 }
                 aria-describedby="media-copy-help"
               />
-              <span>
-                Copy files to Rhythm Media folder when adding to library
-              </span>
+              <span>Copy files to Rio Media folder when adding to library</span>
             </label>
             <p id="media-copy-help" className="muted">
               {!data?.mediaSettings.root
@@ -2648,7 +2651,7 @@ export function App() {
                 }
                 aria-describedby="media-organize-help"
               />
-              <span>Keep Rhythm Media folder organized</span>
+              <span>Keep Rio Media folder organized</span>
             </label>
             <p id="media-organize-help" className="muted">
               Organize new copies by Album Artist and Album. Existing files stay
@@ -2753,7 +2756,7 @@ export function App() {
             </button>
           </div>
           <p className="fine-print">
-            Music files are read only. Rhythm does not move, rename, delete, or
+            Music files are read only. Rio does not move, rename, delete, or
             edit them. Cloud sync and mobile clients are outside version 0.1.
           </p>
         </Modal>
@@ -2868,7 +2871,7 @@ export function App() {
                 [
                   "Ownership",
                   actionTrack.locationKind === "managed"
-                    ? "Managed copy in Rhythm Media"
+                    ? "Managed copy in Rio Media"
                     : "Referenced file",
                 ],
                 [
@@ -2896,8 +2899,8 @@ export function App() {
       {modal === "consolidate" && (
         <Modal title="Consolidate Library?" close={() => setModal(null)}>
           <p>
-            Copy referenced music into Rhythm Media. External originals stay
-            where they are and remain unchanged.
+            Copy referenced music into Rio Media. External originals stay where
+            they are and remain unchanged.
           </p>
           <p className="muted">
             {tracks.filter((t) => t.locationKind === "referenced").length}{" "}
@@ -2913,7 +2916,7 @@ export function App() {
             <p className="path">{data.mediaSettings.root.path}</p>
           ) : (
             <p>
-              Choose a Rhythm Media folder in Library settings before
+              Choose a Rio Media folder in Library settings before
               consolidating.
             </p>
           )}

@@ -46,7 +46,7 @@ export function sortTracks(
     );
   });
 }
-export const TRACK_DRAG_TYPE = "application/x-rhythm-track-ids";
+export const TRACK_DRAG_TYPE = "application/x-rio-track-ids";
 export function dragTrackIds(data: string): string[] {
   try {
     const ids: unknown = JSON.parse(data);

@@ -29,9 +29,9 @@ const originals = new Map<string, { hash: string; mtime: number }>();
 const sha = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 beforeEach(async () => {
   originals.clear();
-  root = await realpath(await mkdtemp(path.join(tmpdir(), "rhythm-managed-")));
+  root = await realpath(await mkdtemp(path.join(tmpdir(), "rio-managed-")));
   music = path.join(root, "Originals");
-  media = path.join(root, "Rhythm Media");
+  media = path.join(root, "Rio Media");
   dbFolder = path.join(root, "Library");
   await mkdir(music);
   await mkdir(media);
@@ -182,7 +182,7 @@ test("copies and verifies managed imports, preserves original integrity and trac
   ]);
   expect(l.state().currentId).toBe(before.id);
   expect(l.mediaSettings().pendingImports).toBe(0);
-  expect(await readdir(path.join(media, ".rhythm-imports"))).toEqual([]);
+  expect(await readdir(path.join(media, ".rio-imports"))).toEqual([]);
   l.close();
   l = await Library.open(dbFolder);
   expect(l.tracks()[0]).toEqual(t);
@@ -303,8 +303,8 @@ test("interrupted partial copies are never indexed and retry replaces only the v
   await enable();
   const file = await source();
   const rootId = l.mediaSettings().root!.id;
-  await mkdir(path.join(media, ".rhythm-imports"));
-  const stage = `.rhythm-imports/${randomUUID()}.partial`;
+  await mkdir(path.join(media, ".rio-imports"));
+  const stage = `.rio-imports/${randomUUID()}.partial`;
   await writeFile(path.join(media, stage), "partial");
   const info = await lstat(path.join(media, stage));
   l.db
@@ -325,7 +325,7 @@ test("interrupted partial copies are never indexed and retry replaces only the v
   expect(l.tracks()).toEqual([]);
   expect((await l.add([file])).errors).toEqual([]);
   expect(l.tracks()[0].locationKind).toBe("managed");
-  expect(await readdir(path.join(media, ".rhythm-imports"))).toEqual([]);
+  expect(await readdir(path.join(media, ".rio-imports"))).toEqual([]);
 });
 test("symlink destinations and unusable staging paths fail safely; retry and root unavailability do not claim success", async () => {
   await enable();
@@ -400,7 +400,7 @@ test("schema migration rolls back all new ownership tables when a later DDL step
 test("unusable staging storage reports a copy failure without indexing and can retry", async () => {
   await enable();
   const file = await source(),
-    marker = path.join(media, ".rhythm-imports");
+    marker = path.join(media, ".rio-imports");
   await writeFile(marker, "not a folder");
   expect((await l.add([file])).errors).not.toHaveLength(0);
   expect(l.tracks()).toEqual([]);
@@ -421,7 +421,7 @@ test("changed managed copies are never overwritten by reimporting their original
   expect(l.tracks()).toHaveLength(1);
 });
 test("media roots inside an imported tree do not recursively duplicate copies; concurrent operations are guarded", async () => {
-  const nested = path.join(music, "Rhythm Media");
+  const nested = path.join(music, "Rio Media");
   await mkdir(nested);
   await l.chooseMediaRoot(nested);
   l.saveMediaSettings({ copyOnAdd: true });

@@ -1,4 +1,4 @@
-// Disposable qualification helpers, deliberately separate from Rhythm's writer/indexer.
+// Disposable qualification helpers, deliberately separate from Rio's writer/indexer.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFile, writeFile, mkdir, realpath, lstat } from "node:fs/promises";
@@ -185,7 +185,7 @@ export async function generate() {
         "-metadata",
         "copyright=Lab copyright",
         "-metadata",
-        "RHYTHM_LAB_UNKNOWN=Original unknown ü 音楽",
+        "RIO_LAB_UNKNOWN=Original unknown ü 音楽",
         "-strict",
         "experimental",
         file,

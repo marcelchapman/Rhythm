@@ -274,7 +274,7 @@ export function createPublicationAdapter(binding: NativePublicationBinding) {
       try {
         return binding.probe(
           snapshot(target),
-          `.rhythm-publication-${randomUUID()}`,
+          `.rio-publication-${randomUUID()}`,
         );
       } catch (error) {
         return failure(error);
@@ -310,7 +310,7 @@ export function createPublicationAdapter(binding: NativePublicationBinding) {
           throw Error("Opened target does not match the supplied digest.");
         const prepared = binding.prepare(
             handle,
-            `.rhythm-publication-${randomUUID()}`,
+            `.rio-publication-${randomUUID()}`,
             candidate,
           ),
           observed = inspection(prepared);

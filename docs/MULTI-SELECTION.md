@@ -1,4 +1,6 @@
-# Rhythm — multi-selection foundation
+> Current behavior is described using the Rio name. Recorded pre-rename artifact paths and CI evidence retain the original working name Rhythm; they are historical records, not current package instructions.
+
+# Rio — multi-selection foundation
 
 Baseline: `1ca6360`, following safe removal (`bb28c60`) and Show in Finder. This mission extends the shared Track List and existing action/removal pipeline. It does not introduce album-level commands, schema changes, tag editing, new menus, or a second selection system.
 
@@ -16,7 +18,7 @@ Right-click inside the selection preserves it and focuses the clicked track. Rig
 | Play Next / Add to Queue | Complete selection, retaining existing availability/deduplication rules |
 | Add to Playlist / New Playlist | Complete selection |
 | Favourite / Remove from Favourites | Complete selection, using existing collective target state |
-| Consolidate to Rhythm Media | Complete selection, retaining existing reference-only and ownership rules |
+| Consolidate to Rio Media | Complete selection, retaining existing reference-only and ownership rules |
 | Remove from Playlist | Complete selection; only memberships in the actual contextual playlist |
 | Delete from Library | Complete selection; one native confirmation |
 | Locate File | Single missing track only; unavailable for multi-selection |

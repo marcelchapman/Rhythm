@@ -6,24 +6,24 @@ Date: 2026-10-28. Host: Intel macOS. Experiment only; production code, root mani
 
 **Accepted with format/API restrictions for future integration, not approved as an unrestricted production writer.**
 
-The engine is usable, but its convenience APIs and automatic backend selection do not provide the preservation guarantees Rhythm needs. A successful save is insufficient evidence. In particular, MP3 comments, FLAC picture geometry and MP4 mdta metadata exhibit concrete preservation failures.
+The engine is usable, but its convenience APIs and automatic backend selection do not provide the preservation guarantees Rio needs. A successful save is insufficient evidence. In particular, MP3 comments, FLAC picture geometry and MP4 mdta metadata exhibit concrete preservation failures.
 
-**Recommended initial production format scope: native FLAC only, using the forced Emscripten full-buffer Core API, with independent preservation verification before publication.** Other extensions remain read-only initially. For FLAC: initially expose integer BPM through Rhythm's present reader; permit comment editing only for an unambiguous COMMENT-only profile; do not enable artwork replacement/removal when another picture must be retained until full picture-attribute preservation is available. Metadata-only edits can preserve existing additional pictures with Emscripten. Files containing foreign ID3 tags or other unqualified profiles should be refused rather than normalized silently. Treat full-date year edits as an explicit adapter policy: preserving month/day is not supplied by the tested DATE replacement.
+**Recommended initial production format scope: native FLAC only, using the forced Emscripten full-buffer Core API, with independent preservation verification before publication.** Other extensions remain read-only initially. For FLAC: initially expose integer BPM through Rio's present reader; permit comment editing only for an unambiguous COMMENT-only profile; do not enable artwork replacement/removal when another picture must be retained until full picture-attribute preservation is available. Metadata-only edits can preserve existing additional pictures with Emscripten. Files containing foreign ID3 tags or other unqualified profiles should be refused rather than normalized silently. Treat full-date year edits as an explicit adapter policy: preserving month/day is not supplied by the tested DATE replacement.
 
 This is a proposed future scope, not a production capability added by the lab. MP3 and ordinary iTunes-style AAC/M4A are the next candidates after their preservation rules and failures are addressed. The reported format-specific restrictions must not be hidden behind a single “supports MP3/FLAC/M4A” label.
 
 ## 1. Runtime and Electron compatibility
 
-- Rhythm: Electron 44.9.2; the actual embedded runtime reports Node 24.22.0 and V8 15.2.124.43-electron.0.
+- Rio: Electron 44.9.2; the actual embedded runtime reports Node 24.22.0 and V8 15.2.124.43-electron.0.
 - Host tooling: Node 26.12.0, npm 11.20.0. CI selects Node 24; runtime consumers use Electron's embedded Node, not the build host's Node.
 - Candidate: npm taglib-wasm **2.4.0**, embedding **TagLib 2.3.2**, requiring Node >=24.0.0. Published gitHead: `1ef771c91a81c81ecdd22e92b334fab4b27a5bb4`.
-- Both forced WASI and Emscripten initialized without flags in Electron's runtime. Both completed all eight format matrices in a standalone, windowless Electron main process. No Rhythm entry point was imported.
+- Both forced WASI and Emscripten initialized without flags in Electron's runtime. Both completed all eight format matrices in a standalone, windowless Electron main process. No Rio entry point was imported.
 - Five final matrix runs: host Node/WASI, host Node/Emscripten, Electron/WASI, Electron/Emscripten, and Electron/Emscripten buffer mode for the three priority formats. Results agreed across host/Electron for matching backends.
 - Node 24's generic documentation mentions an exnref flag/fallback. Electron's newer V8 accepted the artifacts without it; no production flags were added. This does not establish that every standalone Node 24 build behaves identically.
 
 ## 2. Packaging
 
-Rhythm uses npm/package-lock, NodeNext ESM TypeScript for main/domain code, Vite for the renderer, and electron-builder 26.15.3 with ASAR. Current artifacts are macOS DMG/ZIP and Linux AppImage/deb; Windows packaging is future work.
+Rio uses npm/package-lock, NodeNext ESM TypeScript for main/domain code, Vite for the renderer, and electron-builder 26.15.3 with ASAR. Current artifacts are macOS DMG/ZIP and Linux AppImage/deb; Windows packaging is future work.
 
 A lab-only ASAR loaded JS and both WASM engines and edited a generated FLAC successfully in four configurations: WASI/Emscripten with assets inside ASAR, and WASI/Emscripten with explicit external WASM paths. music-metadata, packet hashes and decoded PCM independently verified all four outputs. Thus ASAR unpacking is **not a demonstrated functional requirement** on this macOS runtime.
 
@@ -31,13 +31,13 @@ For production, prefer the JS package as a main/worker dependency, with the sele
 
 WASM avoids an architecture-specific Node addon rebuild, but macOS arm64, Linux and Windows execution were not tested here. Their packaged resource paths, signatures, filesystem semantics and backend behavior still require native canaries. The ASAR experiment is not a signed DMG/ZIP qualification or a Linux/Windows result.
 
-The default WASI loader preopens `/` on Unix and detected drives on Windows. Do not mistake it for Rhythm's managed-authority boundary. A buffer-only writer avoids handing arbitrary filesystem paths to the engine; the domain coordinator must retain filesystem authority.
+The default WASI loader preopens `/` on Unix and detected drives on Windows. Do not mistake it for Rio's managed-authority boundary. A buffer-only writer avoids handing arbitrary filesystem paths to the engine; the domain coordinator must retain filesystem authority.
 
 ## 3. Licensing/distribution
 
 The installed npm manifest labels the package MIT, but its README distinguishes MIT JS/TS from LGPL-2.1-or-later WASM. The published 2.4.0 archive contains only `LICENSE`; it does **not** include LGPL text, a NOTICE file or corresponding TagLib sources/build inputs. Newer online documentation is not proof that those materials are present in this npm artifact.
 
-Before distribution, Rhythm must preserve wrapper/transitive notices; supply the applicable LGPL notice/text; provide corresponding library source, wrapper/build inputs and modifications through an appropriate compliant distribution route; and provide a practical modified-library replacement/relink/rebuild mechanism. Terms must permit the library-modification/debugging rights required by LGPL. Record exact source revisions, toolchains and WASM hashes. A replacement procedure must account for macOS code-signing behavior, not merely say that a WASM file exists. Do not assume an alternative MPL option covers this prebuilt WASM just because upstream TagLib is dual-licensed. Resolve the distribution compliance plan before release; this lab does not settle Rhythm's own undecided license.
+Before distribution, Rio must preserve wrapper/transitive notices; supply the applicable LGPL notice/text; provide corresponding library source, wrapper/build inputs and modifications through an appropriate compliant distribution route; and provide a practical modified-library replacement/relink/rebuild mechanism. Terms must permit the library-modification/debugging rights required by LGPL. Record exact source revisions, toolchains and WASM hashes. A replacement procedure must account for macOS code-signing behavior, not merely say that a WASM file exists. Do not assume an alternative MPL option covers this prebuilt WASM just because upstream TagLib is dual-licensed. Resolve the distribution compliance plan before release; this lab does not settle Rio's own undecided license.
 
 Primary references: [upstream installation](https://charleswiltgen.github.io/TagLib-Wasm/guide/installation.html), [upstream project/license](https://github.com/CharlesWiltgen/taglib-wasm#license), and [TagLib 2.3.2 LGPL text](https://raw.githubusercontent.com/taglib/taglib/v2.3.2/COPYING.LGPL). Actual installed artifact contents and runtime measurements take precedence over changing website claims.
 
@@ -47,7 +47,7 @@ Generated two-second stereo sine fixtures: MP3/libmp3lame, FLAC, AAC/M4A, Ogg/na
 
 Each operation uses a fresh copy. Generated originals remain hashed and untouched after generation. Each format exercises initial reading, no-op save, title, artist/album, album artist, composer, genre, DATE/year, integer/fractional BPM, comments, track/disc number and total changes, separate number/total clears, other explicit clears, JPEG/PNG front replacement and front removal. A separate test checks absent fields stay absent/empty without writing display fallbacks. Default partial-path saving is checked separately.
 
-Every matrix output is parsed independently by Rhythm's installed music-metadata 12.2.3. Every output is demuxed with FFprobe and decoded with FFmpeg. Encoded packet byte-hash sequences and decoded PCM hashes must match the pre-edit fixture. The writer's own media checksum is not used as independent proof.
+Every matrix output is parsed independently by Rio's installed music-metadata 12.2.3. Every output is demuxed with FFprobe and decoded with FFmpeg. Encoded packet byte-hash sequences and decoded PCM hashes must match the pre-edit fixture. The writer's own media checksum is not used as independent proof.
 
 Final evidence: **1,120 matrix operations, 46 preservation edge cases, 16 targeted refinements, four ASAR checks**, plus the pure organization planner check. All matrix encoded-packet and PCM comparisons passed, and every generated original retained its recorded hash. Edge/refinement/ASAR audio checks also passed. Metadata-preservation failures remain recorded as failures, not waived.
 
@@ -81,7 +81,7 @@ These are **strict case counts, not format support scores**. A case fails for co
 | Comments           | Requested text read, but aliases/multiple comments need care   | COMMENT + DESCRIPTION causes duplication or incomplete clear | Ordinary comment property works; typed empty setter does not reliably remove the native atom   |
 | Explicit clears    | Many clear correctly; Emscripten can retain empty numeric tags | Unambiguous COMMENT-only change/clear passes                 | Empty values can remain; Emscripten BPM clear leaves tmpo=0 unless native atom removal is used |
 
-Rhythm's installed reader explicitly uses `Number.parseInt` for BPM. Do not blame every fractional-BPM mismatch on the writer. Raw stored BPM/native values are retained in the evidence. Likewise, setting DATE to `2001` intentionally replaces the previous full date; the engine does not infer a policy for preserving month/day during a year-only editor operation. Unedited full dates and track/disc totals survived title-only edits in the tested profiles.
+Rio's installed reader explicitly uses `Number.parseInt` for BPM. Do not blame every fractional-BPM mismatch on the writer. Raw stored BPM/native values are retained in the evidence. Likewise, setting DATE to `2001` intentionally replaces the previous full date; the engine does not infer a policy for preserving month/day during a year-only editor operation. Unedited full dates and track/disc totals survived title-only edits in the tested profiles.
 
 ## 6. Artwork
 
@@ -100,7 +100,7 @@ Rhythm's installed reader explicitly uses `Number.parseInt` for BPM. Do not blam
 - Independently inserted FLAC APPLICATION block bytes survived title edits on both engines.
 - Independently generated MP4 **mdta** metadata was present before editing; a title-only save removed its unrelated marker on both engines. Ordinary iTunes/freeform success does not qualify all M4A metadata profiles.
 - `setProperties` is unsafe as a generic patch mechanism: the tested Emscripten replacement dropped omitted properties; WASI merged them. Never reconstruct an editing document from a normalized Track or overwrite a complete property map with only form fields.
-- Omitted/unchanged fields, explicit nonempty changes and explicit clears were tested separately. Missing artist/album/album artist/genre/composer fields stayed absent or empty after a title-only change on all fixtures. No Rhythm “Unknown artist/album/genre” fallback was supplied to the writer.
+- Omitted/unchanged fields, explicit nonempty changes and explicit clears were tested separately. Missing artist/album/album artist/genre/composer fields stayed absent or empty after a title-only change on all fixtures. No Rio “Unknown artist/album/genre” fallback was supplied to the writer.
 - FLAC/Ogg COMMENT and DESCRIPTION aliases require policy. Clearing COMMENT alone can leave DESCRIPTION visible. Emscripten retained DESCRIPTION during COMMENT changes; WASI changed it as well in the mixed fixture. With DESCRIPTION deliberately absent, isolated FLAC COMMENT change and clear passed both engines.
 - AIFF NAME/ANNO can survive after deleting an ID3 title/comment, causing the old native value to reappear. Keep AIFF read-only until cross-tag semantics are qualified.
 

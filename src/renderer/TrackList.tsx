@@ -20,7 +20,7 @@ import { selectionModifier } from "./track-selection";
 import { useTrackSelection } from "./use-track-selection";
 
 const ROW = 34;
-const COLUMN_DRAG_TYPE = "application/x-rhythm-song-column";
+const COLUMN_DRAG_TYPE = "application/x-rio-song-column";
 
 const time = (n: number) =>
   `${Math.floor(n / 60)}:${String(Math.floor(n % 60)).padStart(2, "0")}`;

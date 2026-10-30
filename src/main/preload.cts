@@ -2,11 +2,11 @@ import { contextBridge, ipcRenderer, webUtils } from "electron";
 import type {
   PlayerState,
   ScanProgress,
-  RhythmAPI,
+  RioAPI,
   TrackAction,
   PlaylistAction,
 } from "../shared/types.js";
-const api: RhythmAPI = {
+const api: RioAPI = {
   showPlaylistMenu: (id) => ipcRenderer.invoke("playlist:menu", id),
   duplicatePlaylist: (id) => ipcRenderer.invoke("playlist:duplicate", id),
   onPlaylistAction: (callback) => {
@@ -80,4 +80,4 @@ const api: RhythmAPI = {
     return () => ipcRenderer.removeListener("player:command", listener);
   },
 };
-contextBridge.exposeInMainWorld("rhythm", api);
+contextBridge.exposeInMainWorld("rio", api);

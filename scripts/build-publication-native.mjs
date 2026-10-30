@@ -81,7 +81,7 @@ for (const testing of process.argv.includes("--test")
       compiler,
       [
         ...flags,
-        ...(testing ? ["-DRHYTHM_PUBLICATION_TESTING"] : []),
+        ...(testing ? ["-DRIO_PUBLICATION_TESTING"] : []),
         source,
         "-o",
         temporary,

@@ -10,7 +10,7 @@ import {
   collectionTotals,
   collectionSummaryText,
 } from "../src/shared/collection-summary.ts";
-const root = await mkdtemp(path.join(tmpdir(), "rhythm-feature-test-"));
+const root = await mkdtemp(path.join(tmpdir(), "rio-feature-test-"));
 const library = path.join(root, "Library");
 const music = path.join(root, "Music");
 const review = path.resolve(".impeccable/review");
@@ -36,12 +36,12 @@ for (let i = 1; i <= 12; i++)
   });
 let app;
 const executable =
-  process.env.RHYTHM_EXECUTABLE ||
+  process.env.RIO_EXECUTABLE ||
   (process.argv.includes("--packaged")
     ? path.resolve(
         process.platform === "darwin"
-          ? "release/mac/Rhythm.app/Contents/MacOS/Rhythm"
-          : "release/linux-unpacked/rhythm-desktop",
+          ? "release/mac/Rio.app/Contents/MacOS/Rio"
+          : "release/linux-unpacked/rio-desktop",
       )
     : undefined);
 async function launch() {
@@ -49,14 +49,14 @@ async function launch() {
     ...(executable
       ? { executablePath: executable, args: [] }
       : { args: ["."] }),
-    env: { ...process.env, RHYTHM_DATA_DIR: path.join(root, "AppData") },
+    env: { ...process.env, RIO_DATA_DIR: path.join(root, "AppData") },
     timeout: 30000,
   });
   const page = await app.firstWindow();
   await page.waitForSelector("h1");
   return page;
 }
-const snapshot = (page) => page.evaluate(() => window.rhythm.snapshot());
+const snapshot = (page) => page.evaluate(() => window.rio.snapshot());
 async function waitSnapshot(page, predicate) {
   for (let i = 0; i < 100; i++) {
     const s = await snapshot(page);
@@ -84,7 +84,7 @@ async function createPlaylist(page, name) {
 }
 async function menuClick(id) {
   await app.evaluate((_electron, id) => {
-    const item = globalThis.__rhythmTestMenu?.getMenuItemById(id);
+    const item = globalThis.__rioTestMenu?.getMenuItemById(id);
     if (!item) throw Error(`Menu action ${id} missing`);
     item.click();
   }, id);
@@ -100,11 +100,11 @@ async function compactSelectionAcceptance(page) {
       .evaluateAll((rows) => rows.map((row) => row.dataset.detailTrackId));
   async function context(id) {
     await app.evaluate(() => {
-      globalThis.__rhythmTestMenu = null;
+      globalThis.__rioTestMenu = null;
     });
     await row(id).click({ button: "right" });
     for (let i = 0; i < 100; i++) {
-      if (await app.evaluate(() => !!globalThis.__rhythmTestMenu)) return;
+      if (await app.evaluate(() => !!globalThis.__rioTestMenu)) return;
       await page.waitForTimeout(50);
     }
     throw Error("Compact context menu did not appear");
@@ -189,7 +189,7 @@ async function compactSelectionAcceptance(page) {
     path: path.join(review, "album-detail-selection.png"),
   });
   const mix = await page.evaluate(() =>
-    window.rhythm.createPlaylist("Detail selection mix"),
+    window.rio.createPlaylist("Detail selection mix"),
   );
   await context(b);
   await menuClick(`playlist-${mix.id}`);
@@ -253,7 +253,7 @@ async function compactSelectionAcceptance(page) {
   await row(b).dispatchEvent("dragstart", { dataTransfer: transfer });
   assert.deepEqual(
     await transfer.evaluate((transfer) =>
-      JSON.parse(transfer.getData("application/x-rhythm-track-ids")),
+      JSON.parse(transfer.getData("application/x-rio-track-ids")),
     ),
     [a, b],
   );
@@ -492,7 +492,7 @@ try {
   // Capture real native menus and dispatch their callbacks without OS popup automation.
   await app.evaluate(({ Menu }) => {
     Menu.prototype.popup = function () {
-      globalThis.__rhythmTestMenu = this;
+      globalThis.__rioTestMenu = this;
     };
   });
   await page
@@ -506,7 +506,7 @@ try {
   await compactSelectionAcceptance(page);
   await row().click({ button: "right" });
   const labels = await app.evaluate(() =>
-    globalThis.__rhythmTestMenu.items.map((i) => i.label),
+    globalThis.__rioTestMenu.items.map((i) => i.label),
   );
   for (const label of [
     "Play",

@@ -19,7 +19,7 @@ let root: string, l: Library;
 const files = new Map<string, { bytes: Buffer; mtime: number }>();
 beforeEach(async () => {
   root = await realpath(
-    await mkdtemp(path.join(tmpdir(), "rhythm-playlist-actions-")),
+    await mkdtemp(path.join(tmpdir(), "rio-playlist-actions-")),
   );
   l = await Library.open(path.join(root, "Library"));
   const media = path.join(root, "Media");

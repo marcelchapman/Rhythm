@@ -1,4 +1,4 @@
-// Package only this lab, never Rhythm's app or production dependencies.
+// Package only this lab, never Rio's app or production dependencies.
 import { createPackage } from "@electron/asar";
 import { cp, mkdir, writeFile, copyFile } from "node:fs/promises";
 import path from "node:path";

@@ -20,7 +20,7 @@ let root: string, incoming: string, media: string, database: string, l: Library;
 const originals = new Map<string, { hash: string; mtime: number }>();
 const sha = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
 beforeEach(async () => {
-  root = await realpath(await mkdtemp(path.join(tmpdir(), "rhythm-recovery-")));
+  root = await realpath(await mkdtemp(path.join(tmpdir(), "rio-recovery-")));
   incoming = path.join(root, "Incoming");
   media = path.join(root, "Media");
   database = path.join(root, "Library");

@@ -18,7 +18,7 @@ let root: string, folder: string, media: string, l: Library;
 const sources = new Map<string, { bytes: Buffer; mtime: number }>();
 beforeEach(async () => {
   root = await realpath(
-    await mkdtemp(path.join(tmpdir(), "rhythm-summary-metadata-")),
+    await mkdtemp(path.join(tmpdir(), "rio-summary-metadata-")),
   );
   folder = path.join(root, "Library");
   media = path.join(root, "Media");

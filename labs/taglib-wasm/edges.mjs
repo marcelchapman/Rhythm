@@ -94,7 +94,7 @@ function injectId3(data) {
       version,
       version === 4 ? 0x1000 : 0x2000,
     ),
-    frame("PRIV", Buffer.from("org.rhythm.lab\0private-bytes"), version),
+    frame("PRIV", Buffer.from("org.rio.lab\0private-bytes"), version),
     comment("eng", "English description", "English custom comment"),
     comment("por", "Other description", "Other custom comment"),
   ]);
@@ -110,7 +110,7 @@ const nativeCustom = (m) =>
   Object.values(m.native)
     .flat()
     .filter((x) =>
-      /RHYTHM|MiXeD|PRIV|XZZZ|replaygain|REPLAYGAIN|COPYRIGHT|TCOP|cprt|LYRICS|USLT|©lyr/.test(
+      /RIO|MiXeD|PRIV|XZZZ|replaygain|REPLAYGAIN|COPYRIGHT|TCOP|cprt|LYRICS|USLT|©lyr/.test(
         x.id,
       ),
     );
@@ -298,7 +298,7 @@ ffmpeg([
   "-movflags",
   "use_metadata_tags",
   "-metadata",
-  "org.rhythm.lab.UNKNOWN=Independent mdta value",
+  "org.rio.lab.UNKNOWN=Independent mdta value",
   mdta,
 ]);
 await test(
@@ -314,7 +314,7 @@ await test(
   unknown,
   () =>
     edit(unknown, (f) =>
-      f.setProperty("----:org.rhythm.lab:NewCustom", "NEW_CUSTOM_VALUE"),
+      f.setProperty("----:org.rio.lab:NewCustom", "NEW_CUSTOM_VALUE"),
     ),
   { marker: "NEW_CUSTOM_VALUE" },
 );

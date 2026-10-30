@@ -21,7 +21,7 @@ let root: string;
 let music: string;
 let library: Library | undefined;
 beforeEach(async () => {
-  root = await mkdtemp(path.join(tmpdir(), "rhythm-unit-"));
+  root = await mkdtemp(path.join(tmpdir(), "rio-unit-"));
   music = path.join(root, "Music with spaces ü");
   await mkdir(music);
 });
@@ -37,6 +37,20 @@ const open = async () => {
 describe("library ownership and persistence", () => {
   test("new libraries are empty and reopen without fixtures", async () => {
     const l = await open();
+    const db = new DatabaseSync(path.join(root, "Library", "rio.sqlite"), {
+      readOnly: true,
+    });
+    try {
+      expect(
+        (
+          db.prepare("PRAGMA application_id").get() as {
+            application_id: number;
+          }
+        ).application_id,
+      ).toBe(0x52494f00);
+    } finally {
+      db.close();
+    }
     expect(l.tracks()).toEqual([]);
     expect(l.roots()).toEqual([]);
     expect(l.state()).toEqual(defaultState());
@@ -47,12 +61,12 @@ describe("library ownership and persistence", () => {
   test("rejects unrelated databases without modifying them", async () => {
     const folder = path.join(root, "Other");
     await mkdir(folder);
-    const file = path.join(folder, "rhythm.sqlite");
+    const file = path.join(folder, "rio.sqlite");
     const db = new DatabaseSync(file);
     db.exec("CREATE TABLE unrelated (value TEXT)");
     db.close();
     const before = await readFile(file);
-    await expect(Library.open(folder)).rejects.toThrow("not a Rhythm");
+    await expect(Library.open(folder)).rejects.toThrow("not a Rio");
     expect(await readFile(file)).toEqual(before);
   });
   test("reads metadata, indexes once, preserves source bytes and timestamps", async () => {

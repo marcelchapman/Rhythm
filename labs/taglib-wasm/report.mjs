@@ -103,7 +103,7 @@ const summary = {
   decision:
     "accepted with restrictions for future integration, not blanket production approval",
   recommendedInitialScope:
-    "Native FLAC only, forced Emscripten full-buffer core API; exact preservation verification; unambiguous comment edits; integer BPM through current Rhythm reader; artwork replacement/removal only when there are no retained additional pictures. Other formats stay read-only pending requalification.",
+    "Native FLAC only, forced Emscripten full-buffer core API; exact preservation verification; unambiguous comment edits; integer BPM through current Rio reader; artwork replacement/removal only when there are no retained additional pictures. Other formats stay read-only pending requalification.",
   package: {
     version: pkg.version,
     nodeEngines: pkg.engines,

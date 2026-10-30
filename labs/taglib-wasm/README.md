@@ -6,7 +6,7 @@ The compatibility assessment was reported before installation. `taglib-wasm` is 
 
 ## Reproduce
 
-Requires Rhythm's existing dependencies and local FFmpeg/FFprobe. From the repository root:
+Requires Rio's existing dependencies and local FFmpeg/FFprobe. From the repository root:
 
 ```sh
 npm ci --prefix labs/taglib-wasm --ignore-scripts --no-audit --no-fund --cache ./labs/taglib-wasm/.npm-cache
@@ -25,7 +25,7 @@ node labs/taglib-wasm/report.mjs
 node labs/taglib-wasm/validate.mjs
 ```
 
-Run serially: generator and result files are intentionally reused. Paths shown for Electron are macOS-specific; Linux/Windows runtime execution is not claimed. The Electron entry is a standalone windowless lab, not Rhythm's application entry. It uses a lab-local profile and no IPC handlers or BrowserWindows. The ASAR contains only this lab's test entry and dependencies; it is not a rebuilt Rhythm package.
+Run serially: generator and result files are intentionally reused. Paths shown for Electron are macOS-specific; Linux/Windows runtime execution is not claimed. The Electron entry is a standalone windowless lab, not Rio's application entry. It uses a lab-local profile and no IPC handlers or BrowserWindows. The ASAR contains only this lab's test entry and dependencies; it is not a rebuilt Rio package.
 
 `qualify.mjs` records each failure and continues, so a zero exit code means the experiment completed, not that every writer operation qualified. `validate.mjs` asserts the observed successes **and expected failures**. It must fail if observations change and require reassessment. Only generated fixture paths may reach the writer helper. Generated original hashes are checked after qualification and reporting.
 
@@ -38,4 +38,4 @@ Run serially: generator and result files are intentionally reused. Paths shown f
 - `organization.mjs`: calls the existing pure production planner; creates no music directory and moves no file.
 - `RESULTS.json`: compact retained evidence, versions, WASM hashes, native edge snapshots and test matrix. Detailed per-operation native dumps and generated outputs remain under ignored `generated/`.
 
-The lab writes no database. Full Rhythm source/package regression suites were not run because production was unchanged and those suites create fixtures outside this dedicated lab. The optional FFmpeg executables are test instruments, not a proposed shipping dependency.
+The lab writes no database. Full Rio source/package regression suites were not run because production was unchanged and those suites create fixtures outside this dedicated lab. The optional FFmpeg executables are test instruments, not a proposed shipping dependency.

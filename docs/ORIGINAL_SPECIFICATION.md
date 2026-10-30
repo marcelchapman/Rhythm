@@ -1,3 +1,5 @@
+> Archived pre-rename record: this milestone/specification used the working name Rhythm. Names, commands and artifact paths below describe that historical checkpoint. Use the current README and PRODUCT.md for Rio.
+
 > Historical discovery specification. PRODUCT.md supersedes its platform and cloud scope language. This is retained as research context, not a current implementation claim.
 
 # Rhythm

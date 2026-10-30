@@ -18,7 +18,7 @@ export const entries: [string, string][] = [
   ["REPLAYGAIN_TRACK_GAIN", "-3.25 dB"],
   ["REPLAYGAIN_TRACK_PEAK", "0.9"],
   ["LYRICS", "Unedited lyrics 音楽\nSecond line"],
-  ["RHYTHM_CUSTOM", "Custom ü 音楽"],
+  ["RIO_CUSTOM", "Custom ü 音楽"],
 ];
 const be = (n: number) => {
   const b = Buffer.alloc(4);
@@ -37,7 +37,7 @@ export function block(type: number, data: Uint8Array, last = false) {
   return Buffer.concat([h, data]);
 }
 export function commentBlock(values: [string, string][]) {
-  const vendor = Buffer.from("Rhythm generated fixture");
+  const vendor = Buffer.from("Rio generated fixture");
   return Buffer.concat([
     le(vendor.length),
     vendor,

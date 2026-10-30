@@ -1,3 +1,5 @@
+> Current behavior is described using the Rio name. Recorded pre-rename artifact paths and CI evidence retain the original working name Rhythm; they are historical records, not current package instructions.
+
 # Sidebar playlist context menu
 
 Baseline: `a57be64` (context-sensitive library summaries, including the accepted compact centred footer). No schema, audio-file, sidebar styling, summary or playback changes are introduced.
@@ -6,7 +8,7 @@ Baseline: `a57be64` (context-sensitive library summaries, including the accepted
 
 Each user-playlist sidebar button sends its own stable playlist ID through `showPlaylistMenu`. Right-click does not invoke the normal left-click navigation handler. Shift+F10/ContextMenu on the focused playlist uses the same path. Built-in destinations have no playlist-menu handlers.
 
-Main validates that the ID exists in the current library, builds an Electron `Menu` and calls its native `popup` for the Rhythm window. There are exactly three items:
+Main validates that the ID exists in the current library, builds an Electron `Menu` and calls its native `popup` for the Rio window. There are exactly three items:
 
 1. **Export Playlist…**
 2. **Duplicate Playlist**
@@ -83,7 +85,7 @@ Validation on Intel macOS passed: the focused source suite normally; the focused
 
 ## Manual macOS acceptance
 
-Quit an older running Rhythm before launching the new build. Keep playlist A or a library view open; right-click playlist B and verify exactly the three native menu items. Cancel export and deletion once. Export B and check ordered references; duplicate B repeatedly and check naming, independent edits and sidebar visibility while A remains open. Delete B and confirm the other view and playback stay intact. Delete the open playlist and verify the Playlists fallback, including Back/Forward and restart. Check that songs, favourites, queue and managed/referenced audio remain present. Confirm normal track menus and drag-to-playlist behavior, and compare the shared toolbar delete confirmation. Use only sacrificial data when testing deletion.
+Quit an older running Rio before launching the new build. Keep playlist A or a library view open; right-click playlist B and verify exactly the three native menu items. Cancel export and deletion once. Export B and check ordered references; duplicate B repeatedly and check naming, independent edits and sidebar visibility while A remains open. Delete B and confirm the other view and playback stay intact. Delete the open playlist and verify the Playlists fallback, including Back/Forward and restart. Check that songs, favourites, queue and managed/referenced audio remain present. Confirm normal track menus and drag-to-playlist behavior, and compare the shared toolbar delete confirmation. Use only sacrificial data when testing deletion.
 
 ## Files changed
 

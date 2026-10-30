@@ -368,7 +368,7 @@ test.each(["requested", "custom", "application", "artwork", "audio"] as const)(
       corrupt = flacFixture({
         entries: entries.map(([k, v]) => [
           k,
-          k === "RHYTHM_CUSTOM" ? "Lost custom" : k === "TITLE" ? "New" : v,
+          k === "RIO_CUSTOM" ? "Lost custom" : k === "TITLE" ? "New" : v,
         ]),
         pictures: [pictureBlock(), pictureBlock(4, 1)],
       });

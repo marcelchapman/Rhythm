@@ -31,6 +31,7 @@
 
 namespace {
 constexpr size_t limit = 64 * 1024 * 1024;
+constexpr char workspacePrefix[] = ".rio-publication-";
 const napi_type_tag leaseTag = {0xc4ab0e8c9de04751ULL, 0x902674a962fdbe40ULL};
 struct Failure : std::runtime_error {
   std::string category;
@@ -373,7 +374,7 @@ napi_value openLease(napi_env e,napi_callback_info info) {return protect(e,[&]{
   auto o=obj(e); put(e,o,"original",bytes(e,l->original)); put(e,o,"handle",handle(e,std::move(l))); return o;
 });}
 void createWorkspace(Lease& l,const std::string& name) {
-  if(name.rfind(".rhythm-publication-",0)!=0 || name.size()!=56 || name.find_first_not_of(".rhythm-publication-abcdef0123456789")!=std::string::npos)
+  if(name.rfind(workspacePrefix,0)!=0 || name.size()!=sizeof(workspacePrefix)-1+36 || name.find_first_not_of(".rio-publication-abcdef0123456789")!=std::string::npos)
     fail("Invalid private operation name", "invalid-input");
   io(mkdirat(l.parent(),name.c_str(),0700)==0,"Exclusive workspace creation"); l.workspace=name;
   l.work=Fd(relativeOpen(l.parent(),name,O_RDONLY|O_DIRECTORY,true)); io(l.work.n>=0,"Opening private workspace");
@@ -428,7 +429,7 @@ napi_value reopen(napi_env e,napi_callback_info info) {return protect(e,[&]{
   auto a=args(e,info,1); auto l=anchor(e,a[0]);
   if(!matches(e,get(e,a[0],"parentIdentity"),stats(l->parent()),false))fail("Recorded parent changed");
   l->workspace=field(e,a[0],"workspace");
-  auto names=parts(l->workspace); if(names.size()!=1 || l->workspace.rfind(".rhythm-publication-",0)!=0)fail("Unsafe recorded workspace", "invalid-input");
+  auto names=parts(l->workspace); if(names.size()!=1 || l->workspace.rfind(workspacePrefix,0)!=0)fail("Unsafe recorded workspace", "invalid-input");
   l->work=Fd(relativeOpen(l->parent(),l->workspace,O_RDONLY|O_DIRECTORY,true)); io(l->work.n>=0,"Opening recorded workspace"); l->workIdentity=stats(l->work.n);
   if(!matches(e,get(e,a[0],"workspaceIdentity"),l->workIdentity,false)) { fail("Recorded workspace changed"); }
   workspaceCheck(*l);
@@ -443,7 +444,7 @@ napi_value exchangeImpl(napi_env e,napi_callback_info info,Hook hook) {return pr
   try {workspaceCheck(l); currentExpected(l); privateExpected(l,"slot",l.slotIdentity); privateExpected(l,"rollback",l.rollbackIdentity);}
   catch(const Failure& f){return result(e,"no-change",f.what());}
   l.attempted=true;
-#ifdef RHYTHM_PUBLICATION_TESTING
+#ifdef RIO_PUBLICATION_TESTING
   auto callback=[&]{napi_value ignored, receiver; js(napi_get_undefined(e,&receiver)); js(napi_call_function(e,receiver,a[1],0,nullptr,&ignored));};
   if(hook==Hook::Before)callback();
 #endif
@@ -454,7 +455,7 @@ napi_value exchangeImpl(napi_env e,napi_callback_info info,Hook hook) {return pr
     put(e,o,"inspection",inspection(e,l)); return o;
   }
   l.exchanged=true;
-#ifdef RHYTHM_PUBLICATION_TESTING
+#ifdef RIO_PUBLICATION_TESTING
   if(hook==Hook::After)callback();
 #endif
   try {
@@ -504,7 +505,7 @@ napi_value cleanup(napi_env e,napi_callback_info info) {return protect(e,[&]{
 napi_value closeLease(napi_env e,napi_callback_info info) {return protect(e,[&]{
   auto a=args(e,info,1); auto& l=lease(e,a[0]); l.alive=false; l.chain.clear(); l.target=Fd();l.work=Fd();l.slot=Fd();l.rollback=Fd(); l.original.clear(); return result(e,"closed");
 });}
-#ifdef RHYTHM_PUBLICATION_TESTING
+#ifdef RIO_PUBLICATION_TESTING
 napi_value before(napi_env e,napi_callback_info i){return exchangeImpl(e,i,Hook::Before);}
 napi_value after(napi_env e,napi_callback_info i){return exchangeImpl(e,i,Hook::After);}
 napi_value syncFault(napi_env e,napi_callback_info i){return syncImpl(e,i,true);}
@@ -536,7 +537,7 @@ NAPI_MODULE_INIT() {
     {"sync",nullptr,syncCall,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"cleanup",nullptr,cleanup,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"close",nullptr,closeLease,nullptr,nullptr,nullptr,napi_default,nullptr},
-#ifdef RHYTHM_PUBLICATION_TESTING
+#ifdef RIO_PUBLICATION_TESTING
     {"exchangeWithInterleave",nullptr,before,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"exchangeWithAfterInterleave",nullptr,after,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"syncWithFailure",nullptr,syncFault,nullptr,nullptr,nullptr,napi_default,nullptr},

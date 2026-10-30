@@ -32,7 +32,7 @@ export async function fingerprint(file) {
 }
 export async function withPublicationFixture(api, run) {
   const directory = await fs.realpath(
-    await fs.mkdtemp(path.join(tmpdir(), "rhythm-publication-test-")),
+    await fs.mkdtemp(path.join(tmpdir(), "rio-publication-test-")),
   );
   const leases = [];
   try {
@@ -447,12 +447,12 @@ export function qualificationCases(api, testBinding) {
       "foreign-device guard rejects cross-filesystem artifacts where available",
       async (f) => {
         const base =
-          process.env.RHYTHM_PUBLICATION_OTHER_VOLUME ||
+          process.env.RIO_PUBLICATION_OTHER_VOLUME ||
           (process.platform === "darwin" ? path.resolve("labs") : "/dev/shm");
         let foreign;
         try {
           foreign = await fs.mkdtemp(
-            path.join(base, ".rhythm-publication-foreign-"),
+            path.join(base, ".rio-publication-foreign-"),
           );
         } catch (error) {
           if (["ENOENT", "EACCES", "EROFS"].includes(error.code)) return;

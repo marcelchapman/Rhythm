@@ -131,7 +131,7 @@ export async function exportPlaylistFile(
   }
   const temporary = path.join(
     path.dirname(filename),
-    `.rhythm-playlist-${randomUUID()}.tmp`,
+    `.rio-playlist-${randomUUID()}.tmp`,
   );
   try {
     const file = await open(temporary, "wx", 0o600);

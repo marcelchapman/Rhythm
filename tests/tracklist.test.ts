@@ -54,7 +54,7 @@ test("hide/show preserves full order and widths and leaves newly introduced colu
   expect(preferences.trackList.columns.hidden).not.toContain("year");
 });
 test("global preferences migrate once, persist across restart/libraries, serialize concurrent patches and recover corruption", async () => {
-  const root = await mkdtemp(path.join(tmpdir(), "rhythm-global-views-"));
+  const root = await mkdtemp(path.join(tmpdir(), "rio-global-views-"));
   try {
     const store = await ViewPreferenceStore.open(root);
     await store.migrateLegacy({

@@ -108,7 +108,7 @@ pass the Ubuntu CI qualification; it was not runtime-executed on the macOS host.
 ## Workspace and target policy
 
 The private workspace is created exclusively under the retained target parent
-as `.rhythm-publication-<UUID>`, mode 0700, with mode-0600 files. It is checked by
+as `.rio-publication-<UUID>`, mode 0700, with mode-0600 files. It is checked by
 device/inode, type, effective UID, mode, parent relationship and ACL policy.
 Candidate and rollback are separate regular inodes. Unexpected files/subfolders
 in the workspace prevent cleanup; no recursive removal exists in the adapter.
@@ -186,7 +186,7 @@ The standalone harness uses temporary libraries of generated FLAC byte fixtures,
 not an actual library/database. Deterministic native-only test hooks substitute
 objects precisely after precheck. The foreign-device guard is exercised when a
 second volume is available (macOS workspace volume, Linux `/dev/shm`, or
-`RHYTHM_PUBLICATION_OTHER_VOLUME`). The workspace-volume policy is probed
+`RIO_PUBLICATION_OTHER_VOLUME`). The workspace-volume policy is probed
 separately. Test cleanup recursively removes only the harness's disposable tree;
 that is deliberately distinct from the production adapter's cleanup behavior.
 
@@ -241,8 +241,8 @@ Local validation completed:
 | ASAR/package integrity                              | Correct x64/Node-API-8 binary, matching manifest/source freshness, native file unpacked, test binary/hooks excluded |
 | Archive integrity                                   | ZIP CRC test and DMG `hdiutil verify` passed                                                                        |
 
-Local artifacts: `release/Rhythm-0.1.0.dmg`,
-`release/Rhythm-0.1.0-mac.zip`, and `release/mac/Rhythm.app`. They use the existing
+Local artifacts: `release/Rio-0.1.0.dmg`,
+`release/Rio-0.1.0-mac.zip`, and `release/mac/Rio.app`. They use the existing
 unsigned/unnotarized package configuration and were not installed. An initial
 packaging-hook context error was corrected against electron-builder's installed
 types and is covered by the new matching/wrong-architecture hook test. Packaging
