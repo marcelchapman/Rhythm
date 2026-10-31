@@ -267,7 +267,11 @@ async function play(p, track) {
   await p.waitForFunction((id) => {
     const a = document.querySelector("audio");
     return (
-      a.currentSrc.endsWith(id) && !a.paused && !a.error && a.currentTime > 0.2
+      a.currentSrc &&
+      new URL(a.currentSrc).pathname.slice(1) === id &&
+      !a.paused &&
+      !a.error &&
+      a.currentTime > 0.2
     );
   }, track.id);
   await settled(p, (s) => s.state.currentId === track.id);
@@ -423,7 +427,12 @@ async function bulkAcceptance(p, { c, d }) {
   await row(p, r2.id).dblclick();
   await p.waitForFunction((id) => {
     const a = document.querySelector("audio");
-    return a.currentSrc.endsWith(id) && !a.paused && a.currentTime > 0.2;
+    return (
+      a.currentSrc &&
+      new URL(a.currentSrc).pathname.slice(1) === id &&
+      !a.paused &&
+      a.currentTime > 0.2
+    );
   }, r2.id);
   const bulkList = await p.evaluate(
     async (ids) => {

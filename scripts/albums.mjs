@@ -360,7 +360,8 @@ async function play(track) {
   await p.waitForFunction((id) => {
     const audio = document.querySelector("audio");
     return (
-      audio.currentSrc.endsWith(id) &&
+      audio.currentSrc &&
+      new URL(audio.currentSrc).pathname.slice(1) === id &&
       !audio.paused &&
       !audio.error &&
       audio.currentTime > 0.2

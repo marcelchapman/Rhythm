@@ -86,7 +86,8 @@ async function playing(page, id) {
     (id) => {
       const a = document.querySelector("audio");
       return (
-        a.currentSrc.endsWith(id) &&
+        a.currentSrc &&
+        new URL(a.currentSrc).pathname.slice(1) === id &&
         !a.paused &&
         !a.error &&
         a.readyState >= 3 &&

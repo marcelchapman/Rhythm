@@ -81,3 +81,7 @@ Official references consulted: [Electron security](https://www.electronjs.org/do
 ## Domain metadata editing (Phase 2A)
 
 The managed-only, same-path FLAC coordinator uses the qualified writer in bounded workers, durable edit journals and the existing native publication boundary. Schema 4 separates current managed-file receipts from import provenance. Startup reconciles unfinished edits before playback/import access. Editing requires Keep Organized OFF and an explicit reliable idle-use lease; no renderer UI or IPC is exposed. See [METADATA-EDITING.md](METADATA-EDITING.md) for eligibility, recovery, validation and deferred integration.
+
+## Playback ownership for metadata edits (Phase 2B)
+
+`playback-use.ts` supplies `MetadataUsage` for the active library. Before the renderer assigns an audio source, main grants a token through playback-only IPC and marks the track in use in the same gate metadata edits acquire. Every `rio-media` track read requires that live source token. Pause/buffering/ended state retains ownership; clearing the element revokes the token and main waits for all file stream `close` events before marking idle. Renderer teardown, library transitions and quit drain the same authority. Saved queue/current IDs alone are not ownership. No metadata UI or IPC is exposed. See [METADATA-PLAYBACK.md](METADATA-PLAYBACK.md) for races, teardown, validation and the next integration boundary.

@@ -102,7 +102,11 @@ try {
       (id) => {
         const a = document.querySelector("audio");
         return (
-          a && a.currentSrc.endsWith(id) && !a.paused && a.currentTime > 0.05
+          a &&
+          a.currentSrc &&
+          new URL(a.currentSrc).pathname.slice(1) === id &&
+          !a.paused &&
+          a.currentTime > 0.05
         );
       },
       track.id,

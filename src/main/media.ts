@@ -1,4 +1,4 @@
-import { createReadStream } from "node:fs";
+import { createReadStream, type ReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
 
@@ -18,6 +18,7 @@ export async function mediaResponse(
   filename: string,
   format: string,
   request: Request,
+  ownership?: { assertActive(): void; opened(stream: ReadStream): void },
 ): Promise<Response> {
   let info;
   try {
@@ -60,10 +61,15 @@ export async function mediaResponse(
   headers["Content-Length"] = String(Math.max(0, end - start + 1));
   if (request.method === "HEAD" || size === 0)
     return new Response(null, { status: range ? 206 : 200, headers });
+  ownership?.assertActive();
   const stream = createReadStream(filename, { start, end });
-  request.signal.addEventListener("abort", () => stream.destroy(), {
-    once: true,
-  });
+  ownership?.opened(stream);
+  const abort = () => stream.destroy();
+  request.signal.addEventListener("abort", abort, { once: true });
+  stream.once("close", () =>
+    request.signal.removeEventListener("abort", abort),
+  );
+  if (request.signal.aborted) stream.destroy();
   return new Response(Readable.toWeb(stream) as ReadableStream<Uint8Array>, {
     status: range ? 206 : 200,
     headers,

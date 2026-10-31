@@ -27,7 +27,7 @@ import {
   type Track,
   type PlaylistAction,
 } from "../shared/types.js";
-import { mediaResponse } from "./media.js";
+import { playbackUse } from "./playback-use.js";
 import { normalizeViewPreferences } from "../shared/preferences.js";
 import {
   importPlaylistFile,
@@ -74,6 +74,7 @@ let preferences: ViewPreferenceStore;
 let rendererReady = false;
 let pendingSettings = false;
 let desktopInitialized = false;
+let playbackOwnerReady: Promise<void> = Promise.resolve();
 const playlistInbox = new PlaylistOpenInbox();
 const notifyPlaylist = (event: DesktopPlaylistEvent) =>
   win?.webContents.send("playlist:desktop", event);
@@ -175,6 +176,7 @@ async function openSettings() {
 async function chooseLibrary() {
   if (library?.scanning || playlistIO || choosingLibrary)
     throw new Error("Wait for the current import before switching libraries.");
+  const restorePlayback = playbackUse.blockNewUse();
   choosingLibrary = true;
   try {
     const result = await dialog.showOpenDialog(win!, {
@@ -205,13 +207,16 @@ async function chooseLibrary() {
       next.close();
       throw error;
     }
+    await playbackUse.releaseLibrary();
     library?.close();
     library = next;
+    playbackUse.bindLibrary(next);
     rendererReady = false;
     send("library-changed");
     return snapshot();
   } finally {
     choosingLibrary = false;
+    restorePlayback();
   }
 }
 async function importMusic() {
@@ -236,6 +241,34 @@ async function importMusic() {
   );
 }
 function handlers() {
+  ipcMain.handle(
+    "playback:acquire",
+    async (event, id: string, directory: string) => {
+      await playbackOwnerReady;
+      if (
+        event.sender !== win?.webContents ||
+        event.senderFrame?.url !== "rio://app/index.html" ||
+        movingLibrary ||
+        choosingLibrary
+      )
+        throw new Error("Playback is not available in this renderer/library.");
+      if (
+        typeof id !== "string" ||
+        !/^[a-f0-9]{64}$/.test(id) ||
+        typeof directory !== "string"
+      )
+        throw new Error("Invalid playback source.");
+      return playbackUse.acquire(event.sender.id, id, directory);
+    },
+  );
+  ipcMain.handle("playback:release", (event, token: string) => {
+    if (
+      event.senderFrame?.url !== "rio://app/index.html" ||
+      typeof token !== "string"
+    )
+      throw new Error("Invalid playback release.");
+    return playbackUse.release(event.sender.id, token);
+  });
   const handle = (name: string, fn: (...args: any[]) => unknown) =>
     ipcMain.handle(name, (event, ...args) => {
       if (
@@ -720,6 +753,7 @@ function handlers() {
       );
     const current = requireLibrary();
     movingSnapshot = snapshot();
+    const restorePlayback = playbackUse.blockNewUse();
     movingLibrary = true;
     choosingLibrary = true;
     try {
@@ -741,6 +775,7 @@ function handlers() {
         detail: `From: ${current.directory}\nTo: ${destination}\n\nThe whole library folder, including internal media and saved state, will be copied and verified. Referenced sources outside managed media and custom external media folders stay where they are. The original will be retained as a recovery copy after the move.`,
       });
       if (confirmation.response !== 1) return null;
+      await playbackUse.releaseLibrary();
       const result = await relocateLibrary(
         current,
         selected.filePaths[0],
@@ -749,6 +784,7 @@ function handlers() {
       // Destination authority is already committed; never leave the original active
       // because closing a retained original or taking a UI snapshot fails afterward.
       library = result.library;
+      playbackUse.bindLibrary(library);
       rendererReady = false;
       let warning = result.warning;
       try {
@@ -772,6 +808,7 @@ function handlers() {
       movingSnapshot = null;
       movingLibrary = false;
       choosingLibrary = false;
+      restorePlayback();
       if (quitAfterMove) {
         quitAfterMove = false;
         setImmediate(() => app.quit());
@@ -875,6 +912,29 @@ async function createWindow() {
       nodeIntegration: false,
     },
   });
+  const contents = win.webContents;
+  const owner = contents.id;
+  let navigation = 0;
+  contents.on("did-start-navigation", (_event, _url, _inPlace, isMainFrame) => {
+    if (!isMainFrame) return;
+    const expected = ++navigation;
+    playbackOwnerReady = playbackUse.revokeOwner(owner).then(() => {
+      if (
+        !contents.isDestroyed() &&
+        navigation === expected &&
+        _url === "rio://app/index.html"
+      )
+        playbackUse.allowOwner(owner);
+    });
+  });
+  contents.on("render-process-gone", () => {
+    navigation++;
+    void playbackUse.revokeOwner(owner);
+  });
+  contents.on("destroyed", () => {
+    navigation++;
+    void playbackUse.revokeOwner(owner);
+  });
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.on("close", () => {
     rendererReady = false;
@@ -933,6 +993,7 @@ if (!app.requestSingleInstanceLock()) {
         )
           startupError = String(error);
       }
+      playbackUse.bindLibrary(library);
       protocol.handle("rio", async (request) => {
         const url = new URL(request.url);
         const relative =
@@ -982,7 +1043,11 @@ if (!app.requestSingleInstanceLock()) {
         const track = url.hostname === "track" ? library?.media(id) : undefined;
         if (!track) return new Response(null, { status: 404 });
         const owner = library!;
-        const response = await mediaResponse(track.path, track.format, request);
+        const response = await playbackUse.respond(
+          url.searchParams.get("use") ?? "",
+          id,
+          request,
+        );
         if (response.status === 404 && owner === library && !movingLibrary)
           await owner.checkTrack(id);
         return response;
@@ -1130,7 +1195,7 @@ if (!app.requestSingleInstanceLock()) {
     }
     if (preferencesFlushed || !preferences) return;
     event.preventDefault();
-    void preferences.flush().then(() => {
+    void Promise.all([preferences.flush(), playbackUse.shutdown()]).then(() => {
       preferencesFlushed = true;
       app.quit();
     });

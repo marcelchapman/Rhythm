@@ -267,7 +267,10 @@ async function playing(id) {
   await page.waitForFunction((id) => {
     const audio = document.querySelector("audio");
     return (
-      audio.currentSrc.endsWith(id) && !audio.paused && audio.currentTime > 0.2
+      audio.currentSrc &&
+      new URL(audio.currentSrc).pathname.slice(1) === id &&
+      !audio.paused &&
+      audio.currentTime > 0.2
     );
   }, id);
   await until(async () => (await snapshot()).state.currentId === id);

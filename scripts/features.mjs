@@ -270,7 +270,10 @@ async function compactSelectionAcceptance(page) {
   await page.waitForFunction((id) => {
     const audio = document.querySelector("audio");
     return (
-      audio.currentSrc.endsWith(id) && !audio.paused && audio.currentTime > 0.2
+      audio.currentSrc &&
+      new URL(audio.currentSrc).pathname.slice(1) === id &&
+      !audio.paused &&
+      audio.currentTime > 0.2
     );
   }, a);
   const album = (await snapshot(page)).tracks.find((t) => t.id === a).albumId;
@@ -483,7 +486,12 @@ try {
   await row().dblclick();
   await page.waitForFunction((id) => {
     const a = document.querySelector("audio");
-    return a.currentSrc.endsWith(id) && !a.paused && a.currentTime > 0;
+    return (
+      a.currentSrc &&
+      new URL(a.currentSrc).pathname.slice(1) === id &&
+      !a.paused &&
+      a.currentTime > 0
+    );
   }, first.id);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   const firstMix = (await snapshot(page)).playlists.find(
@@ -519,7 +527,12 @@ try {
   await menuClick("track-play");
   await page.waitForFunction((id) => {
     const a = document.querySelector("audio");
-    return a.currentSrc.endsWith(id) && !a.paused && a.currentTime > 0;
+    return (
+      a.currentSrc &&
+      new URL(a.currentSrc).pathname.slice(1) === id &&
+      !a.paused &&
+      a.currentTime > 0
+    );
   }, first.id);
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await row().click({ button: "right" });

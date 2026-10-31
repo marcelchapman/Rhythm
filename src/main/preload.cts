@@ -7,6 +7,9 @@ import type {
   PlaylistAction,
 } from "../shared/types.js";
 const api: RioAPI = {
+  acquirePlayback: (id, libraryPath) =>
+    ipcRenderer.invoke("playback:acquire", id, libraryPath),
+  releasePlayback: (token) => ipcRenderer.invoke("playback:release", token),
   showPlaylistMenu: (id) => ipcRenderer.invoke("playlist:menu", id),
   duplicatePlaylist: (id) => ipcRenderer.invoke("playlist:duplicate", id),
   onPlaylistAction: (callback) => {

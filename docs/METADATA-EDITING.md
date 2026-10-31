@@ -21,9 +21,11 @@ A reliable idle-use capability is mandatory. `MetadataUseGate` starts with unkno
 state, which rejects editing; an explicitly in-use target also rejects. A host
 using this gate must route every playback/decoder acquisition through it. Its
 exclusive idle lease blocks acquisition until the coordinator releases it. There
-is no production renderer/decoder adapter in this slice and no automatic decoder
-release. Omitting the capability rejects the operation. A saved queue/current ID
-is retained as a reference, not treated as proof of decoder idleness.
+is now a production playback-use adapter in Phase 2B; see
+[METADATA-PLAYBACK.md](METADATA-PLAYBACK.md). It tracks real source grants and file
+stream closure without automatic active-decoder release. Omitting the capability
+rejects the operation. A saved queue/current ID is retained as a reference, not
+treated as proof of decoder idleness.
 
 The coordinator holds the existing library-operation gate plus SQLite exclusive
 connection locking across durable transactions. Imports, root/settings changes,
@@ -146,9 +148,10 @@ Internal barriers are domain test options only.
 Local validation results and the changed-file manifest follow below. Intel macOS
 packaged qualification passed using a fresh unsigned, unnotarized x64 DMG and
 ZIP build; see [METADATA-EDITING-PACKAGED.md](METADATA-EDITING-PACKAGED.md) for
-resource evidence and results. Next steps require a real playback-use/release
-adapter before UI/IPC can invoke edits, explicit recovery UX for ambiguous states,
-and Linux/arm64 and signed/notarized distribution qualification. Batch, artwork,
+resource evidence and results. Phase 2B adds the production playback-use adapter;
+see [METADATA-PLAYBACK.md](METADATA-PLAYBACK.md). Next steps include a separately
+scoped UI/IPC integration, explicit recovery UX for ambiguous states, and
+Linux/arm64 and signed/notarized distribution qualification. Batch, artwork,
 referenced-file writing and Keep Organized relocation remain outside this API.
 
 Abort cleanup can also finish just before a journal-finalization interruption.

@@ -346,15 +346,32 @@ export function App() {
     return snapshot;
   };
   const prepareMedia = (track: Track, position = 0, force = false) => {
-    const loader = (mediaSource.current ??= new MediaSource(audio.current!));
+    const directory = dataRef.current?.libraryPath;
+    const loader = (mediaSource.current ??= new MediaSource(
+      audio.current!,
+      async (url) => {
+        const intent = new URL(url);
+        const id = intent.pathname.slice(1);
+        const libraryPath = intent.searchParams.get("library");
+        if (!libraryPath) throw new Error("No active playback library.");
+        const lease = await api.acquirePlayback(id, libraryPath);
+        return {
+          url: lease.url,
+          release: () => api.releasePlayback(lease.token),
+        };
+      },
+    ));
+    const intent = new URL(media(track));
+    intent.searchParams.set("library", directory ?? "");
     return loader.ensure(
-      `${dataRef.current?.libraryPath}\0${track.id}\0${track.path}`,
-      media(track),
+      `${directory}\0${track.id}\0${track.path}`,
+      intent.href,
       position,
       force,
     );
   };
   const unavailable = (track: Track) => {
+    mediaSource.current?.clear();
     desiredPlay.current = false;
     audio.current?.pause();
     setPlaying(false);
@@ -431,6 +448,13 @@ export function App() {
         setError(
           "Rio could not check this file. Try Play again or check its drive.",
         );
+    } finally {
+      if (
+        request === playRequest.current &&
+        generation === mediaSource.current?.generation &&
+        playbackMounted.current
+      )
+        mediaSource.current?.clear();
     }
   };
   const playPrepared = (id: string, request: number) => {
@@ -643,7 +667,7 @@ export function App() {
     return () => {
       playbackMounted.current = false;
       playRequest.current++;
-      mediaSource.current?.cancel();
+      mediaSource.current?.clear();
     };
   }, []);
   useEffect(() => {
@@ -688,6 +712,7 @@ export function App() {
             ...stateRef.current,
             position:
               audio.current.error ||
+              !audio.current.getAttribute("src") ||
               dataRef.current?.tracks.find(
                 (t) => t.id === stateRef.current.currentId,
               )?.missing
@@ -703,6 +728,7 @@ export function App() {
             ...stateRef.current,
             position:
               audio.current?.error ||
+              !audio.current?.getAttribute("src") ||
               dataRef.current?.tracks.find(
                 (t) => t.id === stateRef.current.currentId,
               )?.missing

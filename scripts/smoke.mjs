@@ -242,7 +242,10 @@ try {
     .locator("audio")
     .evaluate((a) => a.currentSrc);
   const playbackTrack = initial.tracks.find((t) => t.title === "Evening light");
-  assert.equal(playbackSource, `rio-media://track/${playbackTrack.id}`);
+  assert.equal(new URL(playbackSource).protocol, "rio-media:");
+  assert.equal(new URL(playbackSource).hostname, "track");
+  assert.equal(new URL(playbackSource).pathname, `/${playbackTrack.id}`);
+  assert(new URL(playbackSource).searchParams.get("use"));
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   // paused flips before the queued timeupdate and React position update settle.
   // Home must start from a synchronized, nonzero control value.

@@ -126,7 +126,16 @@ export interface PlaylistAction {
   command: "export" | "duplicate" | "delete";
   playlistId: string;
 }
+export interface PlaybackSourceLease {
+  token: string;
+  url: string;
+}
 export interface RioAPI {
+  acquirePlayback(
+    id: string,
+    libraryPath: string,
+  ): Promise<PlaybackSourceLease>;
+  releasePlayback(token: string): Promise<void>;
   showPlaylistMenu(id: string): Promise<void>;
   onPlaylistAction(callback: (action: PlaylistAction) => void): () => void;
   duplicatePlaylist(id: string): Promise<Playlist>;
