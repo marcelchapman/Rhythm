@@ -474,7 +474,7 @@ test("case-only managed spelling change reproduces the manual preflight issue an
 
 test("preflight receipt failure leaves selected directory empty and reports move failure, not media recovery", async () => {
   await fixture(async ({ source, parent, pointer }: any) => {
-    source.db.exec("UPDATE managed_imports SET stageInode='invalid-receipt'");
+    source.db.exec("UPDATE managed_file_receipts SET inode='invalid-receipt'");
     const settings = structuredClone(source.mediaSettings());
     const state = source.state();
     const failure = await relocateLibrary(source, parent, pointer).catch(

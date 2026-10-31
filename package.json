@@ -12,10 +12,10 @@
     "build": "npm run build:native && tsc -p tsconfig.main.json && vite build",
     "build:native": "node scripts/build-publication-native.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
-    "test": "npm run build:native -- --test && vitest run --root .",
+    "test": "npm run build:native -- --test && tsc -p tsconfig.main.json && vitest run --root .",
     "test:publication": "npm run build && npm run build:native -- --test && node scripts/publication.mjs",
-    "test:desktop": "npm run build && node scripts/startup.mjs && node scripts/smoke.mjs && node scripts/features.mjs && node scripts/interchange.mjs && node scripts/acceptance.mjs && node scripts/managed.mjs && node scripts/relocation.mjs && node scripts/recovery.mjs && node scripts/track-info.mjs && node scripts/playback-recovery.mjs && node scripts/removal.mjs && node scripts/albums.mjs && node scripts/summary.mjs && node scripts/playlist-menus.mjs",
-    "test:packaged": "node scripts/smoke.mjs --packaged && node scripts/features.mjs --packaged && node scripts/interchange.mjs --packaged && node scripts/acceptance.mjs --packaged && node scripts/managed.mjs --packaged && node scripts/relocation.mjs --packaged && node scripts/recovery.mjs --packaged && node scripts/track-info.mjs --packaged && node scripts/playback-recovery.mjs --packaged && node scripts/removal.mjs --packaged && node scripts/albums.mjs --packaged && node scripts/summary.mjs --packaged && node scripts/playlist-menus.mjs --packaged",
+    "test:desktop": "npm run build && node scripts/startup.mjs && node scripts/metadata-edit.mjs && node scripts/smoke.mjs && node scripts/features.mjs && node scripts/interchange.mjs && node scripts/acceptance.mjs && node scripts/managed.mjs && node scripts/relocation.mjs && node scripts/recovery.mjs && node scripts/track-info.mjs && node scripts/playback-recovery.mjs && node scripts/removal.mjs && node scripts/albums.mjs && node scripts/summary.mjs && node scripts/playlist-menus.mjs",
+    "test:packaged": "node scripts/metadata-edit.mjs --packaged && node scripts/smoke.mjs --packaged && node scripts/features.mjs --packaged && node scripts/interchange.mjs --packaged && node scripts/acceptance.mjs --packaged && node scripts/managed.mjs --packaged && node scripts/relocation.mjs --packaged && node scripts/recovery.mjs --packaged && node scripts/track-info.mjs --packaged && node scripts/playback-recovery.mjs --packaged && node scripts/removal.mjs --packaged && node scripts/albums.mjs --packaged && node scripts/summary.mjs --packaged && node scripts/playlist-menus.mjs --packaged",
     "test:codecs": "node scripts/codecs.mjs",
     "pack": "npm run icons && npm run build && electron-builder --dir",
     "dist:mac": "npm run icons && npm run build && electron-builder --mac dmg zip",
@@ -35,7 +35,8 @@
     "test:removal": "npm run build && node scripts/removal.mjs",
     "test:albums": "npm run build && node scripts/albums.mjs",
     "test:summary": "npm run build && node scripts/summary.mjs",
-    "test:playlist-menus": "npm run build && node scripts/playlist-menus.mjs"
+    "test:playlist-menus": "npm run build && node scripts/playlist-menus.mjs",
+    "test:metadata-edit": "npm run build && node scripts/metadata-edit.mjs"
   },
   "dependencies": {
     "lucide-react": "1.60.0",

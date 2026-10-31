@@ -2,8 +2,8 @@
 
 `src/domain/metadata-writer.ts` provides a bytes-only preparation primitive. It
 does not read or write an audio file, receive a track ID or path, open a database,
-change a receipt, relocate media, or expose an IPC/renderer API. The application
-does not call it yet. The committed qualification findings in
+change a receipt, relocate media, or expose an IPC/renderer API. The Phase 2A domain coordinator now calls it in a bounded worker; see
+[METADATA-EDITING.md](METADATA-EDITING.md). The committed qualification findings in
 `labs/taglib-wasm/REPORT.md` remain authoritative.
 
 ## Interface and patch contract
@@ -114,8 +114,8 @@ descriptions: 1000), must round-trip UTF-8, and cannot contain NUL. Resource lim
 are safeguards, not a large-library memory/performance qualification.
 
 Serialization is within the current process. There is no cancellation, deadline,
-or worker isolation yet. The future coordinator must run CPU/WASM preparation in
-a bounded worker/process with timeout/crash handling before exposing user edits.
+or worker isolation inside this bytes-only primitive. Phase 2A supplies bounded
+worker execution and timeout/crash handling at the coordinator boundary.
 
 ## Validation
 
@@ -161,8 +161,9 @@ entries in the lockfile; their versions did not change.
 
 ## Next phase boundary
 
-This primitive is ready to be called by a separately designed coordinator, after
-worker isolation and crash handling are added. That coordinator must own fresh
+The Phase 2A coordinator now owns worker isolation, crash handling and the
+managed-only same-path lifecycle described in METADATA-EDITING.md. Any extension
+beyond that slice must still own fresh
 location/revision checks, explicit permission to edit a referenced file,
 registered-root/receipt authority, private same-filesystem staging, candidate
 verification, publication/recovery journaling, a short database commit on the
@@ -172,5 +173,4 @@ import provenance must remain distinct from current managed-file authority.
 When organization metadata changes and Keep Organized is enabled, the future
 coordinator must reuse the existing planner and managed-directory protections
 to create/reuse the appropriate destination and clean old directories safely.
-Referenced files must never be relocated because their tags changed. No part of
-that coordinator, path planning, cleanup, or database work is implemented here.
+Referenced files must never be relocated because their tags changed. Path planning and organized-file relocation are not part of Phase 2A.

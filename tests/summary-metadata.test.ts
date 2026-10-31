@@ -72,7 +72,7 @@ test("existing byte sizes surface for referenced and managed tracks and survive 
   const totals = collectionTotals(tracks);
   await reopen();
   expect(collectionTotals(l.tracks())).toEqual(totals);
-  expect(l.db.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
+  expect(l.db.prepare("PRAGMA user_version").get()?.user_version).toBe(4);
   // Unavailable paths retain their last indexed bytes without needing filesystem I/O.
   l.db.prepare("UPDATE tracks SET path=path||'.unavailable',missing=1").run();
   expect(collectionTotals(l.tracks())).toEqual(totals);

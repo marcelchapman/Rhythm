@@ -553,7 +553,7 @@ async function directoryCleanupAcceptance(media) {
       track.id,
     );
     sql(
-      "UPDATE managed_imports SET relative=? WHERE trackId=?",
+      "UPDATE managed_file_receipts SET relative=? WHERE trackId=?",
       relative,
       track.id,
     );

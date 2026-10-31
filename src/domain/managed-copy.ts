@@ -135,29 +135,41 @@ export async function validateManagedLocation(
   return canonical;
 }
 /** Destructive authority requires a published copy receipt, not merely an indexed path. */
-export async function validateManagedTrash(
+export async function validateCurrentManagedReceipt(
   db: DatabaseSync,
   root: MediaRoot,
   trackId: string,
   filename: string,
   relative: string,
 ) {
+  if (
+    db
+      .prepare(
+        "SELECT id FROM managed_imports WHERE trackId=? AND status<>'done'",
+      )
+      .get(trackId)
+  )
+    throw new Error("Finish managed imports before using this receipt.");
   const target = await validateManagedLocation(root, relative);
   const info = await lstat(target);
-  const receipt = db
-    .prepare(
-      "SELECT digest,stageDevice,stageInode FROM managed_imports WHERE trackId=? AND rootId=? AND relative=? AND status='done'",
-    )
-    .all(trackId, root.id, relative)
-    .find(
-      (r) =>
-        r.stageDevice === String(info.dev) && r.stageInode === String(info.ino),
-    );
+  const current = db
+    .prepare("SELECT * FROM managed_file_receipts WHERE trackId=?")
+    .get(trackId);
+  const receipt =
+    current && current.rootId === root.id && current.relative === relative
+      ? {
+          digest: current.digest,
+          stageDevice: current.device,
+          stageInode: current.inode,
+        }
+      : undefined;
   if (
     filename !== target ||
     !info.isFile() ||
     info.isSymbolicLink() ||
     !receipt ||
+    String(info.dev) !== receipt.stageDevice ||
+    String(info.ino) !== receipt.stageInode ||
     receipt.digest !== (await fileDigest(target))
   )
     throw new Error(
@@ -179,6 +191,25 @@ export async function validateManagedTrash(
       "The managed file location changed. It has not been moved to Trash.",
     );
   return target;
+}
+export async function validateManagedTrash(
+  db: DatabaseSync,
+  root: MediaRoot,
+  trackId: string,
+  filename: string,
+  relative: string,
+) {
+  if (
+    db
+      .prepare(
+        "SELECT id FROM metadata_edits WHERE trackId=? AND phase NOT IN ('done','aborted')",
+      )
+      .get(trackId)
+  )
+    throw new Error(
+      "Resolve this track's metadata edit before destructive actions.",
+    );
+  return validateCurrentManagedReceipt(db, root, trackId, filename, relative);
 }
 export interface ManagedAlbumDirectory {
   root: MediaRoot;
@@ -379,12 +410,24 @@ async function publishedLocation(
 ): Promise<ManagedLocation> {
   const canonical = await realpath(target),
     info = await lstat(canonical);
+  const current =
+    job.status === "done"
+      ? db
+          .prepare("SELECT * FROM managed_file_receipts WHERE trackId=?")
+          .get(job.trackId)
+      : undefined;
+  if (job.status === "done" && !current)
+    throw new Error("Current managed-file receipt is missing.");
   if (
     !inside(root.path, canonical) ||
     !info.isFile() ||
-    String(info.dev) !== job.stageDevice ||
-    String(info.ino) !== job.stageInode ||
-    (await fileDigest(canonical)) !== job.digest
+    (current &&
+      (current.rootId !== root.id ||
+        current.relative !==
+          path.relative(root.path, canonical).split(path.sep).join("/"))) ||
+    String(info.dev) !== (current?.device ?? job.stageDevice) ||
+    String(info.ino) !== (current?.inode ?? job.stageInode) ||
+    (await fileDigest(canonical)) !== (current?.digest ?? job.digest)
   )
     throw new Error("Published copy no longer matches its import receipt.");
   const relative = path
@@ -431,7 +474,10 @@ export async function prepareManagedCopy(
   if (job?.status === "done") {
     try {
       const target = await directories(root, job.relative, false);
-      if ((await fileDigest(target)) !== digest)
+      const current = db
+        .prepare("SELECT digest FROM managed_file_receipts WHERE trackId=?")
+        .get(job.trackId);
+      if ((await fileDigest(target)) !== (current?.digest ?? digest))
         throw new Error(
           "The previously imported managed copy changed. It has not been overwritten.",
         );

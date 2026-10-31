@@ -58,7 +58,7 @@ test("migrates a version-one library without losing playlists, state, favourites
   });
   // Reconstruct the exact prior schema, not a new empty library pretending to be old.
   l.db.exec(
-    "DROP TABLE managed_imports; DROP TABLE track_locations; DROP TABLE media_root_locations; DROP TABLE media_roots;",
+    "DROP TABLE metadata_edits; DROP TABLE managed_file_receipts; ALTER TABLE tracks DROP COLUMN composer; ALTER TABLE tracks DROP COLUMN trackTotal; ALTER TABLE tracks DROP COLUMN discTotal; DROP TABLE managed_imports; DROP TABLE track_locations; DROP TABLE media_root_locations; DROP TABLE media_roots;",
   );
   for (const column of [
     "bpm",
@@ -71,7 +71,7 @@ test("migrates a version-one library without losing playlists, state, favourites
   l.db.exec("PRAGMA user_version=1");
   l.close();
   l = await Library.open(folder);
-  expect(l.db.prepare("PRAGMA user_version").get()!.user_version).toBe(3);
+  expect(l.db.prepare("PRAGMA user_version").get()!.user_version).toBe(4);
   expect(l.tracks()[0]).toMatchObject({
     id: track.id,
     addedAt: track.addedAt,

@@ -394,6 +394,97 @@ function preservation(
       "Front-cover replacement did not round-trip exactly.",
     );
 }
+function verifyCommon(
+  originalCommon: Awaited<ReturnType<typeof read>>,
+  common: Awaited<ReturnType<typeof read>>,
+  edits: Edits,
+  pairs: Record<string, { no: number | null; total: number | null }>,
+  artwork: FrontCover | "remove" | undefined,
+) {
+  const ignored = new Set<string>([
+    ...(artwork === undefined ? [] : ["picture"]),
+  ]);
+  const commonNames = {
+    title: ["title"],
+    artist: ["artist", "artists"],
+    album: ["album"],
+    albumArtist: ["albumartist", "albumartists"],
+    composer: ["composer"],
+    genre: ["genre"],
+    comments: ["comment"],
+    year: ["year", "date"],
+    bpm: ["bpm"],
+  };
+  for (const [field, names] of Object.entries(commonNames))
+    if (edits.has(field as Field)) {
+      names.forEach((n) => ignored.add(n));
+      const value = edits.get(field as Field),
+        c = common as unknown as Record<string, unknown>;
+      const actual =
+        field === "comments" ? common.comment?.map((c) => c.text) : c[names[0]];
+      const expected =
+        value === null
+          ? undefined
+          : ["composer", "genre", "comments"].includes(field)
+            ? [value]
+            : value;
+      verify(
+        equal(actual, expected) ||
+          (value === null && Array.isArray(actual) && actual.length === 0),
+        `The independent reader could not verify ${field}.`,
+      );
+    }
+  for (const [prefix, expected] of Object.entries(pairs)) {
+    const key = prefix === "track" ? "track" : "disk";
+    ignored.add(key);
+    verify(
+      equal(common[key], { no: expected.no, of: expected.total }),
+      "The independent reader could not verify track/disc components.",
+    );
+  }
+  for (const key of new Set([
+    ...Object.keys(originalCommon),
+    ...Object.keys(common),
+  ]))
+    if (!ignored.has(key))
+      verify(
+        equal(
+          originalCommon[key as keyof typeof common],
+          common[key as keyof typeof common],
+        ),
+        `Independent readback changed unedited ${key}.`,
+      );
+}
+/** Re-read staged/published bytes using the same qualified preservation/readback contract. */
+export async function verifyFlacMetadataCandidate(
+  original: Uint8Array,
+  candidate: Uint8Array,
+  patch: FlacMetadataPatch,
+) {
+  if (original.length > MAX_BYTES || candidate.length > MAX_BYTES)
+    throw new FlacMetadataWriteError(
+      "resource-limit",
+      "FLAC verification exceeds 64 MiB.",
+    );
+  const plan = patchPlan(patch),
+    before = parseFlac(original),
+    after = parseFlac(candidate);
+  const { operations, pairs } = operationsFor(before, plan.edits);
+  preservation(before, after, operations, plan.artwork);
+  verifyCommon(
+    await read(original, before),
+    await read(candidate, after),
+    plan.edits,
+    pairs,
+    plan.artwork,
+  );
+  return {
+    originalSha256: digest(original),
+    candidateSha256: digest(candidate),
+    audioSha256: digest(after.audio),
+    frames: after.frames,
+  };
+}
 let active = 0;
 /** Bytes in, verified candidate bytes out. No file, database, track or root capabilities. */
 export async function prepareFlacMetadataEdit(
@@ -466,61 +557,7 @@ export async function prepareFlacMetadataEdit(
         `The candidate could not be independently verified: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
-    const ignored = new Set<string>([
-      ...(artwork === undefined ? [] : ["picture"]),
-    ]);
-    const commonNames = {
-      title: ["title"],
-      artist: ["artist", "artists"],
-      album: ["album"],
-      albumArtist: ["albumartist", "albumartists"],
-      composer: ["composer"],
-      genre: ["genre"],
-      comments: ["comment"],
-      year: ["year", "date"],
-      bpm: ["bpm"],
-    };
-    for (const [field, names] of Object.entries(commonNames))
-      if (plan.edits.has(field as Field)) {
-        names.forEach((n) => ignored.add(n));
-        const value = plan.edits.get(field as Field),
-          c = common as unknown as Record<string, unknown>;
-        const actual =
-          field === "comments"
-            ? common.comment?.map((c) => c.text)
-            : c[names[0]];
-        const expected =
-          value === null
-            ? undefined
-            : ["composer", "genre", "comments"].includes(field)
-              ? [value]
-              : value;
-        verify(
-          equal(actual, expected) ||
-            (value === null && Array.isArray(actual) && actual.length === 0),
-          `The independent reader could not verify ${field}.`,
-        );
-      }
-    for (const [prefix, expected] of Object.entries(pairs)) {
-      const key = prefix === "track" ? "track" : "disk";
-      ignored.add(key);
-      verify(
-        equal(common[key], { no: expected.no, of: expected.total }),
-        "The independent reader could not verify track/disc components.",
-      );
-    }
-    for (const key of new Set([
-      ...Object.keys(originalCommon),
-      ...Object.keys(common),
-    ]))
-      if (!ignored.has(key))
-        verify(
-          equal(
-            originalCommon[key as keyof typeof common],
-            common[key as keyof typeof common],
-          ),
-          `Independent readback changed unedited ${key}.`,
-        );
+    verifyCommon(originalCommon, common, plan.edits, pairs, artwork);
     const changedFields = [...plan.edits.keys()].filter((field) => {
       if (field.startsWith("track") || field.startsWith("disc"))
         return changedPairs.has(field);

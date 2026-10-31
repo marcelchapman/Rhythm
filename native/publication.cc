@@ -437,6 +437,26 @@ napi_value reopen(napi_env e,napi_callback_info info) {return protect(e,[&]{
   // Recovery leases cannot exchange/cleanup. Workspace privacy may be reasserted.
   return handle(e,std::move(l));
 });}
+// A separate, cleanup-only recovery capability; ordinary reopen remains read-only.
+napi_value reopenCleanup(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  auto a=args(e,info,2); auto disposition=str(e,a[1]);
+  if(disposition!="abort" && disposition!="committed")fail("Invalid cleanup disposition", "invalid-input");
+  auto l=anchor(e,a[0]);
+  if(!matches(e,get(e,a[0],"parentIdentity"),stats(l->parent()),false))fail("Recorded parent changed");
+  l->workspace=field(e,a[0],"workspace"); auto names=parts(l->workspace);
+  if(names.size()!=1 || l->workspace.rfind(workspacePrefix,0)!=0)fail("Unsafe recorded workspace", "invalid-input");
+  l->work=Fd(relativeOpen(l->parent(),l->workspace,O_RDONLY|O_DIRECTORY,true)); io(l->work.n>=0,"Opening recorded workspace");
+  l->workIdentity=stats(l->work.n);
+  if(!matches(e,get(e,a[0],"workspaceIdentity"),l->workIdentity,false))fail("Recorded workspace changed");
+  l->expected.st_dev=l->chain[l->rootIndex].identity.st_dev; workspaceCheck(*l);
+  l->target=openLeaf(*l,l->parent(),l->leaf); l->slot=openLeaf(*l,l->work.n,"slot"); l->rollback=openLeaf(*l,l->work.n,"rollback");
+  bool committed=disposition=="committed";
+  auto original=stats(committed?l->slot.n:l->target.n), candidate=stats(committed?l->target.n:l->slot.n), rollback=stats(l->rollback.n);
+  if(!matches(e,get(e,a[0],"expected"),original,false) || !matches(e,get(e,a[0],"candidateIdentity"),candidate,false) || !matches(e,get(e,a[0],"rollbackIdentity"),rollback,false))fail("Recorded cleanup layout changed");
+  l->expected=original; l->slotIdentity=candidate; l->rollbackIdentity=rollback;
+  l->prepared=true; l->attempted=true; l->exchanged=committed;
+  return handle(e,std::move(l));
+});}
 enum class Hook {None,Before,After};
 napi_value exchangeImpl(napi_env e,napi_callback_info info,Hook hook) {return protect(e,[&]{
   auto a=args(e,info,hook==Hook::None?1:2); auto& l=lease(e,a[0]);
@@ -533,6 +553,7 @@ NAPI_MODULE_INIT() {
     {"probe",nullptr,probe,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"inspect",nullptr,inspect,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"reopen",nullptr,reopen,nullptr,nullptr,nullptr,napi_default,nullptr},
+    {"reopenCleanup",nullptr,reopenCleanup,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"exchange",nullptr,exchangeCall,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"sync",nullptr,syncCall,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"cleanup",nullptr,cleanup,nullptr,nullptr,nullptr,napi_default,nullptr},

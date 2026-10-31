@@ -48,7 +48,7 @@ try {
   const playlist = library.createPlaylist("Preserved", [track.id]);
   const state = library.state();
   const receipt = library.db
-    .prepare("SELECT id,stageInode FROM managed_imports WHERE status='done'")
+    .prepare("SELECT trackId,inode AS stageInode FROM managed_file_receipts")
     .get();
   library.close();
   // Same-inode spelling aliases used to leak the managed-recovery error during preflight.
@@ -147,9 +147,9 @@ try {
   const corrupt = new DatabaseSync(path.join(folder, "rio.sqlite"));
   corrupt
     .prepare(
-      "UPDATE managed_imports SET stageInode='invalid-receipt' WHERE id=?",
+      "UPDATE managed_file_receipts SET inode='invalid-receipt' WHERE trackId=?",
     )
-    .run(receipt.id);
+    .run(receipt.trackId);
   corrupt.close();
   await move.click();
   await page
@@ -169,8 +169,8 @@ try {
   assert.equal(await page.getByText(/^Library moved to /).count(), 0);
   const restore = new DatabaseSync(path.join(folder, "rio.sqlite"));
   restore
-    .prepare("UPDATE managed_imports SET stageInode=? WHERE id=?")
-    .run(receipt.stageInode, receipt.id);
+    .prepare("UPDATE managed_file_receipts SET inode=? WHERE trackId=?")
+    .run(receipt.stageInode, receipt.trackId);
   restore.close();
   await move.click();
   await dialog.getByText(parent, { exact: true }).waitFor();

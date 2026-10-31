@@ -103,6 +103,10 @@ export interface NativePublicationBinding {
   };
   inspect(handle: object): NativeInspection;
   reopen(record: PublicationRecord): object;
+  reopenCleanup(
+    record: PublicationRecord,
+    disposition: "abort" | "committed",
+  ): object;
   exchange(
     handle: object,
   ): PublicationResult & { inspection?: NativeInspection };
@@ -154,7 +158,9 @@ export class PublicationLease {
     binding: NativePublicationBinding,
     handle: object,
     record: PublicationRecord,
+    exchanged = false,
   ) {
+    this.#exchanged = exchanged;
     this.#binding = binding;
     this.#handle = handle;
     this.#record = snapshot(record);
@@ -356,6 +362,49 @@ export function createPublicationAdapter(binding: NativePublicationBinding) {
         return result;
       }
     },
+    resumePublicationCleanup(
+      record: PublicationRecord,
+      disposition: "abort" | "committed",
+    ): { status: "ready"; lease: PublicationLease } | PublicationResult {
+      let handle: object | undefined;
+      try {
+        if (record.version !== 1)
+          throw Error("Unsupported publication record.");
+        handle = binding.reopenCleanup(snapshot(record), disposition);
+        const lease = new PublicationLease(
+          binding,
+          handle,
+          record,
+          disposition === "committed",
+        );
+        const observed = lease.inspectPublication();
+        const committed = disposition === "committed";
+        if (
+          !observed.boundaryValid ||
+          !identity(
+            observed.target.identity,
+            committed ? record.candidateIdentity : record.expected,
+          ) ||
+          observed.target.sha256 !==
+            (committed ? record.candidateSha256 : record.originalSha256) ||
+          !identity(
+            observed.slot.identity,
+            committed ? record.expected : record.candidateIdentity,
+          ) ||
+          observed.slot.sha256 !==
+            (committed ? record.originalSha256 : record.candidateSha256) ||
+          !identity(observed.rollback.identity, record.rollbackIdentity) ||
+          observed.rollback.sha256 !== record.originalSha256
+        )
+          throw Error(
+            "Recovery cleanup requires exact recorded identities and bytes.",
+          );
+        return { status: "ready", lease };
+      } catch (error) {
+        if (handle) binding.close(handle);
+        return failure(error);
+      }
+    },
     inspectInterruptedPublication(
       record: PublicationRecord,
     ): PublicationInspection | PublicationResult {
@@ -414,6 +463,17 @@ export function openPublicationLease(
 export function inspectInterruptedPublication(record: PublicationRecord) {
   try {
     return current().inspectInterruptedPublication(record);
+  } catch (error) {
+    return { ...failure(error), status: "unsupported" as const };
+  }
+}
+
+export function resumePublicationCleanup(
+  record: PublicationRecord,
+  disposition: "abort" | "committed",
+) {
+  try {
+    return current().resumePublicationCleanup(record, disposition);
   } catch (error) {
     return { ...failure(error), status: "unsupported" as const };
   }

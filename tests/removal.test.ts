@@ -279,12 +279,12 @@ test.each([
         break;
       case "no receipt":
         library.db
-          .prepare("DELETE FROM managed_imports WHERE trackId=?")
+          .prepare("DELETE FROM managed_file_receipts WHERE trackId=?")
           .run(t.id);
         break;
       case "wrong receipt":
         library.db
-          .prepare("UPDATE managed_imports SET stageInode='0' WHERE trackId=?")
+          .prepare("UPDATE managed_file_receipts SET inode='0' WHERE trackId=?")
           .run(t.id);
         break;
       case "pending receipt":

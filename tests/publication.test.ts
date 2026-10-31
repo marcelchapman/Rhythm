@@ -45,3 +45,81 @@ test("package hook validates matching binary and rejects another target architec
     /exact package/,
   );
 });
+
+for (const disposition of ["abort", "committed"] as const) {
+  test(`cleanup-only recovery resumes exact ${disposition} layout without authority to exchange`, async () => {
+    if (!binding) return;
+    const assert = await import("node:assert/strict");
+    const fs = await import("node:fs/promises");
+    await withPublicationFixture(api, async (f: any) => {
+      const lease = await f.open();
+      if (disposition === "committed")
+        assert.equal(lease.exchangeAndObserve().status, "exchanged-expected");
+      const record = lease.record;
+      lease.close();
+      const resumed = api.resumePublicationCleanup(record, disposition);
+      assert.equal(resumed.status, "ready");
+      if (!("lease" in resumed)) throw Error("Recovery lease missing");
+      try {
+        assert.equal(resumed.lease.exchangeAndObserve().status, "no-change");
+        assert.equal(resumed.lease.syncPublication().status, "synced");
+        assert.equal(
+          resumed.lease.cleanupVerifiedArtifacts(disposition).status,
+          "cleaned",
+        );
+        assert.deepEqual(
+          await fs.readFile(f.target),
+          disposition === "committed" ? f.candidate : f.original,
+        );
+      } finally {
+        resumed.lease.close();
+      }
+    });
+  });
+}
+for (const change of [
+  "bytes",
+  "identity",
+  "unknown entry",
+  "wrong layout",
+] as const) {
+  test(`recovery cleanup refuses ${change} and retains original`, async () => {
+    if (!binding) return;
+    const assert = await import("node:assert/strict");
+    const fs = await import("node:fs/promises");
+    const path = await import("node:path");
+    await withPublicationFixture(api, async (f: any) => {
+      const lease = await f.open(),
+        record = lease.record;
+      lease.close();
+      const work = path.join(f.parent, record.workspace),
+        slot = path.join(work, "slot");
+      if (change === "bytes") await fs.writeFile(slot, "changed");
+      if (change === "identity") {
+        await fs.rename(slot, path.join(work, "saved"));
+        await fs.writeFile(slot, f.candidate);
+      }
+      if (change === "unknown entry")
+        await fs.writeFile(path.join(work, "unknown"), "retain");
+      const result = api.resumePublicationCleanup(
+        record,
+        change === "wrong layout" ? "committed" : "abort",
+      );
+      if ("lease" in result) {
+        try {
+          assert.equal(
+            result.lease.cleanupVerifiedArtifacts("abort").status,
+            "cleanup-refused",
+          );
+        } finally {
+          result.lease.close();
+        }
+      } else assert.notEqual(result.status, "ready");
+      assert.deepEqual(await fs.readFile(f.target), f.original);
+      assert.deepEqual(
+        await fs.readFile(path.join(work, "rollback")),
+        f.original,
+      );
+    });
+  });
+}

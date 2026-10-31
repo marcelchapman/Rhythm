@@ -156,7 +156,17 @@ async function relocate(
   pointerFile: string,
   hooks: RelocationHooks,
 ) {
-  if (source.scanning || source.mediaSettings().pendingImports)
+  if (
+    source.scanning ||
+    source.mediaSettings().pendingImports ||
+    Number(
+      source.db
+        .prepare(
+          "SELECT count(*) AS n FROM metadata_edits WHERE phase NOT IN ('done','aborted')",
+        )
+        .get()!.n,
+    )
+  )
     throw new Error("Finish pending operations before moving the library.");
   if (!path.isAbsolute(selectedDestination))
     throw new Error("Choose an absolute destination folder.");
@@ -456,7 +466,7 @@ async function relocate(
           );
           next.db
             .prepare(
-              "UPDATE managed_imports SET relative=?,stageDevice=?,stageInode=? WHERE id=?",
+              "UPDATE managed_file_receipts SET relative=?,device=?,inode=? WHERE trackId=?",
             )
             .run(
               receiptPaths.get(String(receipt.id))!,
@@ -465,11 +475,15 @@ async function relocate(
               receipt.id,
             );
         }
-        const movedSource = remap(String(receipt.source));
-        if (movedSource !== receipt.source)
+      }
+      for (const provenance of next.db
+        .prepare("SELECT id,source FROM managed_imports")
+        .all()) {
+        const movedSource = remap(String(provenance.source));
+        if (movedSource !== provenance.source)
           next.db
             .prepare("UPDATE managed_imports SET source=? WHERE id=?")
-            .run(movedSource, receipt.id);
+            .run(movedSource, provenance.id);
       }
       next.db.exec("COMMIT");
     } catch (error) {
@@ -491,7 +505,7 @@ async function relocate(
       await validateMediaRoot(moved);
       for (const receipt of next.db
         .prepare(
-          "SELECT trackId,relative FROM managed_imports WHERE rootId=? AND status='done'",
+          "SELECT trackId,relative FROM managed_file_receipts WHERE rootId=?",
         )
         .all(root.id))
         await validateManagedTrash(

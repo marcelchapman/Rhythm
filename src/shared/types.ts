@@ -21,6 +21,9 @@ export interface Track {
   format: string;
   bpm: number | null;
   comments: string;
+  composer?: string;
+  trackTotal?: number | null;
+  discTotal?: number | null;
   bitRate: number | null;
   codec: string;
   locationKind: "referenced" | "managed";

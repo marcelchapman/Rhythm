@@ -84,7 +84,7 @@ async function relocate(track: Track, relative: string) {
     .prepare("UPDATE track_locations SET relativePath=? WHERE trackId=?")
     .run(relative, track.id);
   l.db
-    .prepare("UPDATE managed_imports SET relative=? WHERE trackId=?")
+    .prepare("UPDATE managed_file_receipts SET relative=? WHERE trackId=?")
     .run(relative, track.id);
   return l.tracks(track.id)[0];
 }

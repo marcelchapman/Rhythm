@@ -1,3 +1,9 @@
+import {
+  migrateMetadataEdits,
+  pendingMetadataEdits,
+  metadataArtifact,
+} from "./metadata-edit-schema.js";
+import { trackMetadata } from "./track-metadata.js";
 import { assertRelocationOpen } from "./library-relocation-marker.js";
 import { constants } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
@@ -143,14 +149,14 @@ export class Library {
         const version = check.prepare("PRAGMA user_version").get() as {
           user_version: number;
         };
-        if (version.user_version > 3)
+        if (version.user_version > 4)
           throw new Error("This library needs a newer version of Rio.");
       } finally {
         check.close();
       }
     }
     const db = new DatabaseSync(filename);
-    db.exec(`PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
+    db.exec(`PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;
       CREATE TABLE IF NOT EXISTS tracks (
         id TEXT PRIMARY KEY, path TEXT UNIQUE NOT NULL, title TEXT NOT NULL, artist TEXT NOT NULL,
         albumArtist TEXT NOT NULL, album TEXT NOT NULL, albumId TEXT NOT NULL, genre TEXT NOT NULL,
@@ -207,14 +213,32 @@ export class Library {
         throw error;
       }
     }
+    if (version < 4) {
+      try {
+        migrateMetadataEdits(db);
+      } catch (error) {
+        try {
+          db.exec("ROLLBACK");
+        } catch {}
+        db.close();
+        throw error;
+      }
+    }
     const library = new Library(canonical, db);
+    try {
+      const { recoverMetadataEdits } = await import("./metadata-edit.js");
+      await recoverMetadataEdits(library);
+    } catch (error) {
+      db.close();
+      throw error;
+    }
     if (setupMediaRoot) await library.setupMediaRoot(!exists);
     return library;
   }
 
   tracks(id?: string): Track[] {
     const query = this.db.prepare(
-      `SELECT t.id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,size AS fileSize,addedAt,favorite,missing,format,bpm,comments,bitRate,codec,artwork IS NOT NULL AS hasArtwork,
+      `SELECT t.id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,composer,trackTotal,discTotal,size AS fileSize,addedAt,favorite,missing,format,bpm,comments,bitRate,codec,artwork IS NOT NULL AS hasArtwork,
         COALESCE(l.kind,'referenced') AS locationKind,l.mediaRootId,l.relativePath AS mediaRelativePath FROM tracks t LEFT JOIN track_locations l ON l.trackId=t.id ${id ? "WHERE t.id=?" : ""} ORDER BY album COLLATE NOCASE, disc, track, title COLLATE NOCASE`,
     );
     const rows = id ? query.all(id) : query.all();
@@ -377,7 +401,7 @@ export class Library {
     copyOnAdd?: boolean;
     keepOrganized?: boolean;
   }): MediaSettings {
-    if (this.scanning)
+    if (this.scanning || pendingMetadataEdits(this.db))
       throw new Error("Wait for the current import to finish.");
     if (
       !patch ||
@@ -395,7 +419,7 @@ export class Library {
     return this.mediaSettings();
   }
   async chooseMediaRoot(directory: string): Promise<MediaSettings> {
-    if (this.scanning)
+    if (this.scanning || pendingMetadataEdits(this.db))
       throw new Error("Wait for the current import to finish.");
     if (!path.isAbsolute(directory))
       throw new Error("Choose an absolute Rio Media folder.");
@@ -454,7 +478,27 @@ export class Library {
     const digest = await fileDigest(filename);
     const receipt = receipts.find((r) => r.digest === digest);
     const track = receipt && this.tracks(String(receipt.trackId))[0];
-    if (track && (await fileDigest(track.path)) === digest) return track;
+    if (track) {
+      const root = this.db
+        .prepare(
+          "SELECT rootId AS id,path,device,inode FROM media_root_locations WHERE rootId=?",
+        )
+        .get(track.mediaRootId!) as unknown as MediaRoot;
+      if (track.locationKind === "managed" && root && track.mediaRelativePath) {
+        try {
+          await validateManagedTrash(
+            this.db,
+            root,
+            track.id,
+            track.path,
+            track.mediaRelativePath,
+          );
+          return track;
+        } catch {
+          return;
+        }
+      }
+    }
   }
   add(directories: string[], progress?: (p: ScanProgress) => void) {
     return this.scan(directories, progress, { copy: true });
@@ -489,7 +533,7 @@ export class Library {
     selected: string,
     progress?: (p: ScanProgress) => void,
   ) {
-    if (this.scanning)
+    if (this.scanning || pendingMetadataEdits(this.db))
       throw new Error("Wait for the current import to finish.");
     this.scanning = true;
     try {
@@ -500,6 +544,8 @@ export class Library {
         !AUDIO_EXTENSIONS.has(path.extname(selected).toLowerCase())
       )
         throw new Error("Choose a supported audio file.");
+      if (metadataArtifact(selected))
+        throw new Error("Metadata staging/recovery files cannot be imported.");
       const canonical = await realpath(selected);
       if (!(await stat(canonical)).isFile())
         throw new Error("Choose a supported audio file.");
@@ -542,7 +588,7 @@ export class Library {
     ids?: string[],
     progress?: (p: ScanProgress) => void,
   ): Promise<ConsolidationResult> {
-    if (this.scanning)
+    if (this.scanning || pendingMetadataEdits(this.db))
       throw new Error("Wait for the current import to finish.");
     const all = this.tracks();
     if (
@@ -737,7 +783,7 @@ export class Library {
     trash: (filename: string) => Promise<void>,
     options: { cleanupEmptyAlbumDirectories?: boolean } = {},
   ): Promise<TrackRemovalResult> {
-    if (this.scanning)
+    if (this.scanning || pendingMetadataEdits(this.db))
       throw new Error("Wait for the current media operation to finish.");
     const current = this.removalTracks(confirmed.map((track) => track.id));
     if (
@@ -995,6 +1041,14 @@ export class Library {
     }
   }
   media(id: string): { path: string; format: string } | undefined {
+    if (
+      this.db
+        .prepare(
+          "SELECT id FROM metadata_edits WHERE trackId=? AND phase NOT IN ('done','aborted')",
+        )
+        .get(id)
+    )
+      return;
     return this.db
       .prepare("SELECT path,format FROM tracks WHERE id=?")
       .get(id) as { path: string; format: string } | undefined;
@@ -1019,7 +1073,8 @@ export class Library {
       recovery?: boolean;
     } = {},
   ): Promise<ScanResult> {
-    if (this.scanning) throw new Error("An import is already running.");
+    if (this.scanning || pendingMetadataEdits(this.db))
+      throw new Error("An import is already running.");
     this.scanning = true;
     const settings = this.mediaSettings();
     const copying =
@@ -1050,7 +1105,15 @@ export class Library {
         return;
       }
       try {
+        if (metadataArtifact(filename)) {
+          result.skipped++;
+          return;
+        }
         let canonical = await realpath(filename);
+        if (metadataArtifact(canonical)) {
+          result.skipped++;
+          return;
+        }
         const sourceStem = path.basename(canonical, path.extname(canonical));
         if (seen.has(canonical)) return;
         seen.add(canonical);
@@ -1149,7 +1212,7 @@ export class Library {
           !managed &&
           !options.targetId &&
           old &&
-          old.metadataVersion === 2 &&
+          old.metadataVersion === 3 &&
           old.size === info.size &&
           old.mtime === info.mtimeMs
         ) {
@@ -1166,17 +1229,7 @@ export class Library {
         if (!metadata.format.sampleRate || !metadata.format.numberOfChannels)
           throw new Error("No supported audio stream found.");
         const c = metadata.common;
-        const artist = clean(c.artist, "Unknown artist");
-        const albumArtist = c.compilation
-          ? "Various Artists"
-          : clean(c.albumartist, artist);
-        const folder = path.dirname(canonical);
-        const albumFolder = /^(cd|disc|disk)[ _-]*\d+$/i.test(
-          path.basename(folder),
-        )
-          ? path.dirname(folder)
-          : folder;
-        const album = clean(c.album, path.basename(albumFolder));
+        const projected = trackMetadata(canonical, metadata);
         const cover = selectCover(c.picture);
         // Bound database growth; malformed or huge cover payloads are not cached.
         const validCover =
@@ -1190,45 +1243,40 @@ export class Library {
             (old?.id as string | undefined) ??
             hash(randomUUID()),
           canonical,
-          clean(c.title, sourceStem),
-          artist,
-          albumArtist,
-          album,
-          hash(
-            `${albumArtist.toLocaleLowerCase()}\0${album.toLocaleLowerCase()}\0${albumFolder}`,
-          ),
-          clean(c.genre?.join(", "), "Unknown genre"),
-          numeric(c.year),
-          numeric(c.disk.no),
-          numeric(c.track.no),
-          numeric(metadata.format.duration),
+          projected.title,
+          projected.artist,
+          projected.albumArtist,
+          projected.album,
+          projected.albumId,
+          projected.genre,
+          projected.year,
+          projected.disc,
+          projected.track,
+          projected.duration,
           Date.now(),
           path.extname(canonical).slice(1).toLowerCase(),
           info.size,
           info.mtimeMs,
           validCover ? Buffer.from(validCover.data) : null,
           validCover?.format ?? null,
-          numeric(c.bpm) || null,
-          clean(
-            c.comment
-              ?.map((comment) => comment.text ?? "")
-              .filter(Boolean)
-              .join("\n"),
-            "",
-          ),
-          numeric(metadata.format.bitrate) || null,
-          clean(metadata.format.codec, clean(metadata.format.container, "")),
-          2,
+          projected.bpm,
+          projected.comments,
+          projected.bitRate,
+          projected.codec,
+          3,
+          projected.composer,
+          projected.trackTotal,
+          projected.discTotal,
         ];
         this.db.exec("BEGIN IMMEDIATE");
         try {
           this.db
             .prepare(
-              `INSERT INTO tracks(id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,format,size,mtime,artwork,artworkType,bpm,comments,bitRate,codec,metadataVersion)
+              `INSERT INTO tracks(id,path,title,artist,albumArtist,album,albumId,genre,year,disc,track,duration,addedAt,format,size,mtime,artwork,artworkType,bpm,comments,bitRate,codec,metadataVersion,composer,trackTotal,discTotal)
           VALUES(${values.map(() => "?").join(",")}) ON CONFLICT(id) DO UPDATE SET path=excluded.path,
           title=excluded.title,artist=excluded.artist,albumArtist=excluded.albumArtist,album=excluded.album,albumId=excluded.albumId,
           genre=excluded.genre,year=excluded.year,disc=excluded.disc,track=excluded.track,duration=excluded.duration,
-          format=excluded.format,size=excluded.size,mtime=excluded.mtime,artwork=excluded.artwork,artworkType=excluded.artworkType,bpm=excluded.bpm,comments=excluded.comments,bitRate=excluded.bitRate,codec=excluded.codec,metadataVersion=excluded.metadataVersion,missing=0`,
+          format=excluded.format,size=excluded.size,mtime=excluded.mtime,artwork=excluded.artwork,artworkType=excluded.artworkType,bpm=excluded.bpm,comments=excluded.comments,bitRate=excluded.bitRate,codec=excluded.codec,metadataVersion=excluded.metadataVersion,composer=excluded.composer,trackTotal=excluded.trackTotal,discTotal=excluded.discTotal,missing=0`,
             )
             .run(...values);
           if (managed) {
@@ -1237,9 +1285,19 @@ export class Library {
                 "INSERT INTO track_locations VALUES(?,'managed',?,?) ON CONFLICT(trackId) DO UPDATE SET kind='managed',mediaRootId=excluded.mediaRootId,relativePath=excluded.relativePath",
               )
               .run(managed.trackId, managed.rootId, managed.relative);
+            const jobWasDone =
+              this.db
+                .prepare("SELECT status FROM managed_imports WHERE id=?")
+                .get(managed.jobId)?.status === "done";
             this.db
               .prepare("UPDATE managed_imports SET status='done' WHERE id=?")
               .run(managed.jobId);
+            if (!jobWasDone)
+              this.db
+                .prepare(
+                  `INSERT INTO managed_file_receipts SELECT trackId,rootId,relative,digest,stageDevice,stageInode FROM managed_imports WHERE id=? ON CONFLICT(trackId) DO UPDATE SET rootId=excluded.rootId,relative=excluded.relative,digest=excluded.digest,device=excluded.device,inode=excluded.inode`,
+                )
+                .run(managed.jobId);
             this.db
               .prepare("INSERT OR IGNORE INTO roots VALUES(?)")
               .run(mediaRoot!.path);
@@ -1296,7 +1354,15 @@ export class Library {
       for (const directory of directories) {
         let root: string;
         try {
+          if (metadataArtifact(directory)) {
+            result.skipped++;
+            continue;
+          }
           root = await realpath(directory);
+          if (metadataArtifact(root)) {
+            result.skipped++;
+            continue;
+          }
           const info = await stat(root);
           if (info.isFile()) {
             if (AUDIO_EXTENSIONS.has(path.extname(root).toLowerCase())) {

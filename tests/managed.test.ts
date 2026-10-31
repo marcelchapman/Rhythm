@@ -358,11 +358,11 @@ test("schema-2 migration preserves identity, favourites, player, playlists and l
     );
   l.saveState({ ...defaultState(), currentId: t.id, queue: [t.id] });
   l.db.exec(
-    "DROP TABLE managed_imports; DROP TABLE track_locations; DROP TABLE media_root_locations; DROP TABLE media_roots; PRAGMA user_version=2;",
+    "DROP TABLE metadata_edits; DROP TABLE managed_file_receipts; ALTER TABLE tracks DROP COLUMN composer; ALTER TABLE tracks DROP COLUMN trackTotal; ALTER TABLE tracks DROP COLUMN discTotal; DROP TABLE managed_imports; DROP TABLE track_locations; DROP TABLE media_root_locations; DROP TABLE media_roots; PRAGMA user_version=2;",
   );
   l.close();
   l = await Library.open(dbFolder);
-  expect(l.db.prepare("PRAGMA user_version").get()!.user_version).toBe(3);
+  expect(l.db.prepare("PRAGMA user_version").get()!.user_version).toBe(4);
   expect(l.tracks()[0]).toMatchObject({
     id: t.id,
     favorite: true,
@@ -384,7 +384,7 @@ test("schema migration rolls back all new ownership tables when a later DDL step
   await l.scan([file]);
   const id = l.tracks()[0].id;
   l.db.exec(
-    "DROP TABLE managed_imports; DROP TABLE track_locations; DROP TABLE media_root_locations; DROP TABLE media_roots; CREATE TABLE managed_imports(note TEXT); PRAGMA user_version=2;",
+    "DROP TABLE metadata_edits; DROP TABLE managed_file_receipts; ALTER TABLE tracks DROP COLUMN composer; ALTER TABLE tracks DROP COLUMN trackTotal; ALTER TABLE tracks DROP COLUMN discTotal; DROP TABLE managed_imports; DROP TABLE track_locations; DROP TABLE media_root_locations; DROP TABLE media_roots; CREATE TABLE managed_imports(note TEXT); PRAGMA user_version=2;",
   );
   await expect(Library.open(dbFolder)).rejects.toThrow("already exists");
   expect(l.db.prepare("PRAGMA user_version").get()!.user_version).toBe(2);

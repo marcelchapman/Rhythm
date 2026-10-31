@@ -56,7 +56,9 @@ export async function validateRelocationMedia(source: Library) {
     internalRoots.push({ ...root, path: canonical });
   }
   const receipts = source.db
-    .prepare("SELECT * FROM managed_imports WHERE status='done'")
+    .prepare(
+      "SELECT trackId AS id,trackId,rootId,relative,digest,device AS stageDevice,inode AS stageInode FROM managed_file_receipts",
+    )
     .all();
   const receiptPaths = new Map<string, string>();
   for (const receipt of receipts) {
@@ -93,7 +95,10 @@ export async function validateRelocationMedia(source: Library) {
   // Rebase existing internal aliases to their verified canonical spelling in the copy only.
   const paths = [
     ...source.tracks().map((t) => t.path),
-    ...receipts.map((r) => String(r.source)),
+    ...source.db
+      .prepare("SELECT source FROM managed_imports")
+      .all()
+      .map((r) => String(r.source)),
     ...source.roots(),
   ];
   for (const filename of paths) {
