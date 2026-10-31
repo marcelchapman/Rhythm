@@ -2,7 +2,6 @@
 import { _electron as electron } from "playwright";
 import { expect } from "playwright/test";
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import {
   mkdtemp,
   realpath,
@@ -17,12 +16,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { resolvePublicationPackage } from "./lib/publication-package.mjs";
-import {
-  block,
-  commentBlock,
-  inspectFlac,
-} from "../tests/metadata-fixtures.ts";
-import { wavFixture } from "../tests/fixtures.ts";
+import { playbackFlacFixture } from "../tests/metadata-fixtures.ts";
 const packaged =
   !!process.env.RIO_EXECUTABLE || process.argv.includes("--packaged");
 const bundle =
@@ -190,37 +184,11 @@ const fingerprint = async (file) => ({
   mtime: (await stat(file)).mtimeMs,
 });
 try {
-  const original = path.join(root, "Original.flac"),
-    wav = path.join(root, "Generated.wav");
-  await writeFile(wav, wavFixture({ seconds: 30 }));
-  execFileSync("ffmpeg", [
-    "-v",
-    "error",
-    "-nostdin",
-    "-i",
-    wav,
-    "-c:a",
-    "flac",
-    original,
-  ]);
-  const parts = inspectFlac(await readFile(original));
   const canonical = (title) =>
-    Buffer.concat([
-      Buffer.from("fLaC"),
-      ...parts.blocks.map((b, i) =>
-        block(
-          b.type,
-          b.type === 4
-            ? commentBlock([
-                ["TITLE", title],
-                ["ARTIST", "Generated artist"],
-                ["ALBUM", "Playback use"],
-              ])
-            : b.body,
-          i === parts.blocks.length - 1,
-        ),
-      ),
-      parts.audio,
+    playbackFlacFixture([
+      ["TITLE", title],
+      ["ARTIST", "Generated artist"],
+      ["ALBUM", "Playback use"],
     ]);
   const externalA = path.join(root, "A.flac"),
     externalB = path.join(root, "B.flac");

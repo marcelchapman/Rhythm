@@ -11,6 +11,7 @@ import * as backend from "../src/domain/flac-taglib";
 import {
   entries,
   flacFixture,
+  playbackFlacFixture,
   inspectFlac,
   pictureBlock,
   pngFixture,
@@ -686,3 +687,25 @@ test.skipIf(!haveFfmpeg)(
     expect(decode(prepared.candidate)).toEqual(pcm);
   },
 );
+
+test("self-contained playback FLAC is deterministic, lasts 30 seconds and remains qualified for metadata edits", async () => {
+  const original = playbackFlacFixture();
+  expect(playbackFlacFixture()).toEqual(original);
+  expect((await read(original)).format).toMatchObject({
+    duration: 30,
+    sampleRate: 48000,
+    numberOfChannels: 2,
+    bitsPerSample: 16,
+  });
+  const result = await prepareFlacMetadataEdit(original, {
+    title: set("Playback fixture edited"),
+  });
+  // Qualification walks all CRCs/subframes and UTF-8 counters, not just metadata.
+  expect(result.verification.frames).toBe(11250);
+  expect(inspectFlac(result.candidate).audio).toEqual(
+    inspectFlac(original).audio,
+  );
+  const metadata = await read(result.candidate);
+  expect(metadata.common.title).toBe("Playback fixture edited");
+  expect(metadata.format.duration).toBe(30);
+});

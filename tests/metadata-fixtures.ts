@@ -171,6 +171,55 @@ export function flacFixture(
   blocks.push(block(1, Buffer.alloc(32), true));
   return Buffer.concat([Buffer.from("fLaC"), ...blocks, payload]);
 }
+/** Thirty seconds of decodable stereo silence, without an external encoder.
+ * Constant subframes retain small files; sequential UTF-8 frame numbers and both
+ * FLAC CRCs are real, including counters beyond the one- and two-byte ranges.
+ */
+export function playbackFlacFixture(values: [string, string][] = entries) {
+  const samples = 48000 * 30,
+    frames: Buffer[] = [];
+  for (let frame = 0; frame < samples / 128; frame++) {
+    const number =
+      frame < 128
+        ? [frame]
+        : frame < 2048
+          ? [0xc0 | (frame >> 6), 0x80 | (frame & 63)]
+          : [
+              0xe0 | (frame >> 12),
+              0x80 | ((frame >> 6) & 63),
+              0x80 | (frame & 63),
+            ];
+    const header = Buffer.from([255, 248, 0x6a, 0x18, ...number, 127]);
+    // Two independent 16-bit channels: constant subframe header + zero sample.
+    const data = Buffer.concat([
+      header,
+      Buffer.from([crc(header, 8)]),
+      Buffer.alloc(6),
+    ]);
+    const footer = Buffer.alloc(2);
+    footer.writeUInt16BE(crc(data, 16));
+    frames.push(Buffer.concat([data, footer]));
+  }
+  const { blocks } = inspectFlac(flacFixture({ entries: values }));
+  const stream = Buffer.from(blocks[0].body);
+  stream.writeUIntBE(frames[0].length, 4, 3);
+  stream.writeUIntBE(frames[frames.length - 1].length, 7, 3);
+  stream.writeBigUInt64BE(
+    (48000n << 44n) | (1n << 41n) | (15n << 36n) | BigInt(samples),
+    10,
+  );
+  createHash("md5")
+    .update(Buffer.alloc(samples * 4))
+    .digest()
+    .copy(stream, 18);
+  return Buffer.concat([
+    Buffer.from("fLaC"),
+    ...blocks.map((b, i) =>
+      block(b.type, i === 0 ? stream : b.body, i === blocks.length - 1),
+    ),
+    ...frames,
+  ]);
+}
 /** Independent test inspector: metadata offsets and raw audio bytes, no production parser. */
 export function inspectFlac(bytes: Uint8Array) {
   const b = Buffer.from(bytes),
