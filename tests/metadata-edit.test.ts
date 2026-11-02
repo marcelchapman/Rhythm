@@ -1,4 +1,4 @@
-import { test, expect } from "vitest";
+import { test, expect, vi } from "vitest";
 import {
   mkdtemp,
   realpath,
@@ -11,6 +11,7 @@ import {
   chmod,
 } from "node:fs/promises";
 import path from "node:path";
+import { writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { Library } from "../src/domain/library";
 import {
@@ -23,6 +24,7 @@ import {
   validateManagedTrash,
   type MediaRoot,
 } from "../src/domain/managed-copy";
+import * as metadataPublication from "../src/domain/metadata-publication";
 import { defaultState } from "../src/shared/types";
 
 async function fixture(run: (f: any) => Promise<void>, bytes = flacFixture()) {
@@ -738,3 +740,238 @@ test("recordless recovery never resolves over a changed current receipt", async 
     expect(await readFile(t.path)).toEqual(before);
   });
 });
+
+// Exercise the real native in-place writer on disposable local APFS files.
+// Mounted noowners selection and the complete real UI path are covered by metadata-ui.
+test.skipIf(process.platform !== "darwin")(
+  "in-place managed FLAC preserves identity, audio, references and reconciles a published interruption",
+  async () => {
+    const selection = vi
+      .spyOn(metadataPublication, "selectMetadataPublication")
+      .mockReturnValue("in-place");
+    try {
+      await fixture(async ({ l, t, use, before, open }: any) => {
+        const inode = (await lstat(t.path)).ino;
+        l.favorite(t.id);
+        const playlist = l.createPlaylist("Preserve in-place", [t.id]);
+        l.saveState({ ...defaultState(), queue: [t.id], currentId: t.id });
+        const patch: any = {};
+        for (const [key, value] of Object.entries({
+          title: "Local title",
+          artist: "Local artist",
+          albumArtist: "Local album artist",
+          album: "Local album",
+          composer: "Composer",
+          genre: "Jazz",
+          year: 2026,
+          trackNumber: 2,
+          trackTotal: 12,
+          discNumber: 1,
+          discTotal: 2,
+          bpm: 120,
+          comments: "New comments",
+        }))
+          patch[key] = { action: "set", value };
+        await editManagedFlac(l, t.id, patch, { usage: use });
+        expect((await lstat(t.path)).ino).toBe(inode);
+        expect(inspectFlac(await readFile(t.path)).audio).toEqual(
+          inspectFlac(before).audio,
+        );
+        expect(l.tracks(t.id)[0]).toMatchObject({
+          id: t.id,
+          path: t.path,
+          title: "Local title",
+          artist: "Local artist",
+          album: "Local album",
+          year: 2026,
+          track: 2,
+          comments: "New comments",
+          favorite: true,
+        });
+        expect(l.playlists()[0]).toEqual(playlist);
+        expect(l.state()).toMatchObject({ queue: [t.id], currentId: t.id });
+        await expect(
+          editManagedFlac(
+            l,
+            t.id,
+            { comments: { action: "clear" } },
+            {
+              usage: use,
+              hooks: {
+                at: async (phase) => {
+                  if (phase === "published")
+                    throw new MetadataEditInterruption("simulated stop");
+                },
+              },
+            },
+          ),
+        ).rejects.toThrow("simulated stop");
+        l.close();
+        const reopened = await open();
+        expect(reopened.tracks(t.id)[0]).toMatchObject({
+          id: t.id,
+          path: t.path,
+          comments: "",
+          missing: false,
+        });
+
+        expect(
+          reopened.db
+            .prepare(
+              "SELECT phase FROM metadata_edits ORDER BY createdAt DESC LIMIT 1",
+            )
+            .get().phase,
+        ).toBe("done");
+      });
+    } finally {
+      selection.mockRestore();
+    }
+  },
+);
+
+test.skipIf(process.platform !== "darwin")(
+  "in-place stale path is rejected without touching replacement or redirecting writes",
+  async () => {
+    const selection = vi
+      .spyOn(metadataPublication, "selectMetadataPublication")
+      .mockReturnValue("in-place");
+    try {
+      await fixture(async ({ l, t, use, before }: any) => {
+        const retained = t.path + ".retained";
+        await expect(
+          editManagedFlac(
+            l,
+            t.id,
+            { title: { action: "set", value: "Refused" } },
+            {
+              usage: use,
+              hooks: {
+                at: async (phase) => {
+                  if (phase === "before-publish") {
+                    await rename(t.path, retained);
+                    await writeFile(t.path, before);
+                  }
+                },
+              },
+            },
+          ),
+        ).rejects.toThrow(/identity|location|receipt/i);
+        expect(await readFile(t.path)).toEqual(before);
+        expect(await readFile(retained)).toEqual(before);
+      });
+    } finally {
+      selection.mockRestore();
+    }
+  },
+);
+
+test.skipIf(process.platform !== "darwin")(
+  "partial in-place write fails visibly, preserves old receipt and permits Locate; startup does not adopt partial bytes",
+  async () => {
+    const selection = vi
+      .spyOn(metadataPublication, "selectMetadataPublication")
+      .mockReturnValue("in-place");
+    const write = vi
+      .spyOn(metadataPublication, "publishMetadataInPlace")
+      .mockImplementation(() => {
+        throw new Error("In-place metadata write failed: simulated I/O error");
+      });
+    try {
+      await fixture(async ({ l, t, use, before, open }: any) => {
+        const receipt = l.db
+          .prepare("SELECT * FROM managed_file_receipts WHERE trackId=?")
+          .get(t.id);
+        // The failure is raised after a physical partial write through the same inode.
+        write.mockImplementation((target) => {
+          writeFileSync(t.path, before.subarray(0, 32));
+          throw new Error(
+            "In-place metadata write failed: simulated I/O error",
+          );
+        });
+        await expect(
+          editManagedFlac(
+            l,
+            t.id,
+            { title: { action: "set", value: "Not committed" } },
+            { usage: use },
+          ),
+        ).rejects.toThrow(/In-place metadata write failed/);
+        expect(l.tracks(t.id)[0].missing).toBe(true);
+        expect(
+          l.db
+            .prepare("SELECT * FROM managed_file_receipts WHERE trackId=?")
+            .get(t.id),
+        ).toEqual(receipt);
+        expect(
+          l.db.prepare("SELECT phase,error FROM metadata_edits").get(),
+        ).toMatchObject({
+          phase: "aborted",
+          error: expect.stringContaining("Locate File"),
+        });
+        expect(await readFile(t.path)).toEqual(before.subarray(0, 32));
+        l.close();
+        const reopened = await open();
+        expect(reopened.tracks(t.id)[0].missing).toBe(true);
+      });
+    } finally {
+      write.mockRestore();
+      selection.mockRestore();
+    }
+  },
+);
+
+test.skipIf(process.platform !== "darwin").each(["before-publish", "partial"])(
+  "startup handles in-place interruption at %s without guessing or pathname cleanup",
+  async (boundary) => {
+    const selection = vi
+      .spyOn(metadataPublication, "selectMetadataPublication")
+      .mockReturnValue("in-place");
+    let write: ReturnType<typeof vi.spyOn> | undefined;
+    try {
+      await fixture(async ({ l, t, use, before, open }: any) => {
+        if (boundary === "partial")
+          write = vi
+            .spyOn(metadataPublication, "publishMetadataInPlace")
+            .mockImplementation(() => {
+              writeFileSync(t.path, before.subarray(0, 32));
+              throw new MetadataEditInterruption(
+                "simulated process interruption",
+              );
+            });
+        await expect(
+          editManagedFlac(
+            l,
+            t.id,
+            { title: { action: "set", value: "Interrupted" } },
+            {
+              usage: use,
+              hooks: {
+                at: async (phase) => {
+                  if (
+                    boundary === "before-publish" &&
+                    phase === "before-publish"
+                  )
+                    throw new MetadataEditInterruption(
+                      "simulated process interruption",
+                    );
+                },
+              },
+            },
+          ),
+        ).rejects.toThrow("simulated process interruption");
+        l.close();
+        const reopened = await open();
+        expect(
+          reopened.db.prepare("SELECT phase FROM metadata_edits").get().phase,
+        ).toBe("aborted");
+        expect(reopened.tracks(t.id)[0].missing).toBe(boundary === "partial");
+        expect(await readFile(t.path)).toEqual(
+          boundary === "partial" ? before.subarray(0, 32) : before,
+        );
+      });
+    } finally {
+      write?.mockRestore();
+      selection.mockRestore();
+    }
+  },
+);

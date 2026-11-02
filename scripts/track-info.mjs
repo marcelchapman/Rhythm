@@ -340,7 +340,22 @@ try {
   ])
     assert.equal(await field(p, label).innerText(), value);
   assert((await field(p, "Comments").innerText()).includes("First line\n"));
-  for (const omitted of ["Composer", "Play count", "Track total", "Disc total"])
+  // Phase 2C exposes all supported metadata fields, while this referenced WAV
+  // remains strictly read-only and never offers Save.
+  assert.equal(await field(p, "Composer").innerText(), "—");
+  assert.equal(await field(p, "Track total").innerText(), "—");
+  assert.equal(await field(p, "Disc total").innerText(), "3");
+  assert.equal(await info(p).locator("input, textarea").count(), 0);
+  assert.equal(
+    await info(p).getByRole("button", { name: "Save", exact: true }).count(),
+    0,
+  );
+  assert(
+    (await info(p).getByRole("status").innerText()).includes(
+      "Referenced files are read only",
+    ),
+  );
+  for (const omitted of ["Play count"])
     assert.equal(
       await info(p).locator("dt").getByText(omitted, { exact: true }).count(),
       0,
@@ -545,7 +560,7 @@ try {
           "banner and native Locate paths",
           "single-track restart and real playback",
           "genuine pre-existing collision unchanged",
-          "read-only Track Info current metadata and omitted unavailable fields",
+          "read-only Track Info current metadata, supported field values and no Save for references",
           "clicked-row multi-selection and keyboard target",
           "Songs/playlist/Artist/Genre/Favourites/search/list view integration",
           "compact focus/Escape/long comments/path",

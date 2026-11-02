@@ -102,7 +102,8 @@ ambiguous release failure.
 `scripts/metadata-playback.mjs` runs the actual renderer/preload/main/protocol path
 with generated FLAC in disposable managed libraries. Main-process test calls
 invoke the existing coordinator with the production singleton's usage capability;
-no metadata IPC is added. It checks advancing playback, pause, switching,
+this ownership qualification bypasses the editor to isolate the gate. Phase 2C
+adds separate real UI/IPC acceptance. It checks advancing playback, pause, switching,
 successful released-file edits, a deliberately held edit lease denying real Play
 and unleased/stale protocol requests, real decode failure, library change, quit,
 restored paused preload and renderer crash. External source bytes/mtimes and
@@ -122,10 +123,10 @@ Rio.app, DMG and ZIP artifacts were built with
 from the build output; it was not installed or published. Linux/arm64 and
 signed/notarized distribution qualification remain deferred.
 
-A future metadata editing entry point must pass `playbackUse.usageFor` for the
-same active Library to `editManagedFlac`. No manual idle declaration is required
-for that path. UI/IPC still needs its own explicit mission, user intent and
-recovery/error presentation. Automatic active-decoder release, ambiguous metadata
+The Phase 2C Track Info entry point passes `playbackUse.usageFor` for the same
+active Library to `editManagedFlac`; see [METADATA-EDITING.md](METADATA-EDITING.md).
+No manual idle declaration is used. Its separate UI/IPC harness verifies explicit
+user intent, read-only eligibility, authoritative Save rejection and error presentation. Automatic active-decoder release, ambiguous metadata
 journal recovery UX, batch/artwork/referenced editing and Keep Organized
 relocation remain deferred.
 

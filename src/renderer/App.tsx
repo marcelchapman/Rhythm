@@ -1,3 +1,4 @@
+import { TrackInfo } from "./TrackInfo";
 import { MediaSource } from "./media-source";
 import rioWordmark from "../../assets/rio-wordmark.png";
 import { TrackList } from "./TrackList";
@@ -126,10 +127,12 @@ function Modal({
   title,
   children,
   close,
+  closeDisabled = false,
 }: {
   title: string;
   children: ReactNode;
   close: () => void;
+  closeDisabled?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(close);
@@ -139,18 +142,23 @@ function Modal({
     const root = ref.current!;
     const elements = () => [
       ...root.querySelectorAll<HTMLElement>(
-        'button:not(:disabled), input:not(:disabled), select:not(:disabled), [tabindex="0"]',
+        'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]',
       ),
     ];
     (
       root.querySelector<HTMLElement>(
-        "input:not(:disabled), select:not(:disabled)",
+        "input:not(:disabled), select:not(:disabled), textarea:not(:disabled)",
       ) ?? elements()[0]
     )?.focus();
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeRef.current();
       if (e.key === "Tab") {
         const all = elements();
+        if (!all.length) {
+          e.preventDefault();
+          root.focus();
+          return;
+        }
         const first = all[0];
         const last = all.at(-1);
         if (e.shiftKey && document.activeElement === first) {
@@ -179,12 +187,17 @@ function Modal({
         ref={ref}
         className="modal"
         role="dialog"
+        tabIndex={-1}
         aria-modal="true"
         aria-labelledby="modal-title"
       >
         <header>
           <h2 id="modal-title">{title}</h2>
-          <IconButton label="Close dialog" onClick={close}>
+          <IconButton
+            label="Close dialog"
+            disabled={closeDisabled}
+            onClick={close}
+          >
             <X />
           </IconButton>
         </header>
@@ -243,6 +256,7 @@ export function App() {
   >(null);
   const [editPlaylist, setEditPlaylist] = useState<Playlist | null>(null);
   const [name, setName] = useState("");
+  const [infoSaving, setInfoSaving] = useState(false);
   const [actionTrack, setActionTrack] = useState<Track | null>(null);
   const audio = useRef<HTMLAudioElement>(null);
   const mediaSource = useRef<MediaSource | null>(null);
@@ -1340,6 +1354,8 @@ export function App() {
     else if (action.command === "info")
       void (async () => {
         try {
+          if (action.trackIds.length !== 1)
+            throw new Error("Choose one track for Track Info.");
           await api.checkTrack(action.trackIds[0]);
           const latest = await refresh();
           const track = latest.tracks.find((t) => t.id === action.trackIds[0]);
@@ -2871,8 +2887,9 @@ export function App() {
             </button>
           </div>
           <p className="fine-print">
-            Music files are read only. Rio does not move, rename, delete, or
-            edit them. Cloud sync and mobile clients are outside version 0.1.
+            Referenced originals stay unchanged. Managed FLAC metadata can be
+            edited in Track Info with Keep Organized off. Cloud sync and mobile
+            clients are outside version 0.1.
           </p>
         </Modal>
       )}
@@ -2958,57 +2975,26 @@ export function App() {
           </form>
         </Modal>
       )}
-      {modal === "info" && actionTrack && (
-        <Modal title="Track Info" close={() => setModal(null)}>
-          <p className="muted">Read only. Your audio file stays unchanged.</p>
-          <dl className="track-info-fields">
-            {(
-              [
-                ["Title", actionTrack.title],
-                ["Artist", actionTrack.artist],
-                ["Album", actionTrack.album],
-                ["Album Artist", actionTrack.albumArtist],
-                ["Genre", actionTrack.genre],
-                ["Year", actionTrack.year || "—"],
-                ["Track number", actionTrack.track || "—"],
-                ["Disc number", actionTrack.disc || "—"],
-                ["BPM", actionTrack.bpm || "—"],
-                ["Comments", actionTrack.comments || "—"],
-                ["Duration", time(actionTrack.duration)],
-                ["Format", actionTrack.format.toUpperCase()],
-                ["Codec", actionTrack.codec || "—"],
-                [
-                  "Bit rate",
-                  actionTrack.bitRate
-                    ? `${Math.round(actionTrack.bitRate / 1000)} kbps`
-                    : "—",
-                ],
-                [
-                  "Ownership",
-                  actionTrack.locationKind === "managed"
-                    ? "Managed copy in Rio Media"
-                    : "Referenced file",
-                ],
-                [
-                  "Availability",
-                  actionTrack.missing
-                    ? "Unavailable · use Locate File to reconnect"
-                    : "Available",
-                ],
-                ["File location", actionTrack.path],
-              ] as const
-            ).map(([label, value]) => (
-              <div key={label}>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </div>
-            ))}
-          </dl>
-          <div className="dialog-actions">
-            <button className="quiet" onClick={() => setModal(null)}>
-              Done
-            </button>
-          </div>
+      {modal === "info" && actionTrack && data?.metadataSession && (
+        <Modal
+          title="Track Info"
+          closeDisabled={infoSaving}
+          close={() => {
+            if (!infoSaving) setModal(null);
+          }}
+        >
+          <TrackInfo
+            key={`${data.metadataSession}:${actionTrack.id}`}
+            track={actionTrack}
+            session={data.metadataSession}
+            close={() => setModal(null)}
+            savingChanged={setInfoSaving}
+            saved={(snapshot) => {
+              if (snapshot.metadataSession === dataRef.current?.metadataSession)
+                setData(snapshot);
+              setModal(null);
+            }}
+          />
         </Modal>
       )}
       {modal === "consolidate" && (

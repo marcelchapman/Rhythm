@@ -7,6 +7,10 @@ import type {
   PlaylistAction,
 } from "../shared/types.js";
 const api: RioAPI = {
+  metadataEligibility: (id, session) =>
+    ipcRenderer.invoke("metadata:eligibility", id, session),
+  editTrackMetadata: (id, session, changes) =>
+    ipcRenderer.invoke("metadata:edit", id, session, changes),
   acquirePlayback: (id, libraryPath) =>
     ipcRenderer.invoke("playback:acquire", id, libraryPath),
   releasePlayback: (token) => ipcRenderer.invoke("playback:release", token),

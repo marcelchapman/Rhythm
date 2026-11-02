@@ -53,6 +53,7 @@ export interface PlayerState {
   view: string;
 }
 export interface Snapshot {
+  metadataSession: string | null;
   libraryPath: string | null;
   tracks: Track[];
   playlists: Playlist[];
@@ -131,6 +132,18 @@ export interface PlaybackSourceLease {
   url: string;
 }
 export interface RioAPI {
+  metadataEligibility(
+    id: string,
+    session: string,
+  ): Promise<{ editable: boolean; message?: string }>;
+  editTrackMetadata(
+    id: string,
+    session: string,
+    changes: import("./metadata-editor.js").MetadataEditPatch,
+  ): Promise<
+    | { ok: true; snapshot: Snapshot }
+    | { ok: false; message: string; diagnosticId?: string }
+  >;
   acquirePlayback(
     id: string,
     libraryPath: string,

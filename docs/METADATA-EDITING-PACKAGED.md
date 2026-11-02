@@ -2,7 +2,8 @@
 
 The metadata coordinator harness now supports `--packaged` and `RIO_EXECUTABLE`.
 `test:packaged` includes it before the existing packaged desktop harnesses.
-There are no production coordinator, worker, writer, native, UI or IPC changes.
+The original Phase 2A qualification follow-up introduced no production
+coordinator, worker, writer, native, UI or IPC changes.
 
 ## Launch and resource evidence
 
@@ -91,3 +92,43 @@ follow-up. No packaged-only product defect has been found.
 - `scripts/metadata-edit.mjs`: packaged launch/resource assertions and retained acceptance.
 - `package.json`: coordinator harness added to `test:packaged`.
 - `docs/METADATA-EDITING-PACKAGED.md`: qualification method, resource fingerprints and results.
+
+## Phase 2C local APFS follow-up
+
+The original Phase 2A fingerprints and results above describe that earlier build.
+Phase 2C finalization adds main/domain capability selection and a separate native
+in-place metadata operation for local writable APFS, including `noowners`. The
+strong staged publisher remains unchanged where qualified. Current behavior and
+its practical interruption limits are described in [METADATA-EDITING.md](METADATA-EDITING.md).
+
+The real Track Info harness (`scripts/metadata-ui.mjs`) qualifies both strategies.
+Its `--noowners` mode mounts only a disposable APFS image; its
+`RIO_METADATA_EXTERNAL_PARENT` mode creates and removes only an isolated fixture
+folder on an existing local APFS volume. Save uses the real renderer, preload,
+main IPC, active Library, playback-use capability and packaged coordinator. It
+observes the executed strategy module, actual coordinator worker URLs and replies,
+packaged TagLib/WASM resolution and native addon manifest/hash. No production
+implementation is loaded from checkout `dist` in packaged mode. The selected
+strategy and native ownership capability are included in the evidence output.
+
+Finalization Intel macOS acceptance passed in the freshly built unsigned x64 app
+on both a disposable APFS noowners image and a disposable folder on the real
+external APFS noowners volume. Native evidence reported `filesystem: apfs`,
+`ownershipEnabled: false`; the persisted edit journal selected `in-place` and had
+no strong publication record. The full actual Track Info set/clear/Cancel,
+playback exclusion/release, global refresh, restart/identity/reference and
+save-time permission/diagnostic scenarios passed. The production native addon
+SHA-256 was `e1b5a174451b4459c768a0b57182b360846005d8221c896e196fbc06cd497fb6`,
+matching the packaged non-testing darwin/x64 manifest. Neither run imported
+production implementation from the repository. The fresh DMG checksum and ZIP
+Info.plist/ASAR-to-app equality checks passed; product name and bundle identity
+remain Rio / `io.github.marcelchapman.rio`.
+
+The final full `npm run test:packaged` passed all 16 desktop harnesses, including
+the unchanged metadata playback ownership and staged coordinator/recovery
+harnesses. The source desktop suite passed all 17 harnesses and all 473 unit
+tests passed. Typecheck, build, repository/doc formatting and whitespace checks
+passed. An archive comparison confirmed that the packaged coordinator, worker,
+strategy module and privileged metadata adapter match the current compiled bytes.
+Linux/arm64, signed/notarized distribution and interruption during the physical
+in-place rewrite remain outside these successful local Intel acceptance claims.

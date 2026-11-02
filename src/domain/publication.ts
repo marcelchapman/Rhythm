@@ -423,8 +423,10 @@ export function createPublicationAdapter(binding: NativePublicationBinding) {
   };
 }
 let adapter: ReturnType<typeof createPublicationAdapter> | undefined;
-function current() {
-  if (!adapter) {
+let nativeBinding: NativePublicationBinding | undefined;
+/** Internal domain access to the same packaged native addon. */
+export function publicationNativeBinding() {
+  if (!nativeBinding) {
     if (!["darwin", "linux"].includes(process.platform))
       throw Error("Native publication is unsupported on this platform.");
     const source = fileURLToPath(import.meta.url).endsWith(".ts");
@@ -434,12 +436,14 @@ function current() {
         : "../native/publication.node",
       import.meta.url,
     );
-    adapter = createPublicationAdapter(
-      createRequire(import.meta.url)(
-        fileURLToPath(filename),
-      ) as NativePublicationBinding,
-    );
+    nativeBinding = createRequire(import.meta.url)(
+      fileURLToPath(filename),
+    ) as NativePublicationBinding;
   }
+  return nativeBinding;
+}
+function current() {
+  if (!adapter) adapter = createPublicationAdapter(publicationNativeBinding());
   return adapter;
 }
 export function probePublicationSupport(target: PublicationTarget) {

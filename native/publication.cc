@@ -10,6 +10,7 @@
 #include <cstring>
 #include <cstdint>
 #include <memory>
+#include <algorithm>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -174,13 +175,19 @@ std::string mountId(int fd) {
   return num(stats(fd).st_dev);
 #endif
 }
-std::string filesystem(int fd) {
+std::string filesystem(int fd,bool localInPlace=false) {
   struct statfs s{}; io(fstatfs(fd,&s)==0,"fstatfs");
 #ifdef __APPLE__
+  if(localInPlace) {
+    if(std::string(s.f_fstypename)!="apfs" || !(s.f_flags&MNT_LOCAL) || (s.f_flags&MNT_RDONLY))
+      fail("Require local writable APFS for in-place metadata editing", "unsupported");
+    return "apfs";
+  }
   if(std::string(s.f_fstypename)!="apfs" || !(s.f_flags&MNT_LOCAL) || (s.f_flags&(MNT_IGNORE_OWNERSHIP|MNT_RDONLY)))
     fail("Require local writable APFS with ownership enabled", "unsupported");
   return "apfs";
 #else
+  (void)localInPlace;
   auto id=mountId(fd); std::ifstream input("/proc/self/mountinfo"); std::string line;
   while(std::getline(input,line)) {
     std::istringstream fields(line); std::string entry; fields>>entry;
@@ -286,7 +293,7 @@ void privateExpected(Lease& l,const char* name,const struct stat& expected) {
   auto fd=openLeaf(l,l.work.n,name);
   if(!unchanged(expected,stats(fd.n))) fail(std::string("Private artifact changed: ")+name);
 }
-std::unique_ptr<Lease> anchor(napi_env e,napi_value config) {
+std::unique_ptr<Lease> anchor(napi_env e,napi_value config,bool localInPlace=false) {
   auto l=std::make_unique<Lease>();
   auto root=field(e,config,"root"), relative=field(e,config,"relative");
   auto absolute=parts(root,true), local=parts(relative);
@@ -299,7 +306,7 @@ std::unique_ptr<Lease> anchor(napi_env e,napi_value config) {
   }
   l->rootIndex=l->chain.size()-1;
   if(!matches(e,get(e,config,"rootIdentity"),l->chain.back().identity,false)) fail("Registered root identity changed");
-  l->fs=filesystem(l->parent()); l->mount=mountId(l->parent());
+  l->fs=filesystem(l->parent(),localInPlace); l->mount=mountId(l->parent());
   auto device=stats(l->parent()).st_dev;
   for(size_t i=0;i+1<local.size();i++) {
     Fd next(relativeOpen(l->parent(),local[i],O_RDONLY|O_DIRECTORY,true));
@@ -525,6 +532,67 @@ napi_value cleanup(napi_env e,napi_callback_info info) {return protect(e,[&]{
 napi_value closeLease(napi_env e,napi_callback_info info) {return protect(e,[&]{
   auto a=args(e,info,1); auto& l=lease(e,a[0]); l.alive=false; l.chain.clear(); l.target=Fd();l.work=Fd();l.slot=Fd();l.rollback=Fd(); l.original.clear(); return result(e,"closed");
 });}
+// Separate practical local-APFS capability. The strong workspace/exchange
+// implementation above retains its original policy and behavior.
+std::unique_ptr<Lease> localMetadataTarget(napi_env e,napi_value config) {
+#ifndef __APPLE__
+  (void)e; (void)config;
+  fail("In-place metadata editing requires local writable APFS", "unsupported");
+#else
+  auto l=anchor(e,config,true);
+  l->target=Fd(relativeOpen(l->parent(),l->leaf,O_RDWR|O_NONBLOCK,true));
+  io(l->target.n>=0,"Opening writable metadata target");
+  l->expected=stats(l->target.n); regular(l->expected); sameFilesystem(*l,l->target.n);
+  if(!(l->expected.st_mode&0222))fail("Metadata target is read only", "unsupported");
+  currentExpected(*l); return l;
+#endif
+}
+napi_value metadataSupport(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  auto a=args(e,info,1); auto l=localMetadataTarget(e,a[0]);
+  auto o=result(e,"supported"); put(e,o,"filesystem","apfs");
+#ifdef __APPLE__
+  struct statfs s{}; io(fstatfs(l->target.n,&s)==0,"Metadata filesystem classification");
+  put(e,o,"ownershipEnabled",boolean(e,!(s.f_flags&MNT_IGNORE_OWNERSHIP)));
+#endif
+  return o;
+});}
+napi_value writeMetadataInPlace(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  bool mutated=false;
+  try {
+    auto a=args(e,info,3); auto l=localMetadataTarget(e,a[0]);
+    if(!matches(e,get(e,a[0],"expected"),l->expected,true))fail("Metadata target fingerprint changed before writing");
+    void *original,*candidate;size_t originalSize,candidateSize;
+    js(napi_get_buffer_info(e,a[1],&original,&originalSize));
+    js(napi_get_buffer_info(e,a[2],&candidate,&candidateSize));
+    if(originalSize>limit || candidateSize>limit)fail("Metadata file exceeds 64 MiB", "invalid-input");
+    auto observed=readFile(l->target.n);
+    if(observed.size()!=originalSize || memcmp(observed.data(),original,originalSize))fail("Metadata target bytes changed before writing");
+    currentExpected(*l);
+    size_t at=0;
+    while(at<candidateSize) {
+      validateChain(*l);
+      struct stat named{};io(fstatat(l->parent(),l->leaf.c_str(),&named,AT_SYMLINK_NOFOLLOW)==0,"Metadata path unavailable");
+      auto held=stats(l->target.n);regular(held);
+      if(!identity(named,held) || !identity(held,l->expected))fail("Metadata path identity changed during writing");
+      // Always write through the retained descriptor, never a reopened name.
+      auto length=std::min(size_t(64*1024),candidateSize-at);
+      mutated=true;auto n=pwrite(l->target.n,static_cast<uint8_t*>(candidate)+at,length,off_t(at));
+      if(n<0 && errno==EINTR)continue;
+      io(n>0,"Writing metadata in place");at+=size_t(n);
+    }
+    mutated=true;io(ftruncate(l->target.n,off_t(candidateSize))==0,"Truncating metadata target");
+    io(fsync(l->target.n)==0,"Flushing in-place metadata");
+    auto actual=readFile(l->target.n);
+    if(actual.size()!=candidateSize || memcmp(actual.data(),candidate,candidateSize))fail("In-place metadata reread did not match candidate");
+    validateChain(*l);struct stat named{};
+    io(fstatat(l->parent(),l->leaf.c_str(),&named,AT_SYMLINK_NOFOLLOW)==0,"Metadata path unavailable after writing");
+    auto held=stats(l->target.n);if(!identity(named,held)||!identity(held,l->expected))fail("Metadata path identity changed after writing");
+    auto o=result(e,"written");put(e,o,"identity",fingerprint(e,held));return o;
+  } catch(const Failure& f) {
+    if(mutated)throw Failure("in-place-write-failed",std::string("In-place metadata write failed: ")+f.what());
+    throw;
+  }
+});}
 #ifdef RIO_PUBLICATION_TESTING
 napi_value before(napi_env e,napi_callback_info i){return exchangeImpl(e,i,Hook::Before);}
 napi_value after(napi_env e,napi_callback_info i){return exchangeImpl(e,i,Hook::After);}
@@ -558,6 +626,8 @@ NAPI_MODULE_INIT() {
     {"sync",nullptr,syncCall,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"cleanup",nullptr,cleanup,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"close",nullptr,closeLease,nullptr,nullptr,nullptr,napi_default,nullptr},
+    {"metadataSupport",nullptr,metadataSupport,nullptr,nullptr,nullptr,napi_default,nullptr},
+    {"writeMetadataInPlace",nullptr,writeMetadataInPlace,nullptr,nullptr,nullptr,napi_default,nullptr},
 #ifdef RIO_PUBLICATION_TESTING
     {"exchangeWithInterleave",nullptr,before,nullptr,nullptr,nullptr,napi_default,nullptr},
     {"exchangeWithAfterInterleave",nullptr,after,nullptr,nullptr,nullptr,napi_default,nullptr},

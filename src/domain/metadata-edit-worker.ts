@@ -5,6 +5,7 @@ import {
   verifyFlacMetadataCandidate,
 } from "./metadata-writer.js";
 import { trackMetadata } from "./track-metadata.js";
+import { digest, parseFlac } from "./flac-document.js";
 try {
   if (workerData.mode === "prepare")
     parentPort!.postMessage({
@@ -15,11 +16,26 @@ try {
       ),
     });
   else {
-    const proof = await verifyFlacMetadataCandidate(
-      workerData.original,
-      workerData.candidate,
-      workerData.patch,
-    );
+    const recovering = workerData.mode === "recover-in-place";
+    if (recovering) {
+      if (
+        digest(parseFlac(workerData.candidate).audio) !== workerData.audioSha256
+      )
+        throw new Error("In-place recovery audio verification failed.");
+      const check = await prepareFlacMetadataEdit(
+        workerData.candidate,
+        workerData.patch,
+      );
+      if (check.changedFields.length)
+        throw new Error("In-place recovery metadata verification failed.");
+    }
+    const proof = recovering
+      ? undefined
+      : await verifyFlacMetadataCandidate(
+          workerData.original,
+          workerData.candidate,
+          workerData.patch,
+        );
     const parsed = await parseBuffer(
       workerData.candidate,
       { mimeType: "audio/flac", size: workerData.candidate.length },
@@ -27,7 +43,9 @@ try {
     );
     parentPort!.postMessage({
       ok: true,
-      value: { proof, metadata: trackMetadata(workerData.filename, parsed) },
+      value: recovering
+        ? trackMetadata(workerData.filename, parsed)
+        : { proof, metadata: trackMetadata(workerData.filename, parsed) },
     });
   }
 } catch (error) {

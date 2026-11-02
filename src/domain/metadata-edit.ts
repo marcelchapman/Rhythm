@@ -24,6 +24,10 @@ import {
   type PublicationLease,
 } from "./publication.js";
 import { pendingMetadataEdits } from "./metadata-edit-schema.js";
+import {
+  selectMetadataPublication,
+  publishMetadataInPlace,
+} from "./metadata-publication.js";
 
 export type MetadataEditPatch = Omit<FlacMetadataPatch, "artwork">;
 export interface TargetUseLease {
@@ -106,6 +110,8 @@ interface Journal {
   candidateSha256?: string;
   audioSha256?: string;
   metadata?: TrackMetadata;
+  strategy?: "in-place";
+  writeStarted?: boolean;
 }
 const sha = (bytes: Uint8Array) =>
   createHash("sha256").update(bytes).digest("hex");
@@ -206,7 +212,7 @@ function worker<T>(data: object): Promise<T> {
       import.meta.url,
     );
     const timer = setTimeout(() => {
-      finish(new Error("Metadata worker timed out; original retained."));
+      finish(new Error("Metadata worker timed out."));
       void thread.terminate();
     }, 30000);
     let thread: Worker;
@@ -495,6 +501,16 @@ export async function editManagedFlac(
       throw new Error(
         "An unfinished publication workspace conflicts with this edit.",
       );
+    const target = {
+      root: root.path,
+      rootIdentity: {
+        device: root.device,
+        inode: root.inode,
+        type: "directory" as const,
+      },
+      relative: track.mediaRelativePath!,
+    };
+    const strategy = selectMetadataPublication(target);
     const originalFingerprint = await fingerprint(track.path);
     const receipt = l.db
       .prepare(
@@ -547,6 +563,57 @@ export async function editManagedFlac(
     journal.candidateSha256 = prepared.verification.candidateSha256;
     journal.audioSha256 = prepared.verification.audioSha256;
     put(l, id, "preparing", journal);
+    if (strategy === "in-place") {
+      journal.strategy = "in-place";
+      journal.metadata = await verifyCandidate(
+        journal,
+        original,
+        prepared.candidate,
+      );
+      put(l, id, "staged", journal);
+      await options.hooks?.at?.("candidate-staged", id);
+      await options.hooks?.at?.("staged", id);
+      await options.hooks?.at?.("before-publish", id);
+      await validateMediaRoot(root);
+      checkTrack(l, journal);
+      await validateCurrentManagedReceipt(
+        l.db,
+        root,
+        trackId,
+        track.path,
+        journal.relative,
+      );
+      originalReceipt(l, journal);
+      use.assertIdle();
+      if (
+        l.db.prepare("SELECT phase FROM metadata_edits WHERE id=?").get(id)
+          ?.phase !== "staged"
+      )
+        throw new Error("Metadata edit journal changed before publication.");
+      // Durable intent, not a claim of atomicity: physical rewrite may be partial.
+      journal.writeStarted = true;
+      put(l, id, "staged", journal);
+      publishMetadataInPlace(
+        { ...target, expected: originalFingerprint },
+        original,
+        prepared.candidate,
+      );
+      put(l, id, "published", journal);
+      await options.hooks?.at?.("published", id);
+      const actual = await bytesAt(
+        track.path,
+        originalFingerprint,
+        journal.candidateSha256,
+      );
+      const metadata = await verifyCandidate(journal, original, actual);
+      use.assertIdle();
+      commit(l, id, journal, await fingerprint(track.path), metadata);
+      await options.hooks?.at?.("committed", id);
+      const reconciled = await reconcile(l, journal);
+      put(l, id, "done", journal);
+      await options.hooks?.at?.("cleaned", id);
+      return { status: "committed" as const, editId: id, track: reconciled };
+    }
     const opened = openPublicationLease({
       root: root.path,
       rootIdentity: {
@@ -632,7 +699,7 @@ export async function editManagedFlac(
       const phase = l.db
         .prepare("SELECT phase FROM metadata_edits WHERE id=?")
         .get(id)?.phase;
-      if (phase === "done")
+      if (phase === "done" && journal.strategy !== "in-place")
         return {
           status: "reconciled" as const,
           editId: id,
@@ -661,6 +728,72 @@ function originalReceipt(l: Library, j: Journal) {
   )
     throw new Error("Original receipt no longer agrees with recovery.");
 }
+/** No backup or pathname cleanup. Only adopt exact, fully verified candidate bytes. */
+async function recoverInPlace(l: Library, id: string, j: Journal) {
+  try {
+    await validateMediaRoot(j.root);
+    const bytes = await bytesAt(j.filename, j.original);
+    if (sha(bytes) === j.originalSha256) {
+      originalReceipt(l, j);
+      put(l, id, "aborted", j);
+      return;
+    }
+    if (
+      !j.writeStarted ||
+      !j.candidateSha256 ||
+      !j.audioSha256 ||
+      sha(bytes) !== j.candidateSha256
+    )
+      throw new Error(
+        "Interrupted in-place rewrite does not match the verified candidate.",
+      );
+    const metadata = await worker<TrackMetadata>({
+      mode: "recover-in-place",
+      candidate: bytes,
+      patch: j.patch,
+      filename: j.filename,
+      audioSha256: j.audioSha256,
+    });
+    // Normal filesystem flush, followed by another identity/content check.
+    const handle = await open(
+      j.filename,
+      constants.O_RDONLY | constants.O_NOFOLLOW,
+    );
+    try {
+      const info = await handle.stat({ bigint: true });
+      if (
+        String(info.dev) !== j.original.device ||
+        String(info.ino) !== j.original.inode
+      )
+        throw new Error("Metadata target changed during recovery.");
+      await handle.sync();
+    } finally {
+      await handle.close();
+    }
+    await bytesAt(j.filename, j.original, j.candidateSha256);
+    commit(l, id, j, await fingerprint(j.filename), metadata);
+    await reconcile(l, j);
+    put(l, id, "done", j);
+  } catch (error) {
+    // A partial rewrite cannot be rolled back. Preserve the old receipt and file;
+    // release the global operation lock so the existing Locate flow can repair it.
+    l.db.exec("BEGIN IMMEDIATE");
+    try {
+      l.db.prepare("UPDATE tracks SET missing=1 WHERE id=?").run(j.trackId);
+      put(
+        l,
+        id,
+        "aborted",
+        j,
+        `In-place metadata requires Locate File: ${String(error)}`,
+      );
+      l.db.exec("COMMIT");
+    } catch (dbError) {
+      l.db.exec("ROLLBACK");
+      throw dbError;
+    }
+  }
+}
 async function recoverOne(l: Library, id: string, j: Journal) {
   const phase = String(
     l.db.prepare("SELECT phase FROM metadata_edits WHERE id=?").get(id)?.phase,
@@ -668,6 +801,10 @@ async function recoverOne(l: Library, id: string, j: Journal) {
   if (["done", "aborted"].includes(phase)) return;
   if (j.version !== 1) throw new Error("Unsupported metadata journal.");
   checkTrack(l, j);
+  if (j.strategy === "in-place") {
+    await recoverInPlace(l, id, j);
+    return;
+  }
   await validateMediaRoot(j.root);
   if (!j.record) {
     await bytesAt(j.filename, j.original, j.originalSha256);

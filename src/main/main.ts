@@ -28,6 +28,16 @@ import {
   type PlaylistAction,
 } from "../shared/types.js";
 import { playbackUse } from "./playback-use.js";
+import { pendingMetadataEdits } from "../domain/metadata-edit-schema.js";
+import {
+  assertMetadataSender,
+  metadataSession,
+  validateMetadataTarget,
+  metadataEligibility,
+  saveTrackMetadata,
+  metadataError,
+  recordMetadataFailure,
+} from "./metadata-editor.js";
 import { normalizeViewPreferences } from "../shared/preferences.js";
 import {
   importPlaylistFile,
@@ -140,6 +150,7 @@ async function playlistOperation<T>(operation: (l: Library) => Promise<T>) {
 }
 const pointerPath = () => path.join(app.getPath("userData"), "library.json");
 const snapshot = () => ({
+  metadataSession: metadataSession(library),
   libraryPath: library?.directory ?? null,
   tracks: library?.tracks() ?? [],
   playlists: library?.playlists() ?? [],
@@ -241,6 +252,60 @@ async function importMusic() {
   );
 }
 function handlers() {
+  for (const operation of ["eligibility", "edit"] as const) {
+    ipcMain.handle(
+      `metadata:${operation}`,
+      async (event, id: unknown, session: unknown, changes?: unknown) => {
+        // Check the actual owner and top-level frame, not a renderer-provided URL.
+        assertMetadataSender(event, win?.webContents);
+        try {
+          const l = requireLibrary();
+          const track = validateMetadataTarget(id, session, l);
+          if (movingLibrary || choosingLibrary || playlistIO || l.scanning)
+            throw new Error("Wait for the current library operation.");
+          if (operation === "eligibility") {
+            await metadataEligibility(l, track.id, playbackUse.usageFor(l));
+            validateMetadataTarget(id, session, library);
+            if (movingLibrary || choosingLibrary || playlistIO || l.scanning)
+              throw new Error("Wait for the current library operation.");
+            return { editable: true };
+          }
+          await playlistOperation((active) =>
+            saveTrackMetadata(
+              active,
+              track.id,
+              session,
+              changes,
+              playbackUse.usageFor(active),
+            ),
+          );
+          return { ok: true, snapshot: snapshot() };
+        } catch (error) {
+          console.error(`Metadata ${operation} failed:`, error);
+          const message = metadataError(
+            error,
+            !!library?.db.isOpen && pendingMetadataEdits(library.db) > 0,
+          );
+          const diagnosticId =
+            operation === "edit" ||
+            (error instanceof Error &&
+              error.message.startsWith("Publication support unavailable:"))
+              ? await recordMetadataFailure(app.getPath("userData"), id, error)
+              : undefined;
+          return operation === "eligibility"
+            ? {
+                editable: false,
+                message:
+                  message +
+                  (diagnosticId ? ` (Reference: ${diagnosticId}.)` : ""),
+              }
+            : { ok: false, message, diagnosticId };
+        } finally {
+          setImmediate(() => void flushPlaylistFiles());
+        }
+      },
+    );
+  }
   ipcMain.handle(
     "playback:acquire",
     async (event, id: string, directory: string) => {
