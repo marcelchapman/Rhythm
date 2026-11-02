@@ -1,0 +1,819 @@
+{
+  "date": "2026-11-01",
+  "platform": "darwin",
+  "arch": "x64",
+  "system": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H32\n",
+  "mounts": [
+    "/dev/disk5s1 on /private/tmp/rio-apfs-boundary-H77DkV/on (apfs, local, nodev, nosuid, journaled, nobrowse, mounted by marcelchapman)",
+    "/dev/disk7s1 on /private/tmp/rio-apfs-boundary-H77DkV/off (apfs, local, nodev, nosuid, journaled, noowners, nobrowse, mounted by marcelchapman)"
+  ],
+  "productionSourceSha256": "a8d2fbf8b5920108648b6f2431ba7bdcc11bb5f94d14bd89349d1df5f44fcea1",
+  "productionBinarySha256": "fe5f066ccf46b33415142e8969fb28495c46f123f5371821aadf51b43a0f0406",
+  "researchCopySha256": "84b5e6086a328bf1c5bc8d06c32a7cbe67745ba7f96458c0a5fc97dca5d54b3c",
+  "experiment": "Unshipped copy of native/publication.cc; noowners guard admitted solely for research; deterministic interleave after final slot check and workspace check, before unlinkat; fourth cleanup argument is test-only",
+  "production": [
+    {
+      "mode": "on",
+      "timing": "late",
+      "disposition": "abort",
+      "probe": {
+        "status": "supported",
+        "filesystem": "apfs",
+        "barrier": "fullfsync"
+      }
+    },
+    {
+      "mode": "off",
+      "timing": "early",
+      "disposition": "abort",
+      "probe": {
+        "status": "unsupported",
+        "reason": "Require local writable APFS with ownership enabled"
+      }
+    },
+    {
+      "mode": "off",
+      "timing": "late",
+      "disposition": "abort",
+      "probe": {
+        "status": "unsupported",
+        "reason": "Require local writable APFS with ownership enabled"
+      }
+    },
+    {
+      "mode": "off",
+      "timing": "late",
+      "disposition": "committed",
+      "probe": {
+        "status": "unsupported",
+        "reason": "Require local writable APFS with ownership enabled"
+      }
+    }
+  ],
+  "results": [
+    {
+      "mode": "on",
+      "timing": "late",
+      "disposition": "abort",
+      "before": {
+        "boundaryValid": true,
+        "target": {
+          "identity": {
+            "device": "16777235",
+            "inode": "18",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546253976620220",
+            "ctimeNs": "1793546253976620220",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        },
+        "slot": {
+          "identity": {
+            "device": "16777235",
+            "inode": "26",
+            "size": "31",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546254633183884",
+            "ctimeNs": "1793546254633183884",
+            "type": "file"
+          },
+          "sha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143"
+        },
+        "rollback": {
+          "identity": {
+            "device": "16777235",
+            "inode": "27",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546254686652358",
+            "ctimeNs": "1793546254686652358",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        }
+      },
+      "record": {
+        "root": "/private/tmp/rio-apfs-boundary-H77DkV/on/Media",
+        "rootIdentity": {
+          "device": "16777235",
+          "inode": "16",
+          "size": "96",
+          "links": "3",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546253976161573",
+          "ctimeNs": "1793546253976161573",
+          "type": "directory"
+        },
+        "relative": "Track.flac",
+        "version": 1,
+        "workspace": ".rio-publication-3d3fb07e-1d45-46cc-9a14-392cc7e87502",
+        "parentIdentity": {
+          "device": "16777235",
+          "inode": "16",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546254281374971",
+          "ctimeNs": "1793546254281374971",
+          "type": "directory"
+        },
+        "workspaceIdentity": {
+          "device": "16777235",
+          "inode": "23",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546254686380533",
+          "ctimeNs": "1793546254734710182",
+          "type": "directory"
+        },
+        "expected": {
+          "device": "16777235",
+          "inode": "18",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546253976620220",
+          "ctimeNs": "1793546253976620220",
+          "type": "file"
+        },
+        "originalSha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b",
+        "candidateSha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143",
+        "candidateIdentity": {
+          "device": "16777235",
+          "inode": "26",
+          "size": "31",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546254633183884",
+          "ctimeNs": "1793546254633183884",
+          "type": "file"
+        },
+        "rollbackIdentity": {
+          "device": "16777235",
+          "inode": "27",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546254686652358",
+          "ctimeNs": "1793546254686652358",
+          "type": "file"
+        }
+      },
+      "actor": {
+        "uid": 4294967294,
+        "euid": 4294967294,
+        "entered": false,
+        "errno": 13,
+        "replaced": false
+      },
+      "callbackReached": true,
+      "outcome": {
+        "status": "cleaned"
+      },
+      "beforeVictim": {
+        "device": "16777235",
+        "inode": "19",
+        "size": "58",
+        "links": "1",
+        "mode": "33152",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793546253976838718",
+        "ctimeNs": "1793546253976838718",
+        "type": "file"
+      },
+      "afterVictim": {
+        "inode": "19",
+        "links": "1",
+        "size": "58",
+        "sha256": "703791c8b9b48c260300f089103d4a7f02ef3246c75a38fe0eb57d94b9a692e2"
+      },
+      "victimAtOriginalPath": true,
+      "workspaceExists": false,
+      "authoritativeSha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+    },
+    {
+      "mode": "off",
+      "timing": "early",
+      "disposition": "abort",
+      "before": {
+        "boundaryValid": true,
+        "target": {
+          "identity": {
+            "device": "16777239",
+            "inode": "18",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546259880556564",
+            "ctimeNs": "1793546259880556564",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        },
+        "slot": {
+          "identity": {
+            "device": "16777239",
+            "inode": "23",
+            "size": "31",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546260102915863",
+            "ctimeNs": "1793546260102915863",
+            "type": "file"
+          },
+          "sha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143"
+        },
+        "rollback": {
+          "identity": {
+            "device": "16777239",
+            "inode": "24",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546260146656074",
+            "ctimeNs": "1793546260146656074",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        }
+      },
+      "record": {
+        "root": "/private/tmp/rio-apfs-boundary-H77DkV/off/Media",
+        "rootIdentity": {
+          "device": "16777239",
+          "inode": "16",
+          "size": "96",
+          "links": "3",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546259879911282",
+          "ctimeNs": "1793546259879911282",
+          "type": "directory"
+        },
+        "relative": "Track.flac",
+        "version": 1,
+        "workspace": ".rio-publication-1427f2e6-55d3-44a0-adf4-1523a3ed02a5",
+        "parentIdentity": {
+          "device": "16777239",
+          "inode": "16",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546259882289771",
+          "ctimeNs": "1793546259882289771",
+          "type": "directory"
+        },
+        "workspaceIdentity": {
+          "device": "16777239",
+          "inode": "20",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546260146438096",
+          "ctimeNs": "1793546260189583064",
+          "type": "directory"
+        },
+        "expected": {
+          "device": "16777239",
+          "inode": "18",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546259880556564",
+          "ctimeNs": "1793546259880556564",
+          "type": "file"
+        },
+        "originalSha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b",
+        "candidateSha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143",
+        "candidateIdentity": {
+          "device": "16777239",
+          "inode": "23",
+          "size": "31",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546260102915863",
+          "ctimeNs": "1793546260102915863",
+          "type": "file"
+        },
+        "rollbackIdentity": {
+          "device": "16777239",
+          "inode": "24",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546260146656074",
+          "ctimeNs": "1793546260146656074",
+          "type": "file"
+        }
+      },
+      "actor": {
+        "uid": 4294967294,
+        "euid": 4294967294,
+        "entered": true,
+        "replaced": true,
+        "checkedInode": "23",
+        "replacementInode": "19",
+        "replacementLinks": 1
+      },
+      "callbackReached": false,
+      "outcome": {
+        "status": "cleanup-refused",
+        "reason": "Cleanup requires exact owned identities, verified bytes and the requested layout.",
+        "inspection": {
+          "boundaryValid": true,
+          "target": {
+            "identity": {
+              "device": "16777239",
+              "inode": "18",
+              "size": "29",
+              "links": "1",
+              "mode": "33152",
+              "uid": "501",
+              "gid": "20",
+              "mtimeNs": "1793546259880556564",
+              "ctimeNs": "1793546259880556564",
+              "type": "file"
+            },
+            "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+          },
+          "slot": {
+            "identity": {
+              "device": "16777239",
+              "inode": "19",
+              "size": "58",
+              "links": "1",
+              "mode": "33152",
+              "uid": "501",
+              "gid": "20",
+              "mtimeNs": "1793546259880713031",
+              "ctimeNs": "1793546264936192468",
+              "type": "file"
+            },
+            "sha256": "703791c8b9b48c260300f089103d4a7f02ef3246c75a38fe0eb57d94b9a692e2"
+          },
+          "rollback": {
+            "identity": {
+              "device": "16777239",
+              "inode": "24",
+              "size": "29",
+              "links": "1",
+              "mode": "33152",
+              "uid": "501",
+              "gid": "20",
+              "mtimeNs": "1793546260146656074",
+              "ctimeNs": "1793546260146656074",
+              "type": "file"
+            },
+            "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+          }
+        }
+      },
+      "beforeVictim": {
+        "device": "16777239",
+        "inode": "19",
+        "size": "58",
+        "links": "1",
+        "mode": "33152",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793546259880713031",
+        "ctimeNs": "1793546259880713031",
+        "type": "file"
+      },
+      "afterVictim": {
+        "inode": "19",
+        "links": "1",
+        "size": "58",
+        "sha256": "703791c8b9b48c260300f089103d4a7f02ef3246c75a38fe0eb57d94b9a692e2"
+      },
+      "victimAtOriginalPath": false,
+      "workspaceExists": true,
+      "authoritativeSha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+    },
+    {
+      "mode": "off",
+      "timing": "late",
+      "disposition": "abort",
+      "before": {
+        "boundaryValid": true,
+        "target": {
+          "identity": {
+            "device": "16777239",
+            "inode": "27",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546264979822885",
+            "ctimeNs": "1793546264979822885",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        },
+        "slot": {
+          "identity": {
+            "device": "16777239",
+            "inode": "32",
+            "size": "31",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546265216142666",
+            "ctimeNs": "1793546265216142666",
+            "type": "file"
+          },
+          "sha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143"
+        },
+        "rollback": {
+          "identity": {
+            "device": "16777239",
+            "inode": "33",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546265261422368",
+            "ctimeNs": "1793546265261422368",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        }
+      },
+      "record": {
+        "root": "/private/tmp/rio-apfs-boundary-H77DkV/off/Media",
+        "rootIdentity": {
+          "device": "16777239",
+          "inode": "25",
+          "size": "96",
+          "links": "3",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546264979769828",
+          "ctimeNs": "1793546264979769828",
+          "type": "directory"
+        },
+        "relative": "Track.flac",
+        "version": 1,
+        "workspace": ".rio-publication-c3b3be71-ff93-4747-9332-41105aa0778d",
+        "parentIdentity": {
+          "device": "16777239",
+          "inode": "25",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546264981368424",
+          "ctimeNs": "1793546264981368424",
+          "type": "directory"
+        },
+        "workspaceIdentity": {
+          "device": "16777239",
+          "inode": "29",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546265261199217",
+          "ctimeNs": "1793546265305063757",
+          "type": "directory"
+        },
+        "expected": {
+          "device": "16777239",
+          "inode": "27",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546264979822885",
+          "ctimeNs": "1793546264979822885",
+          "type": "file"
+        },
+        "originalSha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b",
+        "candidateSha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143",
+        "candidateIdentity": {
+          "device": "16777239",
+          "inode": "32",
+          "size": "31",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546265216142666",
+          "ctimeNs": "1793546265216142666",
+          "type": "file"
+        },
+        "rollbackIdentity": {
+          "device": "16777239",
+          "inode": "33",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546265261422368",
+          "ctimeNs": "1793546265261422368",
+          "type": "file"
+        }
+      },
+      "actor": {
+        "uid": 4294967294,
+        "euid": 4294967294,
+        "entered": true,
+        "replaced": true,
+        "checkedInode": "32",
+        "replacementInode": "28",
+        "replacementLinks": 1
+      },
+      "callbackReached": true,
+      "outcome": {
+        "status": "cleaned"
+      },
+      "beforeVictim": {
+        "device": "16777239",
+        "inode": "28",
+        "size": "58",
+        "links": "1",
+        "mode": "33152",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793546264979994305",
+        "ctimeNs": "1793546264979994305",
+        "type": "file"
+      },
+      "afterVictim": {
+        "inode": "28",
+        "links": "0",
+        "size": "58",
+        "sha256": "703791c8b9b48c260300f089103d4a7f02ef3246c75a38fe0eb57d94b9a692e2"
+      },
+      "victimAtOriginalPath": false,
+      "workspaceExists": false,
+      "authoritativeSha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+    },
+    {
+      "mode": "off",
+      "timing": "late",
+      "disposition": "committed",
+      "before": {
+        "boundaryValid": true,
+        "target": {
+          "identity": {
+            "device": "16777239",
+            "inode": "41",
+            "size": "31",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546272158574558",
+            "ctimeNs": "1793546272254461225",
+            "type": "file"
+          },
+          "sha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143"
+        },
+        "slot": {
+          "identity": {
+            "device": "16777239",
+            "inode": "36",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546271926335947",
+            "ctimeNs": "1793546272254461272",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        },
+        "rollback": {
+          "identity": {
+            "device": "16777239",
+            "inode": "42",
+            "size": "29",
+            "links": "1",
+            "mode": "33152",
+            "uid": "501",
+            "gid": "20",
+            "mtimeNs": "1793546272201476344",
+            "ctimeNs": "1793546272201476344",
+            "type": "file"
+          },
+          "sha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b"
+        }
+      },
+      "record": {
+        "root": "/private/tmp/rio-apfs-boundary-H77DkV/off/Media",
+        "rootIdentity": {
+          "device": "16777239",
+          "inode": "34",
+          "size": "96",
+          "links": "3",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546271926290508",
+          "ctimeNs": "1793546271926290508",
+          "type": "directory"
+        },
+        "relative": "Track.flac",
+        "version": 1,
+        "workspace": ".rio-publication-96eab5bc-ec6e-4767-9f8e-6185dd1d700a",
+        "parentIdentity": {
+          "device": "16777239",
+          "inode": "34",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546271927634340",
+          "ctimeNs": "1793546271927634340",
+          "type": "directory"
+        },
+        "workspaceIdentity": {
+          "device": "16777239",
+          "inode": "38",
+          "size": "128",
+          "links": "4",
+          "mode": "16832",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546272201403632",
+          "ctimeNs": "1793546272253228645",
+          "type": "directory"
+        },
+        "expected": {
+          "device": "16777239",
+          "inode": "36",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546271926335947",
+          "ctimeNs": "1793546271926335947",
+          "type": "file"
+        },
+        "originalSha256": "9104827abe5196cc7a6eecfd6fae4b6109877c96dc074eaf64062c052d225f9b",
+        "candidateSha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143",
+        "candidateIdentity": {
+          "device": "16777239",
+          "inode": "41",
+          "size": "31",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546272158574558",
+          "ctimeNs": "1793546272158574558",
+          "type": "file"
+        },
+        "rollbackIdentity": {
+          "device": "16777239",
+          "inode": "42",
+          "size": "29",
+          "links": "1",
+          "mode": "33152",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793546272201476344",
+          "ctimeNs": "1793546272201476344",
+          "type": "file"
+        }
+      },
+      "actor": {
+        "uid": 4294967294,
+        "euid": 4294967294,
+        "entered": true,
+        "replaced": true,
+        "checkedInode": "36",
+        "replacementInode": "37",
+        "replacementLinks": 1
+      },
+      "callbackReached": true,
+      "outcome": {
+        "status": "cleaned"
+      },
+      "beforeVictim": {
+        "device": "16777239",
+        "inode": "37",
+        "size": "58",
+        "links": "1",
+        "mode": "33152",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793546271926492658",
+        "ctimeNs": "1793546271926492658",
+        "type": "file"
+      },
+      "afterVictim": {
+        "inode": "37",
+        "links": "0",
+        "size": "58",
+        "sha256": "703791c8b9b48c260300f089103d4a7f02ef3246c75a38fe0eb57d94b9a692e2"
+      },
+      "victimAtOriginalPath": false,
+      "workspaceExists": false,
+      "authoritativeSha256": "2b8fc2d85a2d6c382ab4cc0df990ec9a0e92210e0c974502399b43684b619143"
+    }
+  ],
+  "ownershipEnabledBaselineChecks": [
+    "production probe, exchange, sync, reopen inspection and committed cleanup",
+    "production abort preserves original and removes only private artifacts",
+    "production rejects a substituted target without deleting it",
+    "filesystem capabilities and occupied no-overwrite probe",
+    "expected exchange retains candidate, displaced A and independent rollback",
+    "substitution before entry produces no namespace change",
+    "unexpected B at exact precheck/exchange boundary is preserved as conflict",
+    "same-inode in-place mutation at exchange boundary fails digest verification",
+    "unexpected directory at exact exchange boundary is retained intact",
+    "unexpected symlink at exchange boundary never edits its referent",
+    "independent digest check rejects a falsely positive native observation",
+    "failed preparation reports retained workspace without changing public file",
+    "leaf symlink rejected without touching referent",
+    "parent substitution before exchange is refused",
+    "parent swapped at syscall boundary cannot redirect anchored exchange",
+    "changed registered root and forged expected digest are rejected",
+    "hard-linked target rejected",
+    "non-regular target rejected",
+    "traversal and candidate paths cannot enter publication API",
+    "foreign-device guard rejects cross-filesystem artifacts where available",
+    "candidate substitution before exchange is refused",
+    "cleanup preserves unexpected slot substitution",
+    "cleanup preserves changed rollback bytes",
+    "unknown workspace entries prevent cleanup",
+    "cancellation-style abort cleans only owned private artifacts",
+    "workspace permission or identity substitution refuses operations",
+    "extended workspace ACL is rejected despite mode 0700",
+    "interrupted exchange is inspectable after original lease closes",
+    "post-exchange observation interruption reports recovery-required",
+    "synchronization error is propagated with evidence intact",
+    "lease records are snapshots and closed handles cannot mutate",
+    "SIGKILL at prepared boundary retains inspectable evidence",
+    "SIGKILL at before boundary retains inspectable evidence",
+    "SIGKILL at after boundary retains inspectable evidence",
+    "SIGKILL at synced boundary retains inspectable evidence"
+  ],
+  "decision": "STOP: checked-name cleanup can silently unlink an unrelated replacement under noowners; production refusal retained",
+  "validation": {
+    "ownershipEnabledNativeCases": 35,
+    "fullUnitTests": 466,
+    "unitFiles": 22,
+    "typecheck": "passed",
+    "build": "passed",
+    "productionSourceAndBinaryUnchanged": true,
+    "newNoownersFaultMatrix": "not run after hard stop",
+    "sourceAndPackagedDesktop": "not rerun after hard stop",
+    "newPackage": "not built; no production support enabled"
+  }
+}

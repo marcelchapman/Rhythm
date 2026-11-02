@@ -1,0 +1,2982 @@
+{
+  "study": "Picard FLAC source/publication audit",
+  "date": "2026-11-01",
+  "latestRelease": {
+    "tag_name": "release-3.0.4",
+    "published_at": "2026-11-01T15:36:11Z",
+    "html_url": "https://github.com/metabrainz/picard/releases/tag/release-3.0.4"
+  },
+  "officialRuntimeAsset": {
+    "url": "https://github.com/metabrainz/picard/releases/download/release-3.0.4/MusicBrainz-Picard-3.0.4-macOS-13.0-x86_64.dmg",
+    "sha256": "3ead7559abaf78b4a3f10205de0f1b0f497d307ccb99cc32b6e136016ebfa809",
+    "releaseDigestMatched": true,
+    "codesignDeepStrict": "failed: invalid signature; no resigning, quarantine removal or security changes performed; app launched normally from read-only image"
+  },
+  "sources": [
+    {
+      "project": "Picard",
+      "version": "3.0.2",
+      "commit": "02fece92db40acf236722f76e4a9234d5562f9d4",
+      "archiveSha256": "bc5fc5655ec20aa136018fb2142f45e39783cc72d3d7d6825b48195650f536cf",
+      "files": [
+        {
+          "path": "picard/ui/mainwindow/actions.py",
+          "sha256": "0634a4b73940bbbf3da62bfc5bf9ad1ff80a874ddf510471201670d11ff6f9f5",
+          "lines": 635
+        },
+        {
+          "path": "picard/ui/mainwindow/__init__.py",
+          "sha256": "c394946da85097e18e917793c8fb1c727e025ec2f5b0e7eabb41892812a4e205",
+          "lines": 2519
+        },
+        {
+          "path": "picard/tagger.py",
+          "sha256": "b2791cc33cd2285686d11574b34e5d67579f554fe751db0b3aadc0b2b3c73591",
+          "lines": 1910
+        },
+        {
+          "path": "picard/file.py",
+          "sha256": "7516b27ec5e4ce57963b0440f169db4aa21898972d58b3ffa2f61bbf83504d55",
+          "lines": 1418
+        },
+        {
+          "path": "picard/formats/vorbis.py",
+          "sha256": "519d367dc592d492ff03743c85031cab88c58c6c61d98136e71e3d3a1f49dc2c",
+          "lines": 567
+        },
+        {
+          "path": "picard/util/filenaming.py",
+          "sha256": "df0ee7007855c1796c2aef0fb446cfb85fa8eb2b9711a467270dd06ce00f1dee",
+          "lines": 630
+        },
+        {
+          "path": "picard/session/session_manager.py",
+          "sha256": "2117f3fa9915fea8b0627f2e3338a36475e6446cbe469b763b86df27dfce4063",
+          "lines": 141
+        },
+        {
+          "path": "picard/audit.py",
+          "sha256": "a884cb5a8a563e2f7745b9fe881b3ee1834043b9d897513a3a515170b17846a1",
+          "lines": 99
+        },
+        {
+          "path": "requirements.txt",
+          "sha256": "07f17667988b1b227c6490f16132116de6f76c486b3581ef5cd7449af9b8e538",
+          "lines": 722
+        }
+      ]
+    },
+    {
+      "project": "Picard",
+      "version": "3.0.4",
+      "commit": "b4cfdb02dbe808e7ac73a34760aaf382e8d837f6",
+      "archiveSha256": "251d3e1ab5041f077741477b4838dc837d26982fc9fce58a764b0aa342d66473",
+      "files": [
+        {
+          "path": "picard/ui/mainwindow/actions.py",
+          "sha256": "d85af3c6b6860c98552d2d1a4e611de1aca554435490dbf6e512298b7270e83c",
+          "lines": 623
+        },
+        {
+          "path": "picard/ui/mainwindow/__init__.py",
+          "sha256": "d4311ad8ec6ba95676ac98aba88b76dd383f3029a3aec48408d90ac71ede0827",
+          "lines": 2518
+        },
+        {
+          "path": "picard/tagger.py",
+          "sha256": "b2791cc33cd2285686d11574b34e5d67579f554fe751db0b3aadc0b2b3c73591",
+          "lines": 1910
+        },
+        {
+          "path": "picard/file.py",
+          "sha256": "2a4b0a5d4c0ea260186ba7e3aca4423452e788f3e1ee1a24e57527201a2f2259",
+          "lines": 1418
+        },
+        {
+          "path": "picard/formats/vorbis.py",
+          "sha256": "519d367dc592d492ff03743c85031cab88c58c6c61d98136e71e3d3a1f49dc2c",
+          "lines": 567
+        },
+        {
+          "path": "picard/util/filenaming.py",
+          "sha256": "df0ee7007855c1796c2aef0fb446cfb85fa8eb2b9711a467270dd06ce00f1dee",
+          "lines": 630
+        },
+        {
+          "path": "picard/session/session_manager.py",
+          "sha256": "2117f3fa9915fea8b0627f2e3338a36475e6446cbe469b763b86df27dfce4063",
+          "lines": 141
+        },
+        {
+          "path": "picard/audit.py",
+          "sha256": "a884cb5a8a563e2f7745b9fe881b3ee1834043b9d897513a3a515170b17846a1",
+          "lines": 99
+        },
+        {
+          "path": "requirements.txt",
+          "sha256": "e92ea7479fa9e317b249c575d7572f9dbde7df3ac60c8e261d0e33c0e3650c4f",
+          "lines": 726
+        }
+      ]
+    },
+    {
+      "project": "Mutagen",
+      "version": "1.48.1",
+      "commit": "452190d42ab2092577c77342d49157f8768d796f",
+      "archiveSha256": "779f18015af1b28af59bd80c6292aa8151ca7e5fe6a36e17a394dda515981a5e",
+      "files": [
+        {
+          "path": "mutagen/flac.py",
+          "sha256": "78977ec3c9e45d16725981ed6ee1085586f199c80c779a76f12c83400c023526"
+        },
+        {
+          "path": "mutagen/_util.py",
+          "sha256": "da7e9709b2c13d1af25698566bf6d5a5ecf6de59b6baa3dd6a571564651ffae5"
+        },
+        {
+          "path": "mutagen/_tags.py",
+          "sha256": "f667c8fd8c00791f097f84db643037c1a004c1beb6935d58d533ebdc59612b5d"
+        }
+      ]
+    }
+  ],
+  "criticalSourceComparison": [
+    {
+      "path": "picard/file.py",
+      "class": "File",
+      "method": "save",
+      "sameSourceText": true,
+      "sha256": "f1bf0950a71ad935198fa57a7666fd2280d12ef12d2f70ddcb041318cb290a50"
+    },
+    {
+      "path": "picard/file.py",
+      "class": "File",
+      "method": "_save_and_rename",
+      "sameSourceText": true,
+      "sha256": "865feef77bdae6a2a4b868ab7596a1faf0c2e5aad0faf7fb3809fd77a64d0dfb"
+    },
+    {
+      "path": "picard/formats/vorbis.py",
+      "class": "VCommentFile",
+      "method": "_save",
+      "sameSourceText": true,
+      "sha256": "d13e6e2d9506432485b4208950e280571ff06ea1767e5ba711fca93bd20472a1"
+    }
+  ],
+  "versionEvidence": [
+    {
+      "evidence_id": "ev_e736ddb727586c1f6962c4da534ec51221b193e7bda0feda296cbe5370097ada",
+      "subject": null,
+      "provider": {
+        "id": "rea-process",
+        "name": "REA process capture",
+        "version": "3"
+      },
+      "analysis_profile": null,
+      "predicate_type": "rea.process-capture",
+      "operation": "capture_process_scenario",
+      "parameters": {
+        "executable_name": "picard-run",
+        "argument_count": 1,
+        "event_count": 0,
+        "filesystem_observation_path_count": 0,
+        "normalization": {
+          "paths": false,
+          "pids": true,
+          "ports": true,
+          "time_bucket_ms": 10,
+          "patterns": []
+        }
+      },
+      "raw_result": null,
+      "normalized_result": {
+        "manifest": {
+          "rea_version": "6.7.0",
+          "provider_version": "3",
+          "platform": "darwin",
+          "architecture": "x64",
+          "pty_backend": "node-pty",
+          "started_at": "2026-11-01T17:43:55.353Z",
+          "completed_at": "2026-11-01T17:43:57.534Z",
+          "scenario": {
+            "executable": "/Applications/MusicBrainz Picard.app/Contents/MacOS/picard-run",
+            "arguments": ["--long-version"],
+            "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm",
+            "environment": {},
+            "filesystem_observation_paths": [],
+            "terminal": {
+              "columns": 80,
+              "rows": 24,
+              "scrollback": 1000
+            },
+            "events": [],
+            "timeout_ms": 15000,
+            "idle_timeout_ms": 30000,
+            "settle_ms": 100,
+            "limits": {
+              "output_bytes": 20000,
+              "files": 10000,
+              "file_bytes": 10000000,
+              "processes": 1000,
+              "filesystem_depth": 16
+            },
+            "normalization": {
+              "paths": false,
+              "pids": true,
+              "ports": true,
+              "time_bucket_ms": 10,
+              "patterns": []
+            },
+            "executable_sha256": "4c2d8a0cbf743e26ac25756594f271b9d16d9a86bed8908e6c201587e408ff47"
+          },
+          "comparison_contract": {
+            "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm",
+            "environment": {},
+            "ambient_environment": "unknown",
+            "filesystem_observation_paths": [],
+            "terminal": {
+              "columns": 80,
+              "rows": 24,
+              "scrollback": 1000
+            },
+            "events": [],
+            "timeout_ms": 15000,
+            "idle_timeout_ms": 30000,
+            "settle_ms": 100,
+            "limits": {
+              "output_bytes": 20000,
+              "files": 10000,
+              "file_bytes": 10000000,
+              "processes": 1000,
+              "filesystem_depth": 16
+            },
+            "normalization": {
+              "paths": false,
+              "pids": true,
+              "ports": true,
+              "time_bucket_ms": 10,
+              "patterns": []
+            },
+            "port_normalization_version": "contextual-endpoints-v2",
+            "rendered_line_format": "trailing-spaces-trimmed-v1"
+          },
+          "full_scenario_sha256": "9acdf029db2c7938140c4ce9bfd4d28f95910ec67a4e22c64bf88d8c43bda49f",
+          "comparison_contract_sha256": "58c4179221626c41037e936565cfb825f147aab561bd69adee770e7f07d047c1",
+          "selected_executable_sha256": "4c2d8a0cbf743e26ac25756594f271b9d16d9a86bed8908e6c201587e408ff47",
+          "executable_sha256": "4c2d8a0cbf743e26ac25756594f271b9d16d9a86bed8908e6c201587e408ff47",
+          "executable_identity": {
+            "state": "path_metadata_unchanged",
+            "reason": null
+          },
+          "normalization_sha256": "5c58aa1aa890197f15f9c59ef755d01120e6e07f356fa1ef2f20787e63b6fa87"
+        },
+        "normalization": {
+          "paths": false,
+          "pids": true,
+          "ports": true,
+          "time_bucket_ms": 10,
+          "patterns": []
+        },
+        "frames": [
+          {
+            "sequence": 0,
+            "at_ms": 1750,
+            "data": "Picard 3.0.2, Python 3.14.7, PyQt 6.11.0, Qt 6.11.2, Mutagen 1.48.1, Discid discid 1.4.2, libdiscid 0.7.0, astrcmp C, SSL OpenSSL 3.5.7 9 Jun 2026, pygit2 1.20.1\r\n"
+          }
+        ],
+        "rendered_frames": [
+          {
+            "sequence": 0,
+            "at_ms": 1750,
+            "columns": 80,
+            "rows": 24,
+            "cursor_x": 0,
+            "cursor_y": 3,
+            "active_buffer": "normal",
+            "lines": [
+              "Picard 3.0.2, Python 3.14.7, PyQt 6.11.0, Qt 6.11.2, Mutagen 1.48.1, Discid disc",
+              "id 1.4.2, libdiscid 0.7.0, astrcmp C, SSL OpenSSL 3.5.7 9 Jun 2026, pygit2 1.20.",
+              "1",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "serialized_state": "Picard 3.0.2, Python 3.14.7, PyQt 6.11.0, Qt 6.11.2, Mutagen 1.48.1, Discid discid 1.4.2, libdiscid 0.7.0, astrcmp C, SSL OpenSSL 3.5.7 9 Jun 2026, pygit2 1.20.1\u001b[1B\u001b[1D"
+          }
+        ],
+        "interaction_events": [],
+        "exit": {
+          "code": 0,
+          "signal": 0,
+          "reason": "exited"
+        },
+        "settlement": {
+          "state": "quiesced",
+          "elapsed_ms": 205,
+          "cleanup_outcome": "not_required"
+        },
+        "process_samples": [
+          {
+            "at_ms": 340,
+            "pid": 1,
+            "parent_pid": 2,
+            "command": "/Applications/MusicBrainz Picard.app/Contents/MacOS/picard-run --long-version",
+            "process_group_id": 1,
+            "session_id": null
+          },
+          {
+            "at_ms": 1920,
+            "pid": 1,
+            "parent_pid": 2,
+            "command": "(picard-run)",
+            "process_group_id": 1,
+            "session_id": null
+          }
+        ],
+        "filesystem_checkpoints": [
+          {
+            "name": "before",
+            "at_ms": 0,
+            "files": [],
+            "effects": [],
+            "truncated": false
+          },
+          {
+            "name": "after_settlement",
+            "at_ms": 2180,
+            "files": [],
+            "effects": [],
+            "truncated": false
+          }
+        ],
+        "event_journal": [
+          {
+            "capture_order": 0,
+            "collection": "filesystem_checkpoints",
+            "index": 0
+          },
+          {
+            "capture_order": 1,
+            "collection": "process_samples",
+            "index": 0
+          },
+          {
+            "capture_order": 2,
+            "collection": "frames",
+            "index": 0
+          },
+          {
+            "capture_order": 3,
+            "collection": "rendered_frames",
+            "index": 0
+          },
+          {
+            "capture_order": 4,
+            "collection": "lifecycle",
+            "index": 0
+          },
+          {
+            "capture_order": 5,
+            "collection": "process_samples",
+            "index": 1
+          },
+          {
+            "capture_order": 6,
+            "collection": "lifecycle",
+            "index": 1
+          },
+          {
+            "capture_order": 7,
+            "collection": "filesystem_checkpoints",
+            "index": 1
+          }
+        ],
+        "files_before": [],
+        "files_after": [],
+        "filesystem_effects": [],
+        "truncated": false,
+        "truncation_details": {
+          "raw_terminal": {
+            "budget_bytes": 20000,
+            "observed_bytes": 163,
+            "retained_bytes": 163,
+            "observed_frames": 1,
+            "retained_frames": 1
+          },
+          "rendered_terminal": {
+            "budget_bytes": 20000,
+            "observed_bytes": 330,
+            "retained_bytes": 330,
+            "observed_frames": 1,
+            "retained_frames": 1
+          },
+          "normalized_terminal": {
+            "budget_bytes": 20000,
+            "retained_bytes": 163,
+            "omitted_frames": 0
+          },
+          "filesystem_before": {
+            "files_limit": 10000,
+            "depth_limit": 16,
+            "enumeration_truncated": false,
+            "enumeration_reasons": [],
+            "enumeration_omissions": [],
+            "hash_budget_bytes": 10000000,
+            "hashed_bytes": 0,
+            "hash_omissions": []
+          },
+          "filesystem_after": {
+            "files_limit": 10000,
+            "depth_limit": 16,
+            "enumeration_truncated": false,
+            "enumeration_reasons": [],
+            "enumeration_omissions": [],
+            "hash_budget_bytes": 10000000,
+            "hashed_bytes": 0,
+            "hash_omissions": []
+          },
+          "process": {
+            "sample_limit": 1000,
+            "sampling_partial": false,
+            "retained_samples": 2,
+            "sample_limit_reached": false,
+            "sampling_failures": 0,
+            "first_sampling_failure": null,
+            "coverage": "sampled"
+          }
+        },
+        "limitations": [
+          "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+          "Process trees are sampled and may omit short-lived descendants.",
+          "Filesystem observations are before/after snapshots, not syscall traces.",
+          "Inherited host environment variables are not recorded and may affect results.",
+          "No filesystem observation paths were selected; filesystem effects remain unknown."
+        ],
+        "residual_unknowns": [
+          {
+            "scope": "process",
+            "reason": "Process trees are sampled and may omit short-lived descendants."
+          },
+          {
+            "scope": "process",
+            "reason": "The executable digest is a prelaunch file sample; operating-system image binding is not atomically observed."
+          },
+          {
+            "scope": "environment",
+            "reason": "Inherited host environment variables are not recorded."
+          },
+          {
+            "scope": "network",
+            "reason": "Network activity is not observed by this capture."
+          },
+          {
+            "scope": "filesystem",
+            "reason": "No filesystem observation paths were selected; filesystem effects remain unknown."
+          }
+        ],
+        "cleanup": {
+          "owned_process_group": "verified",
+          "temporary_root": "removed"
+        }
+      },
+      "confidence": "observed",
+      "authority": "controlled-replay",
+      "environment": {
+        "id": "darwin-x64",
+        "platform": "darwin",
+        "architecture": "x64",
+        "isolation": "process"
+      },
+      "limitations": [
+        "Artifact identity is unavailable for this observation.",
+        "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+        "Process trees are sampled and may omit short-lived descendants.",
+        "Filesystem observations are before/after snapshots, not syscall traces.",
+        "Inherited host environment variables are not recorded and may affect results.",
+        "No filesystem observation paths were selected; filesystem effects remain unknown."
+      ],
+      "relationship_coverage": null,
+      "locations": [],
+      "evidence_links": []
+    },
+    {
+      "evidence_id": "ev_4cf76cbc6504590c966ed2fc46215ee6c00dee2250e7b09f793672aadf8e7d0a",
+      "subject": null,
+      "provider": {
+        "id": "rea-process",
+        "name": "REA process capture",
+        "version": "3"
+      },
+      "analysis_profile": null,
+      "predicate_type": "rea.process-capture",
+      "operation": "capture_process_scenario",
+      "parameters": {
+        "executable_name": "picard-run",
+        "argument_count": 1,
+        "event_count": 0,
+        "filesystem_observation_path_count": 0,
+        "normalization": {
+          "paths": false,
+          "pids": true,
+          "ports": true,
+          "time_bucket_ms": 10,
+          "patterns": []
+        }
+      },
+      "raw_result": null,
+      "normalized_result": {
+        "manifest": {
+          "rea_version": "6.7.0",
+          "provider_version": "3",
+          "platform": "darwin",
+          "architecture": "x64",
+          "pty_backend": "node-pty",
+          "started_at": "2026-11-02T01:00:31.011Z",
+          "completed_at": "2026-11-02T01:00:43.955Z",
+          "scenario": {
+            "executable": "/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/MacOS/picard-run",
+            "arguments": ["--long-version"],
+            "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm",
+            "environment": {},
+            "filesystem_observation_paths": [],
+            "terminal": {
+              "columns": 80,
+              "rows": 24,
+              "scrollback": 1000
+            },
+            "events": [],
+            "timeout_ms": 15000,
+            "idle_timeout_ms": 30000,
+            "settle_ms": 100,
+            "limits": {
+              "output_bytes": 12000,
+              "files": 10000,
+              "file_bytes": 10000000,
+              "processes": 1000,
+              "filesystem_depth": 16
+            },
+            "normalization": {
+              "paths": false,
+              "pids": true,
+              "ports": true,
+              "time_bucket_ms": 10,
+              "patterns": []
+            },
+            "executable_sha256": "88113c85e519ed031b0e076f0afee2759003d898c4a924a9edb85aff66ebcb83"
+          },
+          "comparison_contract": {
+            "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm",
+            "environment": {},
+            "ambient_environment": "unknown",
+            "filesystem_observation_paths": [],
+            "terminal": {
+              "columns": 80,
+              "rows": 24,
+              "scrollback": 1000
+            },
+            "events": [],
+            "timeout_ms": 15000,
+            "idle_timeout_ms": 30000,
+            "settle_ms": 100,
+            "limits": {
+              "output_bytes": 12000,
+              "files": 10000,
+              "file_bytes": 10000000,
+              "processes": 1000,
+              "filesystem_depth": 16
+            },
+            "normalization": {
+              "paths": false,
+              "pids": true,
+              "ports": true,
+              "time_bucket_ms": 10,
+              "patterns": []
+            },
+            "port_normalization_version": "contextual-endpoints-v2",
+            "rendered_line_format": "trailing-spaces-trimmed-v1"
+          },
+          "full_scenario_sha256": "a39d3a07248f45bb0dcadc671f45f1a9c350de1eb6e62bf7cc50b9696dbf01fd",
+          "comparison_contract_sha256": "08c5d926bbcfda5f320901b0323d6d97db86eb5024f658ccc2ea58a96baffd66",
+          "selected_executable_sha256": "88113c85e519ed031b0e076f0afee2759003d898c4a924a9edb85aff66ebcb83",
+          "executable_sha256": "88113c85e519ed031b0e076f0afee2759003d898c4a924a9edb85aff66ebcb83",
+          "executable_identity": {
+            "state": "path_metadata_unchanged",
+            "reason": null
+          },
+          "normalization_sha256": "5c58aa1aa890197f15f9c59ef755d01120e6e07f356fa1ef2f20787e63b6fa87"
+        },
+        "normalization": {
+          "paths": false,
+          "pids": true,
+          "ports": true,
+          "time_bucket_ms": 10,
+          "patterns": []
+        },
+        "frames": [
+          {
+            "sequence": 0,
+            "at_ms": 12450,
+            "data": "Picard 3.0.4, Python 3.14.10, PyQt 6.11.0, Qt 6.11.2, Mutagen 1.48.1, Discid discid 1.4.2, libdiscid 0.7.0, astrcmp C, SSL OpenSSL 3.5.7 9 Jun 2026, pygit2 1.20.1\r\n"
+          }
+        ],
+        "rendered_frames": [
+          {
+            "sequence": 0,
+            "at_ms": 12450,
+            "columns": 80,
+            "rows": 24,
+            "cursor_x": 0,
+            "cursor_y": 3,
+            "active_buffer": "normal",
+            "lines": [
+              "Picard 3.0.4, Python 3.14.10, PyQt 6.11.0, Qt 6.11.2, Mutagen 1.48.1, Discid dis",
+              "cid 1.4.2, libdiscid 0.7.0, astrcmp C, SSL OpenSSL 3.5.7 9 Jun 2026, pygit2 1.20",
+              ".1",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "serialized_state": "Picard 3.0.4, Python 3.14.10, PyQt 6.11.0, Qt 6.11.2, Mutagen 1.48.1, Discid discid 1.4.2, libdiscid 0.7.0, astrcmp C, SSL OpenSSL 3.5.7 9 Jun 2026, pygit2 1.20.1\u001b[1B\u001b[2D"
+          }
+        ],
+        "interaction_events": [],
+        "exit": {
+          "code": 0,
+          "signal": 0,
+          "reason": "exited"
+        },
+        "settlement": {
+          "state": "quiesced",
+          "elapsed_ms": 237,
+          "cleanup_outcome": "not_required"
+        },
+        "process_samples": [
+          {
+            "at_ms": 300,
+            "pid": 1,
+            "parent_pid": 2,
+            "command": "/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/MacOS/picard-run --long-version",
+            "process_group_id": 1,
+            "session_id": null
+          },
+          {
+            "at_ms": 10500,
+            "pid": 3,
+            "parent_pid": 1,
+            "command": "(file)",
+            "process_group_id": 1,
+            "session_id": null
+          },
+          {
+            "at_ms": 12670,
+            "pid": 1,
+            "parent_pid": 2,
+            "command": "(picard-run)",
+            "process_group_id": 1,
+            "session_id": null
+          }
+        ],
+        "filesystem_checkpoints": [
+          {
+            "name": "before",
+            "at_ms": 0,
+            "files": [],
+            "effects": [],
+            "truncated": false
+          },
+          {
+            "name": "after_settlement",
+            "at_ms": 12945,
+            "files": [],
+            "effects": [],
+            "truncated": false
+          }
+        ],
+        "event_journal": [
+          {
+            "capture_order": 0,
+            "collection": "filesystem_checkpoints",
+            "index": 0
+          },
+          {
+            "capture_order": 1,
+            "collection": "process_samples",
+            "index": 0
+          },
+          {
+            "capture_order": 2,
+            "collection": "process_samples",
+            "index": 1
+          },
+          {
+            "capture_order": 3,
+            "collection": "frames",
+            "index": 0
+          },
+          {
+            "capture_order": 4,
+            "collection": "rendered_frames",
+            "index": 0
+          },
+          {
+            "capture_order": 5,
+            "collection": "lifecycle",
+            "index": 0
+          },
+          {
+            "capture_order": 6,
+            "collection": "process_samples",
+            "index": 2
+          },
+          {
+            "capture_order": 7,
+            "collection": "lifecycle",
+            "index": 1
+          },
+          {
+            "capture_order": 8,
+            "collection": "filesystem_checkpoints",
+            "index": 1
+          }
+        ],
+        "files_before": [],
+        "files_after": [],
+        "filesystem_effects": [],
+        "truncated": false,
+        "truncation_details": {
+          "raw_terminal": {
+            "budget_bytes": 12000,
+            "observed_bytes": 164,
+            "retained_bytes": 164,
+            "observed_frames": 1,
+            "retained_frames": 1
+          },
+          "rendered_terminal": {
+            "budget_bytes": 12000,
+            "observed_bytes": 332,
+            "retained_bytes": 332,
+            "observed_frames": 1,
+            "retained_frames": 1
+          },
+          "normalized_terminal": {
+            "budget_bytes": 12000,
+            "retained_bytes": 164,
+            "omitted_frames": 0
+          },
+          "filesystem_before": {
+            "files_limit": 10000,
+            "depth_limit": 16,
+            "enumeration_truncated": false,
+            "enumeration_reasons": [],
+            "enumeration_omissions": [],
+            "hash_budget_bytes": 10000000,
+            "hashed_bytes": 0,
+            "hash_omissions": []
+          },
+          "filesystem_after": {
+            "files_limit": 10000,
+            "depth_limit": 16,
+            "enumeration_truncated": false,
+            "enumeration_reasons": [],
+            "enumeration_omissions": [],
+            "hash_budget_bytes": 10000000,
+            "hashed_bytes": 0,
+            "hash_omissions": []
+          },
+          "process": {
+            "sample_limit": 1000,
+            "sampling_partial": false,
+            "retained_samples": 3,
+            "sample_limit_reached": false,
+            "sampling_failures": 0,
+            "first_sampling_failure": null,
+            "coverage": "sampled"
+          }
+        },
+        "limitations": [
+          "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+          "Process trees are sampled and may omit short-lived descendants.",
+          "Filesystem observations are before/after snapshots, not syscall traces.",
+          "Inherited host environment variables are not recorded and may affect results.",
+          "No filesystem observation paths were selected; filesystem effects remain unknown."
+        ],
+        "residual_unknowns": [
+          {
+            "scope": "process",
+            "reason": "Process trees are sampled and may omit short-lived descendants."
+          },
+          {
+            "scope": "process",
+            "reason": "The executable digest is a prelaunch file sample; operating-system image binding is not atomically observed."
+          },
+          {
+            "scope": "environment",
+            "reason": "Inherited host environment variables are not recorded."
+          },
+          {
+            "scope": "network",
+            "reason": "Network activity is not observed by this capture."
+          },
+          {
+            "scope": "filesystem",
+            "reason": "No filesystem observation paths were selected; filesystem effects remain unknown."
+          },
+          {
+            "scope": "process",
+            "reason": "Ownership of unrelated process 74118 could not be verified; it was left untouched: sysctl_failed_22"
+          },
+          {
+            "scope": "process",
+            "reason": "Ownership of unrelated process 74126 could not be verified; it was left untouched: sysctl_failed_22"
+          }
+        ],
+        "cleanup": {
+          "owned_process_group": "verified",
+          "temporary_root": "removed",
+          "unverified_processes": [
+            {
+              "pid": 74118,
+              "reason": "sysctl_failed_22"
+            },
+            {
+              "pid": 74126,
+              "reason": "sysctl_failed_22"
+            }
+          ]
+        }
+      },
+      "confidence": "observed",
+      "authority": "controlled-replay",
+      "environment": {
+        "id": "darwin-x64",
+        "platform": "darwin",
+        "architecture": "x64",
+        "isolation": "process"
+      },
+      "limitations": [
+        "Artifact identity is unavailable for this observation.",
+        "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+        "Process trees are sampled and may omit short-lived descendants.",
+        "Filesystem observations are before/after snapshots, not syscall traces.",
+        "Inherited host environment variables are not recorded and may affect results.",
+        "No filesystem observation paths were selected; filesystem effects remain unknown."
+      ],
+      "relationship_coverage": null,
+      "locations": [],
+      "evidence_links": []
+    }
+  ],
+  "runtime": {
+    "scope": "Latest steering: stop when source/runtime investigation answers whether a new publication strategy exists; no repeated GUI crash attempts or added tagging machinery",
+    "originalVersion": "3.0.2",
+    "currentVersion": "3.0.4",
+    "saveReached": false,
+    "exitStatus": 139,
+    "crashes": [
+      {
+        "filename": "picard-run-2026-11-01-145033.ips",
+        "procPath": "/Applications/MusicBrainz Picard.app/Contents/MacOS/picard-run",
+        "exception": {
+          "codes": "0x000000000000000d, 0x0000000000000000",
+          "rawCodes": [13, 0],
+          "type": "EXC_BAD_ACCESS",
+          "signal": "SIGSEGV",
+          "subtype": "UNKNOWN_0xD at 0x0000000000000000"
+        },
+        "topFrames": [
+          {
+            "imageOffset": 600313,
+            "imageIndex": 89,
+            "imagePath": "/Applications/MusicBrainz Picard.app/Contents/Frameworks/PyQt6/Qt6/plugins/platforms/libqcocoa.dylib"
+          },
+          {
+            "imageOffset": 852310,
+            "symbol": "-[NSAccessibilityAttributeAccessorInfo getAttributeValue:forObject:]",
+            "symbolLocation": 58,
+            "imageIndex": 95,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          },
+          {
+            "imageOffset": 9395803,
+            "symbol": "___NSAccessibilityEntryPointValueForAttribute_block_invoke.865",
+            "symbolLocation": 1478,
+            "imageIndex": 95,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          },
+          {
+            "imageOffset": 9377600,
+            "symbol": "NSAccessibilityPerformEntryPointObject",
+            "symbolLocation": 16,
+            "imageIndex": 95,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          },
+          {
+            "imageOffset": 3062809,
+            "symbol": "_NSAccessibilityEntryPointValueForAttribute",
+            "symbolLocation": 168,
+            "imageIndex": 95,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          },
+          {
+            "imageOffset": 6218746,
+            "symbol": "-[NSObject(NSObjectAccessibilityAttributeAccessAdditions) accessibilityArrayAttributeCount:]",
+            "symbolLocation": 24,
+            "imageIndex": 95,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          }
+        ]
+      },
+      {
+        "filename": "picard-run-2026-11-01-220158.ips",
+        "procPath": "/private/tmp/*/MusicBrainz Picard.app/Contents/MacOS/picard-run",
+        "exception": {
+          "codes": "0x0000000000000001, 0x00000000ffffffff",
+          "rawCodes": [1, 4294967295],
+          "type": "EXC_BAD_ACCESS",
+          "signal": "SIGSEGV",
+          "subtype": "KERN_INVALID_ADDRESS at 0x00000000ffffffff"
+        },
+        "topFrames": [
+          {
+            "imageOffset": 4294967295,
+            "imageIndex": 95,
+            "imagePath": null
+          },
+          {
+            "imageOffset": 600316,
+            "imageIndex": 89,
+            "imagePath": "/private/tmp/*/MusicBrainz Picard.app/Contents/Frameworks/PyQt6/Qt6/plugins/platforms/libqcocoa.dylib"
+          },
+          {
+            "imageOffset": 852310,
+            "symbol": "-[NSAccessibilityAttributeAccessorInfo getAttributeValue:forObject:]",
+            "symbolLocation": 58,
+            "imageIndex": 96,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          },
+          {
+            "imageOffset": 9395803,
+            "symbol": "___NSAccessibilityEntryPointValueForAttribute_block_invoke.865",
+            "symbolLocation": 1478,
+            "imageIndex": 96,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          },
+          {
+            "imageOffset": 9377600,
+            "symbol": "NSAccessibilityPerformEntryPointObject",
+            "symbolLocation": 16,
+            "imageIndex": 96,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          },
+          {
+            "imageOffset": 3062809,
+            "symbol": "_NSAccessibilityEntryPointValueForAttribute",
+            "symbolLocation": 168,
+            "imageIndex": 96,
+            "imagePath": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit"
+          }
+        ]
+      }
+    ],
+    "logs": {
+      "picard.log": {
+        "sha256": "0c85d4b2c8e9cd8a5065fd61190018eab809ab602e1d1bf7a6c765e0aacbf496",
+        "studyLines": [
+          "D: 14:46:01,329 picard/tagger._log_startup:394: Configuration file path: '/private/tmp/rio-picard-publication-MEZDB2/picard.ini'",
+          "D: 14:49:49,391 picard/formats/vorbis._load:164: Loading file '/private/tmp/rio-picard-publication-MEZDB2/off/Media/Baseline.flac'",
+          "D: 14:50:29,890 picard/file.update:1030: Updating file <FLACFile 'Baseline.flac'>"
+        ],
+        "savingFileMessageObserved": false
+      },
+      "picard-3.0.4.log": {
+        "sha256": "7f393e5cf4a4dad6042a72b498ad1938a51608f84964cc648112a58210611f35",
+        "studyLines": [
+          "D: 22:00:53,249 picard/tagger._log_startup:389: Starting Picard from '/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/Frameworks/picard/tagger.py'",
+          "D: 22:00:53,264 picard/tagger._log_startup:394: Configuration file path: '/private/tmp/rio-picard-publication-MEZDB2/picard.ini'",
+          "D: 22:00:53,264 picard/tagger._log_startup:400: Qt Env.: QT_PLUGIN_PATH='/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/Frameworks/PyQt6/Qt6/plugins'",
+          "D: 22:00:53,508 picard/i18n/gettext._load_translation:216: Loading gettext translation for picard, localedir='/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/Frameworks/locale', language='en_GB.UTF-8'",
+          "D: 22:00:53,578 picard/i18n/gettext._load_translation:216: Loading gettext translation for picard-attributes, localedir='/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/Frameworks/locale', language='en_GB.UTF-8'",
+          "D: 22:00:53,600 picard/i18n/gettext._load_translation:216: Loading gettext translation for picard-constants, localedir='/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/Frameworks/locale', language='en_GB.UTF-8'",
+          "D: 22:00:53,601 picard/i18n/gettext._load_translation:216: Loading gettext translation for picard-countries, localedir='/private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/Frameworks/locale', language='en_GB.UTF-8'",
+          "D: 22:00:53,677 picard/i18n/qt.add_default_translators:69: Looking for Qt locale en_GB in /private/tmp/rio-picard-publication-MEZDB2/App/MusicBrainz Picard.app/Contents/Frameworks/PyQt6/Qt6/translations",
+          "D: 22:01:43,127 picard/formats/vorbis._load:164: Loading file '/private/tmp/rio-picard-publication-MEZDB2/off/Media/Baseline.flac'",
+          "D: 22:01:46,284 picard/file.update:1030: Updating file <FLACFile 'Baseline.flac'>"
+        ],
+        "savingFileMessageObserved": false
+      }
+    },
+    "before": {
+      "at": "2026-11-01T17:46:04.156Z",
+      "mounts": [
+        "/dev/disk5s1 on /private/tmp/rio-picard-publication-MEZDB2/on (apfs, local, nodev, nosuid, journaled, nobrowse, mounted by marcelchapman)",
+        "/dev/disk7s1 on /private/tmp/rio-picard-publication-MEZDB2/off (apfs, local, nodev, nosuid, journaled, noowners, nobrowse, mounted by marcelchapman)"
+      ],
+      "rows": [
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Baseline.flac",
+          "device": "16777235",
+          "inode": "17",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138672027440",
+          "ctimeNs": "1793555138672027440",
+          "birthtimeNs": "1793555138671709281",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Baseline.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/ExternalTags.flac",
+          "device": "16777235",
+          "inode": "21",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138675522713",
+          "ctimeNs": "1793555138675522713",
+          "birthtimeNs": "1793555138675420886",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/ExternalTags.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Growth.flac",
+          "device": "16777235",
+          "inode": "18",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138674689543",
+          "ctimeNs": "1793555138674689543",
+          "birthtimeNs": "1793555138674568558",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Growth.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Remove.flac",
+          "device": "16777235",
+          "inode": "22",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138675832466",
+          "ctimeNs": "1793555138675832466",
+          "birthtimeNs": "1793555138675745239",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Remove.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Rename.flac",
+          "device": "16777235",
+          "inode": "19",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138674960955",
+          "ctimeNs": "1793555138674960955",
+          "birthtimeNs": "1793555138674878945",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Rename.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Replace.flac",
+          "device": "16777235",
+          "inode": "20",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138675264814",
+          "ctimeNs": "1793555138675264814",
+          "birthtimeNs": "1793555138675126743",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Replace.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Baseline.flac",
+          "device": "16777239",
+          "inode": "17",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139945531583",
+          "ctimeNs": "1793555139945531583",
+          "birthtimeNs": "1793555139945424377",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Baseline.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/ExternalTags.flac",
+          "device": "16777239",
+          "inode": "21",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139947391807",
+          "ctimeNs": "1793555139947391807",
+          "birthtimeNs": "1793555139947289500",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/ExternalTags.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Growth.flac",
+          "device": "16777239",
+          "inode": "18",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139946324186",
+          "ctimeNs": "1793555139946324186",
+          "birthtimeNs": "1793555139946222903",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Growth.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Remove.flac",
+          "device": "16777239",
+          "inode": "22",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139948037264",
+          "ctimeNs": "1793555139948037264",
+          "birthtimeNs": "1793555139947847846",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Remove.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Rename.flac",
+          "device": "16777239",
+          "inode": "19",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139946651420",
+          "ctimeNs": "1793555139946651420",
+          "birthtimeNs": "1793555139946543752",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Rename.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Replace.flac",
+          "device": "16777239",
+          "inode": "20",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139947012010",
+          "ctimeNs": "1793555139947012010",
+          "birthtimeNs": "1793555139946922244",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Replace.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        }
+      ]
+    },
+    "after": {
+      "at": "2026-11-02T01:04:06.174Z",
+      "mounts": [
+        "/dev/disk5s1 on /private/tmp/rio-picard-publication-MEZDB2/on (apfs, local, nodev, nosuid, journaled, nobrowse, mounted by marcelchapman)",
+        "/dev/disk7s1 on /private/tmp/rio-picard-publication-MEZDB2/off (apfs, local, nodev, nosuid, journaled, noowners, nobrowse, mounted by marcelchapman)",
+        "/dev/disk9s1 on /private/tmp/rio-picard-publication-MEZDB2/App (apfs, local, nodev, nosuid, read-only, journaled, noowners, nobrowse, mounted by marcelchapman)"
+      ],
+      "rows": [
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Baseline.flac",
+          "device": "16777235",
+          "inode": "17",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138672027440",
+          "ctimeNs": "1793555138672027440",
+          "birthtimeNs": "1793555138671709281",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Baseline.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/ExternalTags.flac",
+          "device": "16777235",
+          "inode": "21",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138675522713",
+          "ctimeNs": "1793555138675522713",
+          "birthtimeNs": "1793555138675420886",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/ExternalTags.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Growth.flac",
+          "device": "16777235",
+          "inode": "18",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138674689543",
+          "ctimeNs": "1793555138674689543",
+          "birthtimeNs": "1793555138674568558",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Growth.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Remove.flac",
+          "device": "16777235",
+          "inode": "22",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138675832466",
+          "ctimeNs": "1793555138675832466",
+          "birthtimeNs": "1793555138675745239",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Remove.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Rename.flac",
+          "device": "16777235",
+          "inode": "19",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138674960955",
+          "ctimeNs": "1793555138674960955",
+          "birthtimeNs": "1793555138674878945",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Rename.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/on/Media/Replace.flac",
+          "device": "16777235",
+          "inode": "20",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555138675264814",
+          "ctimeNs": "1793555138675264814",
+          "birthtimeNs": "1793555138675126743",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/on/Media/Replace.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Baseline.flac",
+          "device": "16777239",
+          "inode": "17",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139945531583",
+          "ctimeNs": "1793555139945531583",
+          "birthtimeNs": "1793555139945424377",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Baseline.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/ExternalTags.flac",
+          "device": "16777239",
+          "inode": "21",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139947391807",
+          "ctimeNs": "1793555139947391807",
+          "birthtimeNs": "1793555139947289500",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/ExternalTags.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Growth.flac",
+          "device": "16777239",
+          "inode": "18",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139946324186",
+          "ctimeNs": "1793555139946324186",
+          "birthtimeNs": "1793555139946222903",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Growth.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Remove.flac",
+          "device": "16777239",
+          "inode": "22",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139948037264",
+          "ctimeNs": "1793555139948037264",
+          "birthtimeNs": "1793555139947847846",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Remove.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Rename.flac",
+          "device": "16777239",
+          "inode": "19",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139946651420",
+          "ctimeNs": "1793555139946651420",
+          "birthtimeNs": "1793555139946543752",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Rename.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        },
+        {
+          "path": "/private/tmp/rio-picard-publication-MEZDB2/off/Media/Replace.flac",
+          "device": "16777239",
+          "inode": "20",
+          "size": "189364",
+          "links": "1",
+          "mode": "644",
+          "uid": "501",
+          "gid": "20",
+          "mtimeNs": "1793555139947012010",
+          "ctimeNs": "1793555139947012010",
+          "birthtimeNs": "1793555139946922244",
+          "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 14:45 /private/tmp/rio-picard-publication-MEZDB2/off/Media/Replace.flac\n",
+          "xattrs": "",
+          "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+          "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+          "audioBytes": 189074,
+          "metadata": {
+            "format": {
+              "tagTypes": ["vorbis"],
+              "trackInfo": [
+                {
+                  "type": 2,
+                  "audio": {
+                    "samplingFrequency": 48000,
+                    "channels": 2,
+                    "bitDepth": 16
+                  },
+                  "codecName": "FLAC",
+                  "duration": 30,
+                  "bitrate": 50419.73333333333,
+                  "lossless": true
+                }
+              ],
+              "container": "FLAC",
+              "codec": "FLAC",
+              "hasAudio": true,
+              "lossless": true,
+              "numberOfChannels": 2,
+              "bitsPerSample": 16,
+              "sampleRate": 48000,
+              "duration": 30,
+              "tool": "Rio generated fixture",
+              "bitrate": 50419.73333333333,
+              "hasVideo": false,
+              "containerDuration": 30,
+              "overallBitrate": 50497.066666666666
+            },
+            "common": {
+              "track": {
+                "no": null,
+                "of": null
+              },
+              "disk": {
+                "no": null,
+                "of": null
+              },
+              "movementIndex": {
+                "no": null,
+                "of": null
+              },
+              "title": "Rio disposable original",
+              "artists": ["Rio Study Artist"],
+              "artist": "Rio Study Artist",
+              "album": "Rio Publication Study",
+              "comment": [
+                {
+                  "text": "Disposable synthetic FLAC; no user media"
+                }
+              ]
+            }
+          },
+          "decode": {
+            "status": 0,
+            "signal": null,
+            "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+            "stderr": ""
+          }
+        }
+      ]
+    },
+    "sameBytesAll12Fixtures": true,
+    "completedSaveTests": 0,
+    "interruptionDuringWrite": "not run; GUI crashes happened before Save",
+    "ordinaryChanges": "not run; source expectations only",
+    "syscallTrace": "not obtained; noninteractive fs_usage required authentication, original PID expired; no claim of a completed trace",
+    "auditLogging": "3.0.4 launched with public --audit open,os.rename,os.remove,os.truncate,os.link; this did not replace missing Save execution",
+    "cleanupNote": "An unexpected bare process from the temporary 3.0.4 app was found after the UI failure, consistent with UI-tool relaunch. It had no study config arguments. The verified temporary executable was sent SIGTERM without a Save request. Full isolation of that relaunch is not claimed; no real music was deliberately loaded or edited."
+  },
+  "sourceConclusion": {
+    "strategy": "Mutagen FLAC.save reopens filename rb+ and mutates same file with resize_bytes, insert/delete and read/write movement; no separate audio candidate/backup/journal in audited path",
+    "newArchitectureFound": false,
+    "runtimeStrategyQualified": false
+  },
+  "productionNativeHashes": {
+    "source": "a8d2fbf8b5920108648b6f2431ba7bdcc11bb5f94d14bd89349d1df5f44fcea1",
+    "binary": "fe5f066ccf46b33415142e8969fb28495c46f123f5371821aadf51b43a0f0406"
+  },
+  "validation": {
+    "fixturePreservation": "passed, all 12",
+    "sourceFunctionsCompared": 3,
+    "officialAssetDigest": "matched",
+    "rioNativeSourceAndBinary": "unchanged"
+  }
+}

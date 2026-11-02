@@ -1,0 +1,4210 @@
+{
+  "date": "2026-11-01T16:46:30.190Z",
+  "environment": {
+    "system": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H32\n",
+    "arch": "x64",
+    "mounts": [
+      "/dev/disk5s1 on /private/tmp/rio-pac-publication-xe4Cek/on (apfs, local, nodev, nosuid, journaled, nobrowse, mounted by marcelchapman)",
+      "/dev/disk7s1 on /private/tmp/rio-pac-publication-xe4Cek/off (apfs, local, nodev, nosuid, journaled, noowners, nobrowse, mounted by marcelchapman)"
+    ]
+  },
+  "application": {
+    "path": "/Applications/Pro Audio Converter.app",
+    "version": "1.11.1",
+    "build": "307",
+    "identifier": "com.markvapps.proaudioconverter",
+    "executableSha256": "571978863cd80d6147d4ecab6e6de1d3e4119d16f430302e487e3939ed83ebdc"
+  },
+  "fixture": {
+    "duration": 30,
+    "sampleRate": 48000,
+    "channels": 2,
+    "bits": 16,
+    "bytes": 189364,
+    "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+    "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+    "entries": [
+      ["TITLE", "Rio disposable original"],
+      ["ARTIST", "Rio Study Artist"],
+      ["ALBUM", "Rio Publication Study"],
+      ["COMMENT", "Disposable synthetic FLAC; no user media"]
+    ]
+  },
+  "interruptionFixture": {
+    "generation": "ffmpeg -f lavfi -i anoisesrc=color=white:seed=42:sample_rate=48000:duration=600 -ac 2 -c:a flac -compression_level 0 -sample_fmt s16; synthetic only",
+    "ffmpeg": "ffmpeg version 9.0.2 Copyright (c) 2000-2026 the FFmpeg developers",
+    "before": {
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "device": "16777239",
+      "inode": "24",
+      "size": "64613876",
+      "links": "1",
+      "mode": "644",
+      "uid": "501",
+      "gid": "20",
+      "mtimeNs": "1793551143393662487",
+      "ctimeNs": "1793551143393662487",
+      "birthtimeNs": "1793551141754625864",
+      "acl": "-rw-r--r--  1 marcelchapman  staff  64613876 Nov  1 13:39 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac\n",
+      "xattrs": "",
+      "sha256": "c9a4c79bd8581967e90246d0b47b8d309084fe57d76acbf295978c8a7b0ac7db",
+      "audioSha256": "36fc601241d5ab1fe2386a8e97c4bf9bec96e9d7217bb395200711c9145784a8",
+      "audioBytes": 64605495,
+      "metadata": {
+        "format": {
+          "tagTypes": ["vorbis"],
+          "trackInfo": [
+            {
+              "type": 2,
+              "audio": {
+                "samplingFrequency": 48000,
+                "channels": 2,
+                "bitDepth": 16
+              },
+              "codecName": "FLAC",
+              "duration": 600,
+              "bitrate": 861406.6,
+              "lossless": true
+            }
+          ],
+          "container": "FLAC",
+          "codec": "FLAC",
+          "hasAudio": true,
+          "lossless": true,
+          "numberOfChannels": 2,
+          "bitsPerSample": 16,
+          "sampleRate": 48000,
+          "duration": 600,
+          "tool": "Lavf63.1.102",
+          "bitrate": 861406.6,
+          "hasVideo": false,
+          "containerDuration": 600,
+          "overallBitrate": 861518.3466666667
+        },
+        "common": {
+          "track": {
+            "no": null,
+            "of": null
+          },
+          "disk": {
+            "no": null,
+            "of": null
+          },
+          "movementIndex": {
+            "no": null,
+            "of": null
+          },
+          "title": "Rio disposable interruption",
+          "artists": ["Rio Study Artist"],
+          "artist": "Rio Study Artist",
+          "album": "Rio Publication Study"
+        }
+      },
+      "decode": {
+        "status": 0,
+        "signal": null,
+        "stdout": "MD5=97067a78eae80a5c05235da8a64c8e4b\n",
+        "stderr": ""
+      }
+    }
+  },
+  "results": [
+    {
+      "name": "baseline-off",
+      "relative": "off/Media/Baseline.flac",
+      "before": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac",
+        "device": "16777239",
+        "inode": "17",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550579574051183",
+        "ctimeNs": "1793550634779596458",
+        "birthtimeNs": "1793550579573962502",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  189364 Nov  1 13:29 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 39 32 61 3B 50 72  |0082;6ae7692a;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Rio disposable original",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "album": "Rio Publication Study",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "after": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac",
+        "device": "16777239",
+        "inode": "17",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550699287153667",
+        "ctimeNs": "1793550699287153667",
+        "birthtimeNs": "1793550579573962502",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  189364 Nov  1 13:31 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 39 32 61 3B 50 72  |0082;6ae7692a;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "1c6b4b09bdeae573e6eae8a18ef066884b28f5e86c94437632a756cd7579daa7",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "album": "PAC Album",
+            "artists": ["PAC Artist"],
+            "artist": "PAC Artist",
+            "comment": [
+              {
+                "text": "PAC baseline"
+              }
+            ],
+            "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+            "title": "PAC noowners baseline"
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "title": "PAC noowners baseline",
+      "thread": "1337793",
+      "sequence": {
+        "thread": "1337793",
+        "counts": {
+          "stat64": 1,
+          "open": 1,
+          "fstat64": 1,
+          "lseek": 23,
+          "read": 7,
+          "write": 2,
+          "close": 1,
+          "WrData[A]": 1
+        },
+        "first": "13:31:39.285211  stat64                                 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac                                                                                                       0.000017   Pro Audio Converter.1337793",
+        "last": "13:31:39.286644    WrData[A]       D=0x000001b6  B=0x1000   /dev/disk7s1  /private/tmp/rio-pac-publication-xe4Cek/off.sparseimage                                                                                             0.000733 W Pro Audio Conver.1337793"
+      }
+    },
+    {
+      "name": "baseline-on",
+      "relative": "on/Media/Baseline.flac",
+      "before": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac",
+        "device": "16777235",
+        "inode": "17",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550578217360181",
+        "ctimeNs": "1793550578217360181",
+        "birthtimeNs": "1793550578217155895",
+        "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 13:29 /private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac\n",
+        "xattrs": "",
+        "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Rio disposable original",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "album": "Rio Publication Study",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "after": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac",
+        "device": "16777235",
+        "inode": "17",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550829395356739",
+        "ctimeNs": "1793550829395356739",
+        "birthtimeNs": "1793550578217155895",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  189364 Nov  1 13:33 /private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 39 64 63 3B 50 72  |0082;6ae769dc;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "b4918096abb8914ddeb1a92ab10c7ee343343e25183b93124949651e73dd14f5",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "album": "PAC Album",
+            "artists": ["PAC Artist"],
+            "artist": "PAC Artist",
+            "comment": [
+              {
+                "text": "PAC baseline"
+              }
+            ],
+            "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+            "title": "PAC owners baseline"
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "title": "PAC owners baseline",
+      "thread": "1339938",
+      "sequence": {
+        "thread": "1339938",
+        "counts": {
+          "stat64": 1,
+          "open": 1,
+          "fstat64": 1,
+          "lseek": 23,
+          "read": 7,
+          "write": 2,
+          "close": 1,
+          "WrData[A]": 1
+        },
+        "first": "13:33:49.389882  stat64                                 /private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac                                                                                                        0.000018   Pro Audio Converter.1339938",
+        "last": "13:33:49.390773    WrData[A]       D=0x000001b6  B=0x1000   /dev/disk5s1  /private/tmp/rio-pac-publication-xe4Cek/on.sparseimage                                                                                              0.000565 W Pro Audio Conver.1339938"
+      }
+    },
+    {
+      "name": "growth-on",
+      "relative": "on/Media/Growth.flac",
+      "before": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac",
+        "device": "16777235",
+        "inode": "18",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550578221327887",
+        "ctimeNs": "1793550578221327887",
+        "birthtimeNs": "1793550578220792482",
+        "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 13:29 /private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac\n",
+        "xattrs": "",
+        "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Rio disposable original",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "album": "Rio Publication Study",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "after": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac",
+        "device": "16777235",
+        "inode": "18",
+        "size": "197390",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550892250886833",
+        "ctimeNs": "1793550892250886833",
+        "birthtimeNs": "1793550578220792482",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  197390 Nov  1 13:34 /private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 61 30 33 3B 50 72  |0082;6ae76a03;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "cb5372cf92113ab1adb966f8e0bbc1d35cc6b8602aa2330441d9440cba353a10",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 52637.333333333336
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "album": "Rio Publication Study",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "comment": [
+              {
+                "text": {
+                  "length": 3949,
+                  "sha256": "ef824dd27811bbe133b8f4dcf46b01192451517dff5e302b3e4ab4f6045044a3",
+                  "prefix": "PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC",
+                  "suffix": "TH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-",
+                  "repeatToken": "PAC-GROWTH-",
+                  "repeatCount": 359
+                }
+              }
+            ],
+            "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+            "title": "PAC owners growth"
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "title": "PAC owners growth",
+      "thread": "1340850",
+      "sequence": {
+        "thread": "1340850",
+        "counts": {
+          "stat64": 1,
+          "open": 1,
+          "fstat64": 1,
+          "lseek": 70,
+          "read": 33,
+          "write": 28,
+          "close": 1,
+          "WrData[A]": 2
+        },
+        "first": "13:34:52.243288  stat64                                 /private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac                                                                                                          0.000018   Pro Audio Converter.1340850",
+        "last": "13:34:52.244820    WrData[A]       D=0x000002e3  B=0x2000   /dev/disk5s1  /private/tmp/rio-pac-publication-xe4Cek/on.sparseimage                                                                                              0.000914 W Pro Audio Conver.1340850"
+      }
+    },
+    {
+      "name": "growth-off",
+      "relative": "off/Media/Growth.flac",
+      "before": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac",
+        "device": "16777239",
+        "inode": "18",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550579576441222",
+        "ctimeNs": "1793550579576441222",
+        "birthtimeNs": "1793550579576353827",
+        "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 13:29 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac\n",
+        "xattrs": "",
+        "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Rio disposable original",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "album": "Rio Publication Study",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "after": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac",
+        "device": "16777239",
+        "inode": "18",
+        "size": "202243",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550951280318481",
+        "ctimeNs": "1793550951280318481",
+        "birthtimeNs": "1793550579576353827",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  202243 Nov  1 13:35 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 61 35 64 3B 50 72  |0082;6ae76a5d;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "2f78279b69cca35595b98808c98f218af4fb5efafc3f79d27b37ce2e28926654",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 53931.46666666667
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "album": "Rio Publication Study",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "comment": [
+              {
+                "text": {
+                  "length": 8800,
+                  "sha256": "061f1a1f254027c9183f1f6e99df03c509296d6ccc90c9af7188b95726b2e5ad",
+                  "prefix": "PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC",
+                  "suffix": "TH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-PAC-GROWTH-",
+                  "repeatToken": "PAC-GROWTH-",
+                  "repeatCount": 800
+                }
+              }
+            ],
+            "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+            "title": "PAC noowners growth"
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "title": "PAC noowners growth",
+      "thread": "1342165",
+      "sequence": {
+        "thread": "1342165",
+        "counts": {
+          "stat64": 1,
+          "open": 1,
+          "fstat64": 1,
+          "lseek": 52,
+          "read": 24,
+          "write": 33,
+          "close": 1,
+          "WrData[A]": 2
+        },
+        "first": "13:35:51.270737  stat64                                 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac                                                                                                         0.000013   Pro Audio Converter.1342165",
+        "last": "13:35:51.272352    WrData[A]       D=0x000002e3  B=0x3000   /dev/disk7s1  /private/tmp/rio-pac-publication-xe4Cek/off.sparseimage                                                                                             0.000787 W Pro Audio Conver.1342165"
+      }
+    }
+  ],
+  "ordinaryChanges": {
+    "rename": {
+      "renamed": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Renamed.flac",
+        "device": "16777239",
+        "inode": "19",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550579578359716",
+        "ctimeNs": "1793550994259119278",
+        "birthtimeNs": "1793550579578266225",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  189364 Nov  1 13:29 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Renamed.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 61 38 34 3B 50 72  |0082;6ae76a84;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Rio disposable original",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "album": "Rio Publication Study",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "oldPathAbsent": true,
+      "unchanged": true,
+      "sequence": {
+        "thread": "1343712",
+        "counts": {
+          "stat64": 1
+        },
+        "first": "13:36:42.591662  stat64                 [  2]           /private/tmp/rio-pac-publication-xe4Cek/off/Media/Rename.flac                                                                                                         0.000014   Pro Audio Converter.1343712",
+        "last": "13:36:42.591662  stat64                 [  2]           /private/tmp/rio-pac-publication-xe4Cek/off/Media/Rename.flac                                                                                                         0.000014   Pro Audio Converter.1343712"
+      }
+    },
+    "replacement": {
+      "before": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac",
+        "device": "16777239",
+        "inode": "23",
+        "size": "189356",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793551027761307256",
+        "ctimeNs": "1793551027761307256",
+        "birthtimeNs": "1793551027761171893",
+        "acl": "-rw-r--r--  1 marcelchapman  staff  189356 Nov  1 13:37 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac\n",
+        "xattrs": "",
+        "sha256": "886e9316e741294a7f3bc4e20dc394075da271f9543206a423c9806b82aed3f1",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50494.933333333334
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Ordinary replacement",
+            "artists": ["Ordinary external artist"],
+            "artist": "Ordinary external artist",
+            "album": "Ordinary external album",
+            "comment": [
+              {
+                "text": "Ordinary external comment"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "after": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac",
+        "device": "16777239",
+        "inode": "23",
+        "size": "193484",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793551036918553026",
+        "ctimeNs": "1793551036918553026",
+        "birthtimeNs": "1793551027761171893",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  193484 Nov  1 13:37 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 61 62 63 3B 50 72  |0082;6ae76abc;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "18f6e918ebff535640704cb98a8c3bd4de5b8aea2c6fcb849306a94abb2789d8",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 51595.73333333333
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "album": "Rio Publication Study",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ],
+            "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+            "title": "PAC replacement save"
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "originalRetained": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace-original.flac",
+        "device": "16777239",
+        "inode": "20",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550579580688198",
+        "ctimeNs": "1793551027708411112",
+        "birthtimeNs": "1793550579580567074",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  189364 Nov  1 13:29 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace-original.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 61 61 62 3B 50 72  |0082;6ae76aab;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Rio disposable original",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "album": "Rio Publication Study",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "sequence": {
+        "thread": "1344832",
+        "counts": {
+          "stat64": 1,
+          "open": 1,
+          "fstat64": 1,
+          "lseek": 97,
+          "read": 46,
+          "write": 78,
+          "close": 1,
+          "WrData[A]": 2
+        },
+        "first": "13:37:16.906072  stat64                                 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac                                                                                                        0.000026   Pro Audio Converter.1344832",
+        "last": "13:37:16.908421    WrData[A]       D=0x00000336  B=0x1000   /dev/disk7s1  /private/tmp/rio-pac-publication-xe4Cek/off.sparseimage                                                                                             0.001200 W Pro Audio Conver.1344832"
+      }
+    },
+    "externalTags": {
+      "before": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac",
+        "device": "16777239",
+        "inode": "21",
+        "size": "189359",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793551061061939173",
+        "ctimeNs": "1793551061061939173",
+        "birthtimeNs": "1793550579581352725",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  189359 Nov  1 13:37 /private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 61 63 39 3B 50 72  |0082;6ae76ac9;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "4a02a8db5f5cea95fbe082b58397d0f396712111023adb6726c9cd7e4210f694",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50495.73333333333
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Ordinary external title",
+            "artists": ["Ordinary external artist"],
+            "artist": "Ordinary external artist",
+            "album": "Ordinary external album",
+            "comment": [
+              {
+                "text": "Ordinary external comment"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "after": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac",
+        "device": "16777239",
+        "inode": "21",
+        "size": "193484",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793551069473142241",
+        "ctimeNs": "1793551069473142241",
+        "birthtimeNs": "1793550579581352725",
+        "acl": "-rw-r--r--@ 1 marcelchapman  staff  193484 Nov  1 13:37 /private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac\n\tcom.apple.quarantine\t    34 \n",
+        "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 61 63 39 3B 50 72  |0082;6ae76ac9;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+        "sha256": "acb4f7de92c54c8068aaff64f40df9646aa942092bf4fded7375b66399324fe2",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 51595.73333333333
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "album": "Rio Publication Study",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ],
+            "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+            "title": "PAC cached tags save"
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "sequence": {
+        "thread": "1345943",
+        "counts": {
+          "stat64": 1,
+          "open": 1,
+          "fstat64": 1,
+          "lseek": 97,
+          "read": 46,
+          "write": 78,
+          "close": 1,
+          "WrData[A]": 2
+        },
+        "first": "13:37:49.460131  stat64                                 /private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac                                                                                                   0.000026   Pro Audio Converter.1345943",
+        "last": "13:37:49.461470    WrData[A]       D=0x0000037c  B=0x1000   /dev/disk7s1  /private/tmp/rio-pac-publication-xe4Cek/off.sparseimage                                                                                             0.000634 W Pro Audio Conver.1345943"
+      }
+    },
+    "removed": {
+      "before": {
+        "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Remove.flac",
+        "device": "16777239",
+        "inode": "22",
+        "size": "189364",
+        "links": "1",
+        "mode": "644",
+        "uid": "501",
+        "gid": "20",
+        "mtimeNs": "1793550579582388333",
+        "ctimeNs": "1793550579582388333",
+        "birthtimeNs": "1793550579582296516",
+        "acl": "-rw-r--r--  1 marcelchapman  staff  189364 Nov  1 13:29 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Remove.flac\n",
+        "xattrs": "",
+        "sha256": "0f1c9d79d2bfa26c5d82a4a7e17eb555cbdafb88e8bd7d2334dddcc2a787a9d0",
+        "audioSha256": "a6e9ca235eaadd57a9ba4794a84291907b666dc7a4c7aa9667a37165f8a57e46",
+        "audioBytes": 189074,
+        "metadata": {
+          "format": {
+            "tagTypes": ["vorbis"],
+            "trackInfo": [
+              {
+                "type": 2,
+                "audio": {
+                  "samplingFrequency": 48000,
+                  "channels": 2,
+                  "bitDepth": 16
+                },
+                "codecName": "FLAC",
+                "duration": 30,
+                "bitrate": 50419.73333333333,
+                "lossless": true
+              }
+            ],
+            "container": "FLAC",
+            "codec": "FLAC",
+            "hasAudio": true,
+            "lossless": true,
+            "numberOfChannels": 2,
+            "bitsPerSample": 16,
+            "sampleRate": 48000,
+            "duration": 30,
+            "tool": "Rio generated fixture",
+            "bitrate": 50419.73333333333,
+            "hasVideo": false,
+            "containerDuration": 30,
+            "overallBitrate": 50497.066666666666
+          },
+          "common": {
+            "track": {
+              "no": null,
+              "of": null
+            },
+            "disk": {
+              "no": null,
+              "of": null
+            },
+            "movementIndex": {
+              "no": null,
+              "of": null
+            },
+            "title": "Rio disposable original",
+            "artists": ["Rio Study Artist"],
+            "artist": "Rio Study Artist",
+            "album": "Rio Publication Study",
+            "comment": [
+              {
+                "text": "Disposable synthetic FLAC; no user media"
+              }
+            ]
+          }
+        },
+        "decode": {
+          "status": 0,
+          "signal": null,
+          "stdout": "MD5=1b080927679d0b43dbdc8f3e11ec1f8a\n",
+          "stderr": ""
+        }
+      },
+      "afterPathAbsent": true,
+      "sequence": {
+        "thread": "1346639",
+        "counts": {
+          "stat64": 1
+        },
+        "first": "13:38:12.382336  stat64                 [  2]           /private/tmp/rio-pac-publication-xe4Cek/off/Media/Remove.flac                                                                                                         0.000023   Pro Audio Converter.1346639",
+        "last": "13:38:12.382336  stat64                 [  2]           /private/tmp/rio-pac-publication-xe4Cek/off/Media/Remove.flac                                                                                                         0.000023   Pro Audio Converter.1346639"
+      }
+    }
+  },
+  "interruption": {
+    "trigger": {
+      "armedAt": "2026-11-01T16:42:08.111Z",
+      "observedAt": "2026-11-01T16:42:14.272Z",
+      "target": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "pid": 66664,
+      "processIdentity": "/Applications/Pro Audio Converter.app/Contents/MacOS/Pro Audio Converter Sun Nov  1 13:27:53 2026",
+      "before": {
+        "inode": "24",
+        "size": "64613876",
+        "mtimeNs": "1793551143393662487"
+      },
+      "observed": {
+        "inode": "24",
+        "size": "64613876",
+        "mtimeNs": "1793551334253667153"
+      },
+      "signaledAt": "2026-11-01T16:42:14.272Z"
+    },
+    "before": {
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "device": "16777239",
+      "inode": "24",
+      "size": "64613876",
+      "links": "1",
+      "mode": "644",
+      "uid": "501",
+      "gid": "20",
+      "mtimeNs": "1793551143393662487",
+      "ctimeNs": "1793551143393662487",
+      "birthtimeNs": "1793551141754625864",
+      "acl": "-rw-r--r--  1 marcelchapman  staff  64613876 Nov  1 13:39 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac\n",
+      "xattrs": "",
+      "sha256": "c9a4c79bd8581967e90246d0b47b8d309084fe57d76acbf295978c8a7b0ac7db",
+      "audioSha256": "36fc601241d5ab1fe2386a8e97c4bf9bec96e9d7217bb395200711c9145784a8",
+      "audioBytes": 64605495,
+      "metadata": {
+        "format": {
+          "tagTypes": ["vorbis"],
+          "trackInfo": [
+            {
+              "type": 2,
+              "audio": {
+                "samplingFrequency": 48000,
+                "channels": 2,
+                "bitDepth": 16
+              },
+              "codecName": "FLAC",
+              "duration": 600,
+              "bitrate": 861406.6,
+              "lossless": true
+            }
+          ],
+          "container": "FLAC",
+          "codec": "FLAC",
+          "hasAudio": true,
+          "lossless": true,
+          "numberOfChannels": 2,
+          "bitsPerSample": 16,
+          "sampleRate": 48000,
+          "duration": 600,
+          "tool": "Lavf63.1.102",
+          "bitrate": 861406.6,
+          "hasVideo": false,
+          "containerDuration": 600,
+          "overallBitrate": 861518.3466666667
+        },
+        "common": {
+          "track": {
+            "no": null,
+            "of": null
+          },
+          "disk": {
+            "no": null,
+            "of": null
+          },
+          "movementIndex": {
+            "no": null,
+            "of": null
+          },
+          "title": "Rio disposable interruption",
+          "artists": ["Rio Study Artist"],
+          "artist": "Rio Study Artist",
+          "album": "Rio Publication Study"
+        }
+      },
+      "decode": {
+        "status": 0,
+        "signal": null,
+        "stdout": "MD5=97067a78eae80a5c05235da8a64c8e4b\n",
+        "stderr": ""
+      }
+    },
+    "after": {
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "device": "16777239",
+      "inode": "24",
+      "size": "64613876",
+      "links": "1",
+      "mode": "644",
+      "uid": "501",
+      "gid": "20",
+      "mtimeNs": "1793551334272926016",
+      "ctimeNs": "1793551334272926016",
+      "birthtimeNs": "1793551141754625864",
+      "acl": "-rw-r--r--@ 1 marcelchapman  staff  64613876 Nov  1 13:42 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac\n\tcom.apple.quarantine\t      34 \n",
+      "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 62 35 30 3B 50 72  |0082;6ae76b50;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+      "sha256": "b952ca08588bc7e758862f9e6d4a393dacaf3655f330356d686ee13772a203d3",
+      "audioSha256": "b08dbb0bec73ae42ba95f052bced491d3d8e1c3324c1a163daf0d939ad40b484",
+      "audioBytes": 64470286,
+      "metadata": {
+        "format": {
+          "tagTypes": ["vorbis"],
+          "trackInfo": [
+            {
+              "type": 2,
+              "audio": {
+                "samplingFrequency": 48000,
+                "channels": 2,
+                "bitDepth": 16
+              },
+              "codecName": "FLAC",
+              "duration": 600,
+              "bitrate": 859603.8133333334,
+              "lossless": true
+            }
+          ],
+          "container": "FLAC",
+          "codec": "FLAC",
+          "hasAudio": true,
+          "lossless": true,
+          "numberOfChannels": 2,
+          "bitsPerSample": 16,
+          "sampleRate": 48000,
+          "duration": 600,
+          "tool": "Lavf63.1.102",
+          "bitrate": 859603.8133333334,
+          "hasVideo": false,
+          "containerDuration": 600,
+          "overallBitrate": 861518.3466666667
+        },
+        "common": {
+          "track": {
+            "no": null,
+            "of": null
+          },
+          "disk": {
+            "no": null,
+            "of": null
+          },
+          "movementIndex": {
+            "no": null,
+            "of": null
+          },
+          "album": "Rio Publication Study",
+          "artists": ["Rio Study Artist"],
+          "artist": "Rio Study Artist",
+          "comment": [
+            {
+              "text": {
+                "length": 139264,
+                "sha256": "e769c8aa359105e9634f1708bd374618247550400b1e80b2cab89f241ca27574",
+                "prefix": "PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUP",
+                "suffix": "NTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-",
+                "repeatToken": "PAC-INTERRUPTION-",
+                "repeatCount": 8192
+              }
+            }
+          ],
+          "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+          "title": "PAC interruption save"
+        }
+      },
+      "decode": {
+        "status": 0,
+        "signal": null,
+        "stdout": "MD5=c67462dc69ce01783ad9448e80c4add6\n",
+        "stderr": "[flac @ 0x7fb16171c500] illegal residual coding method 3\n[flac @ 0x7fb16171c500] decode_frame() failed\n[aist#0:0/flac @ 0x7fb161716500] [dec:flac @ 0x7fb161717a80] Decoding error: Invalid data found when processing input\n"
+      }
+    },
+    "restart": {
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "device": "16777239",
+      "inode": "24",
+      "size": "64613876",
+      "links": "1",
+      "mode": "644",
+      "uid": "501",
+      "gid": "20",
+      "mtimeNs": "1793551334272926016",
+      "ctimeNs": "1793551334272926016",
+      "birthtimeNs": "1793551141754625864",
+      "acl": "-rw-r--r--@ 1 marcelchapman  staff  64613876 Nov  1 13:42 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac\n\tcom.apple.quarantine\t      34 \n",
+      "xattrs": "com.apple.quarantine:\n00000000  30 30 38 32 3B 36 61 65 37 36 62 35 30 3B 50 72  |0082;6ae76b50;Pr|\n00000010  6F 20 41 75 64 69 6F 20 43 6F 6E 76 65 72 74 65  |o Audio Converte|\n00000020  72 3B                                            |r;|\n00000022\n",
+      "sha256": "b952ca08588bc7e758862f9e6d4a393dacaf3655f330356d686ee13772a203d3",
+      "audioSha256": "b08dbb0bec73ae42ba95f052bced491d3d8e1c3324c1a163daf0d939ad40b484",
+      "audioBytes": 64470286,
+      "metadata": {
+        "format": {
+          "tagTypes": ["vorbis"],
+          "trackInfo": [
+            {
+              "type": 2,
+              "audio": {
+                "samplingFrequency": 48000,
+                "channels": 2,
+                "bitDepth": 16
+              },
+              "codecName": "FLAC",
+              "duration": 600,
+              "bitrate": 859603.8133333334,
+              "lossless": true
+            }
+          ],
+          "container": "FLAC",
+          "codec": "FLAC",
+          "hasAudio": true,
+          "lossless": true,
+          "numberOfChannels": 2,
+          "bitsPerSample": 16,
+          "sampleRate": 48000,
+          "duration": 600,
+          "tool": "Lavf63.1.102",
+          "bitrate": 859603.8133333334,
+          "hasVideo": false,
+          "containerDuration": 600,
+          "overallBitrate": 861518.3466666667
+        },
+        "common": {
+          "track": {
+            "no": null,
+            "of": null
+          },
+          "disk": {
+            "no": null,
+            "of": null
+          },
+          "movementIndex": {
+            "no": null,
+            "of": null
+          },
+          "album": "Rio Publication Study",
+          "artists": ["Rio Study Artist"],
+          "artist": "Rio Study Artist",
+          "comment": [
+            {
+              "text": {
+                "length": 139264,
+                "sha256": "e769c8aa359105e9634f1708bd374618247550400b1e80b2cab89f241ca27574",
+                "prefix": "PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUP",
+                "suffix": "NTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-PAC-INTERRUPTION-",
+                "repeatToken": "PAC-INTERRUPTION-",
+                "repeatCount": 8192
+              }
+            }
+          ],
+          "encodedby": "FLAC 1.5.0 via Pro Audio Converter 1.11.1",
+          "title": "PAC interruption save"
+        }
+      },
+      "decode": {
+        "status": 0,
+        "signal": null,
+        "stdout": "MD5=c67462dc69ce01783ad9448e80c4add6\n",
+        "stderr": "[flac @ 0x7fe912716d00] illegal residual coding method 3\n[flac @ 0x7fe912716d00] decode_frame() failed\n[aist#0:0/flac @ 0x7fe912710880] [dec:flac @ 0x7fe912713340] Decoding error: Invalid data found when processing input\n"
+      }
+    },
+    "sequence": {
+      "thread": "1350977",
+      "counts": {
+        "stat64": 1,
+        "open": 1,
+        "fstat64": 1,
+        "lseek": 419,
+        "read": 208,
+        "write": 401,
+        "WrData[A]": 6
+      },
+      "first": "13:42:14.375596  stat64                                 /private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac                                                                                                   0.000030   Pro Audio Converter.1350977",
+      "last": "13:42:14.492437    WrData[A]       D=0x00000d99  B=0x200000 /dev/disk7s1  /private/tmp/rio-pac-publication-xe4Cek/off.sparseimage                                                                                             0.094181 W Pro Audio Conver.1350977"
+    },
+    "signalsSent": 1,
+    "restartUI": "Empty queue, no recovery prompt; reopening the study file displayed PAC interruption save. Queue cleared without writing and app quit.",
+    "contentUnchangedOnRestart": true
+  },
+  "sourceSnapshots": [
+    "before",
+    "loaded",
+    "baseline-off",
+    "controls",
+    "growth-off",
+    "renamed",
+    "replacement-before-save",
+    "replacement-after-save",
+    "external-before-save",
+    "external-after-save",
+    "removed",
+    "interruption-before",
+    "interruption-after",
+    "restart"
+  ],
+  "trace": {
+    "artifact": "pro-audio-converter-saves.fs-usage.txt.gz",
+    "rawSha256": "8caf80c2c24c517d06393a91a4d8902f680df21aa2f74cefa07ae6d6c3ee7003",
+    "retainedSha256": "0838033deb3dc4ad8b4f6d0c280ce37ca35746b1a0fec75f24e4f5825138f22a",
+    "selection": "All save-worker lines plus all study-root lines; other app UI/resource accesses omitted",
+    "allPidNamespaceOrBarrierOperations": [
+      "13:31:30.913406  fcntl             F=3   <GETPATH>                                                                                                                                                                            0.000003   Pro Audio Converter.1332413",
+      "13:31:30.954767  fcntl             F=3   <RDADVISE>                                                                                                                                                                           0.000006   Pro Audio Converter.1332413",
+      "13:35:47.794279  fcntl             F=3   <GETPATH>                                                                                                                                                                            0.000003   Pro Audio Converter.1332413",
+      "13:35:47.794447  fcntl             F=3   <GETPATH>                                                                                                                                                                            0.000002   Pro Audio Converter.1332413"
+    ],
+    "lostMarkerObserved": false,
+    "scope": "Original PID 66664; not a system-wide/child-helper or restart trace. 10ms sibling polling supplements syscall observation."
+  },
+  "directoryObservations": [
+    {
+      "at": "2026-11-01T16:30:08.808Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac",
+      "inode": "17",
+      "size": "189364",
+      "mtimeNs": "1793550578217360181",
+      "ctimeNs": "1793550578217360181"
+    },
+    {
+      "at": "2026-11-01T16:30:08.811Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/ExternalTags.flac",
+      "inode": "21",
+      "size": "189364",
+      "mtimeNs": "1793550578223483383",
+      "ctimeNs": "1793550578223483383"
+    },
+    {
+      "at": "2026-11-01T16:30:08.811Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac",
+      "inode": "18",
+      "size": "189364",
+      "mtimeNs": "1793550578221327887",
+      "ctimeNs": "1793550578221327887"
+    },
+    {
+      "at": "2026-11-01T16:30:08.811Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Remove.flac",
+      "inode": "22",
+      "size": "189364",
+      "mtimeNs": "1793550578224090331",
+      "ctimeNs": "1793550578224090331"
+    },
+    {
+      "at": "2026-11-01T16:30:08.811Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Rename.flac",
+      "inode": "19",
+      "size": "189364",
+      "mtimeNs": "1793550578222314216",
+      "ctimeNs": "1793550578222314216"
+    },
+    {
+      "at": "2026-11-01T16:30:08.811Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Replace.flac",
+      "inode": "20",
+      "size": "189364",
+      "mtimeNs": "1793550578222803366",
+      "ctimeNs": "1793550578222803366"
+    },
+    {
+      "at": "2026-11-01T16:30:08.812Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac",
+      "inode": "17",
+      "size": "189364",
+      "mtimeNs": "1793550579574051183",
+      "ctimeNs": "1793550579574051183"
+    },
+    {
+      "at": "2026-11-01T16:30:08.812Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac",
+      "inode": "21",
+      "size": "189364",
+      "mtimeNs": "1793550579581449096",
+      "ctimeNs": "1793550579581449096"
+    },
+    {
+      "at": "2026-11-01T16:30:08.812Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac",
+      "inode": "18",
+      "size": "189364",
+      "mtimeNs": "1793550579576441222",
+      "ctimeNs": "1793550579576441222"
+    },
+    {
+      "at": "2026-11-01T16:30:08.812Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Remove.flac",
+      "inode": "22",
+      "size": "189364",
+      "mtimeNs": "1793550579582388333",
+      "ctimeNs": "1793550579582388333"
+    },
+    {
+      "at": "2026-11-01T16:30:08.812Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Rename.flac",
+      "inode": "19",
+      "size": "189364",
+      "mtimeNs": "1793550579578359716",
+      "ctimeNs": "1793550579578359716"
+    },
+    {
+      "at": "2026-11-01T16:30:08.813Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac",
+      "inode": "20",
+      "size": "189364",
+      "mtimeNs": "1793550579580688198",
+      "ctimeNs": "1793550579580688198"
+    },
+    {
+      "at": "2026-11-01T16:30:34.782Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac",
+      "inode": "17",
+      "size": "189364",
+      "mtimeNs": "1793550579574051183",
+      "ctimeNs": "1793550634779596458"
+    },
+    {
+      "at": "2026-11-01T16:31:39.298Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Baseline.flac",
+      "inode": "17",
+      "size": "189364",
+      "mtimeNs": "1793550699287153667",
+      "ctimeNs": "1793550699287153667"
+    },
+    {
+      "at": "2026-11-01T16:33:32.342Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac",
+      "inode": "17",
+      "size": "189364",
+      "mtimeNs": "1793550578217360181",
+      "ctimeNs": "1793550812321773935"
+    },
+    {
+      "at": "2026-11-01T16:33:49.405Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Baseline.flac",
+      "inode": "17",
+      "size": "189364",
+      "mtimeNs": "1793550829395356739",
+      "ctimeNs": "1793550829395356739"
+    },
+    {
+      "at": "2026-11-01T16:34:11.311Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac",
+      "inode": "18",
+      "size": "189364",
+      "mtimeNs": "1793550578221327887",
+      "ctimeNs": "1793550851310424880"
+    },
+    {
+      "at": "2026-11-01T16:34:52.259Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/on/Media/Growth.flac",
+      "inode": "18",
+      "size": "197390",
+      "mtimeNs": "1793550892250886833",
+      "ctimeNs": "1793550892250886833"
+    },
+    {
+      "at": "2026-11-01T16:35:41.386Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac",
+      "inode": "18",
+      "size": "189364",
+      "mtimeNs": "1793550579576441222",
+      "ctimeNs": "1793550941381025935"
+    },
+    {
+      "at": "2026-11-01T16:35:51.290Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Growth.flac",
+      "inode": "18",
+      "size": "202243",
+      "mtimeNs": "1793550951280318481",
+      "ctimeNs": "1793550951280318481"
+    },
+    {
+      "at": "2026-11-01T16:36:20.805Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Rename.flac",
+      "inode": "19",
+      "size": "189364",
+      "mtimeNs": "1793550579578359716",
+      "ctimeNs": "1793550980797537891"
+    },
+    {
+      "at": "2026-11-01T16:36:34.259Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Rename.flac",
+      "error": "ENOENT"
+    },
+    {
+      "at": "2026-11-01T16:36:34.270Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Renamed.flac",
+      "inode": "19",
+      "size": "189364",
+      "mtimeNs": "1793550579578359716",
+      "ctimeNs": "1793550994259119278"
+    },
+    {
+      "at": "2026-11-01T16:36:34.270Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Rename.flac",
+      "removed": true
+    },
+    {
+      "at": "2026-11-01T16:36:59.318Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac",
+      "inode": "20",
+      "size": "189364",
+      "mtimeNs": "1793550579580688198",
+      "ctimeNs": "1793551019317455704"
+    },
+    {
+      "at": "2026-11-01T16:37:07.710Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace-original.flac",
+      "inode": "20",
+      "size": "189364",
+      "mtimeNs": "1793550579580688198",
+      "ctimeNs": "1793551027708411112"
+    },
+    {
+      "at": "2026-11-01T16:37:07.711Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac",
+      "removed": true
+    },
+    {
+      "at": "2026-11-01T16:37:07.763Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac",
+      "inode": "23",
+      "size": "189356",
+      "mtimeNs": "1793551027761307256",
+      "ctimeNs": "1793551027761307256"
+    },
+    {
+      "at": "2026-11-01T16:37:16.921Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Replace.flac",
+      "inode": "23",
+      "size": "193484",
+      "mtimeNs": "1793551036918553026",
+      "ctimeNs": "1793551036918553026"
+    },
+    {
+      "at": "2026-11-01T16:37:29.030Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac",
+      "inode": "21",
+      "size": "189364",
+      "mtimeNs": "1793550579581449096",
+      "ctimeNs": "1793551049027333815"
+    },
+    {
+      "at": "2026-11-01T16:37:41.063Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac",
+      "inode": "21",
+      "size": "189359",
+      "mtimeNs": "1793551061061939173",
+      "ctimeNs": "1793551061061939173"
+    },
+    {
+      "at": "2026-11-01T16:37:49.477Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/ExternalTags.flac",
+      "inode": "21",
+      "size": "193484",
+      "mtimeNs": "1793551069473142241",
+      "ctimeNs": "1793551069473142241"
+    },
+    {
+      "at": "2026-11-01T16:38:01.802Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Remove.flac",
+      "inode": "22",
+      "size": "189364",
+      "mtimeNs": "1793550579582388333",
+      "ctimeNs": "1793551081793779982"
+    },
+    {
+      "at": "2026-11-01T16:38:10.077Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Remove.flac",
+      "removed": true
+    },
+    {
+      "at": "2026-11-01T16:39:01.764Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "262144",
+      "mtimeNs": "1793551141760930415",
+      "ctimeNs": "1793551141760930415"
+    },
+    {
+      "at": "2026-11-01T16:39:01.773Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "1048576",
+      "mtimeNs": "1793551141772512550",
+      "ctimeNs": "1793551141772512550"
+    },
+    {
+      "at": "2026-11-01T16:39:01.783Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "1572864",
+      "mtimeNs": "1793551141780434882",
+      "ctimeNs": "1793551141780434882"
+    },
+    {
+      "at": "2026-11-01T16:39:01.793Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "2359296",
+      "mtimeNs": "1793551141791944699",
+      "ctimeNs": "1793551141791944699"
+    },
+    {
+      "at": "2026-11-01T16:39:01.804Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "3145728",
+      "mtimeNs": "1793551141803751597",
+      "ctimeNs": "1793551141803751597"
+    },
+    {
+      "at": "2026-11-01T16:39:01.814Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "3670016",
+      "mtimeNs": "1793551141811573233",
+      "ctimeNs": "1793551141811573233"
+    },
+    {
+      "at": "2026-11-01T16:39:01.825Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "4456448",
+      "mtimeNs": "1793551141823644156",
+      "ctimeNs": "1793551141823644156"
+    },
+    {
+      "at": "2026-11-01T16:39:01.834Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "4980736",
+      "mtimeNs": "1793551141833314942",
+      "ctimeNs": "1793551141833314942"
+    },
+    {
+      "at": "2026-11-01T16:39:01.844Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "5505024",
+      "mtimeNs": "1793551141841997643",
+      "ctimeNs": "1793551141841997643"
+    },
+    {
+      "at": "2026-11-01T16:39:01.854Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "6291456",
+      "mtimeNs": "1793551141853693137",
+      "ctimeNs": "1793551141853693137"
+    },
+    {
+      "at": "2026-11-01T16:39:01.865Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "6815744",
+      "mtimeNs": "1793551141863509426",
+      "ctimeNs": "1793551141863509426"
+    },
+    {
+      "at": "2026-11-01T16:39:01.875Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "7340032",
+      "mtimeNs": "1793551141873086035",
+      "ctimeNs": "1793551141873086035"
+    },
+    {
+      "at": "2026-11-01T16:39:01.886Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "8126464",
+      "mtimeNs": "1793551141885439826",
+      "ctimeNs": "1793551141885439826"
+    },
+    {
+      "at": "2026-11-01T16:39:01.896Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "8650752",
+      "mtimeNs": "1793551141893331893",
+      "ctimeNs": "1793551141893331893"
+    },
+    {
+      "at": "2026-11-01T16:39:01.906Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "9437184",
+      "mtimeNs": "1793551141905340952",
+      "ctimeNs": "1793551141905340952"
+    },
+    {
+      "at": "2026-11-01T16:39:01.916Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "9699328",
+      "mtimeNs": "1793551141909419587",
+      "ctimeNs": "1793551141909419587"
+    },
+    {
+      "at": "2026-11-01T16:39:01.927Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "10223616",
+      "mtimeNs": "1793551141923027557",
+      "ctimeNs": "1793551141923027557"
+    },
+    {
+      "at": "2026-11-01T16:39:01.937Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "11010048",
+      "mtimeNs": "1793551141936459126",
+      "ctimeNs": "1793551141936459126"
+    },
+    {
+      "at": "2026-11-01T16:39:01.948Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "11534336",
+      "mtimeNs": "1793551141945384436",
+      "ctimeNs": "1793551141945384436"
+    },
+    {
+      "at": "2026-11-01T16:39:01.956Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "12058624",
+      "mtimeNs": "1793551141954323615",
+      "ctimeNs": "1793551141954323615"
+    },
+    {
+      "at": "2026-11-01T16:39:01.967Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "12845056",
+      "mtimeNs": "1793551141966890539",
+      "ctimeNs": "1793551141966890539"
+    },
+    {
+      "at": "2026-11-01T16:39:01.977Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "13107200",
+      "mtimeNs": "1793551141972711073",
+      "ctimeNs": "1793551141972711073"
+    },
+    {
+      "at": "2026-11-01T16:39:01.997Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "13369344",
+      "mtimeNs": "1793551141988395636",
+      "ctimeNs": "1793551141988395636"
+    },
+    {
+      "at": "2026-11-01T16:39:02.008Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "13631488",
+      "mtimeNs": "1793551142003613712",
+      "ctimeNs": "1793551142003613712"
+    },
+    {
+      "at": "2026-11-01T16:39:02.018Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "13893632",
+      "mtimeNs": "1793551142014865959",
+      "ctimeNs": "1793551142014865959"
+    },
+    {
+      "at": "2026-11-01T16:39:02.028Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "14155776",
+      "mtimeNs": "1793551142026726096",
+      "ctimeNs": "1793551142026726096"
+    },
+    {
+      "at": "2026-11-01T16:39:02.039Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "14417920",
+      "mtimeNs": "1793551142038257829",
+      "ctimeNs": "1793551142038257829"
+    },
+    {
+      "at": "2026-11-01T16:39:02.060Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "14680064",
+      "mtimeNs": "1793551142051186058",
+      "ctimeNs": "1793551142051186058"
+    },
+    {
+      "at": "2026-11-01T16:39:02.070Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "14942208",
+      "mtimeNs": "1793551142063173919",
+      "ctimeNs": "1793551142063173919"
+    },
+    {
+      "at": "2026-11-01T16:39:02.080Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "15204352",
+      "mtimeNs": "1793551142075455436",
+      "ctimeNs": "1793551142075455436"
+    },
+    {
+      "at": "2026-11-01T16:39:02.091Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "15466496",
+      "mtimeNs": "1793551142088005520",
+      "ctimeNs": "1793551142088005520"
+    },
+    {
+      "at": "2026-11-01T16:39:02.101Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "15728640",
+      "mtimeNs": "1793551142099101273",
+      "ctimeNs": "1793551142099101273"
+    },
+    {
+      "at": "2026-11-01T16:39:02.121Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "15990784",
+      "mtimeNs": "1793551142112548146",
+      "ctimeNs": "1793551142112548146"
+    },
+    {
+      "at": "2026-11-01T16:39:02.131Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "16252928",
+      "mtimeNs": "1793551142128479145",
+      "ctimeNs": "1793551142128479145"
+    },
+    {
+      "at": "2026-11-01T16:39:02.141Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "16777216",
+      "mtimeNs": "1793551142137919436",
+      "ctimeNs": "1793551142137919436"
+    },
+    {
+      "at": "2026-11-01T16:39:02.151Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "17301504",
+      "mtimeNs": "1793551142147142526",
+      "ctimeNs": "1793551142147142526"
+    },
+    {
+      "at": "2026-11-01T16:39:02.162Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "18087936",
+      "mtimeNs": "1793551142159949057",
+      "ctimeNs": "1793551142159949057"
+    },
+    {
+      "at": "2026-11-01T16:39:02.172Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "18612224",
+      "mtimeNs": "1793551142168893454",
+      "ctimeNs": "1793551142168893454"
+    },
+    {
+      "at": "2026-11-01T16:39:02.182Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "19398656",
+      "mtimeNs": "1793551142181648022",
+      "ctimeNs": "1793551142181648022"
+    },
+    {
+      "at": "2026-11-01T16:39:02.193Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "19660800",
+      "mtimeNs": "1793551142189743589",
+      "ctimeNs": "1793551142189743589"
+    },
+    {
+      "at": "2026-11-01T16:39:02.227Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "19922944",
+      "mtimeNs": "1793551142223234344",
+      "ctimeNs": "1793551142223234344"
+    },
+    {
+      "at": "2026-11-01T16:39:02.265Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "20709376",
+      "mtimeNs": "1793551142264398362",
+      "ctimeNs": "1793551142264398362"
+    },
+    {
+      "at": "2026-11-01T16:39:02.275Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "21233664",
+      "mtimeNs": "1793551142272548631",
+      "ctimeNs": "1793551142272548631"
+    },
+    {
+      "at": "2026-11-01T16:39:02.285Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "22020096",
+      "mtimeNs": "1793551142284345808",
+      "ctimeNs": "1793551142284345808"
+    },
+    {
+      "at": "2026-11-01T16:39:02.296Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "22544384",
+      "mtimeNs": "1793551142292368801",
+      "ctimeNs": "1793551142292368801"
+    },
+    {
+      "at": "2026-11-01T16:39:02.305Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "23330816",
+      "mtimeNs": "1793551142304612281",
+      "ctimeNs": "1793551142304612281"
+    },
+    {
+      "at": "2026-11-01T16:39:02.316Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "23855104",
+      "mtimeNs": "1793551142312500425",
+      "ctimeNs": "1793551142312500425"
+    },
+    {
+      "at": "2026-11-01T16:39:02.327Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "24641536",
+      "mtimeNs": "1793551142324183169",
+      "ctimeNs": "1793551142324183169"
+    },
+    {
+      "at": "2026-11-01T16:39:02.338Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "25427968",
+      "mtimeNs": "1793551142336480358",
+      "ctimeNs": "1793551142336480358"
+    },
+    {
+      "at": "2026-11-01T16:39:02.347Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "25952256",
+      "mtimeNs": "1793551142344677414",
+      "ctimeNs": "1793551142344677414"
+    },
+    {
+      "at": "2026-11-01T16:39:02.357Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "26738688",
+      "mtimeNs": "1793551142356698014",
+      "ctimeNs": "1793551142356698014"
+    },
+    {
+      "at": "2026-11-01T16:39:02.369Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "27525120",
+      "mtimeNs": "1793551142368959017",
+      "ctimeNs": "1793551142368959017"
+    },
+    {
+      "at": "2026-11-01T16:39:02.379Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "28049408",
+      "mtimeNs": "1793551142378225052",
+      "ctimeNs": "1793551142378225052"
+    },
+    {
+      "at": "2026-11-01T16:39:02.388Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "28311552",
+      "mtimeNs": "1793551142385860868",
+      "ctimeNs": "1793551142385860868"
+    },
+    {
+      "at": "2026-11-01T16:39:02.398Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "28835840",
+      "mtimeNs": "1793551142396682585",
+      "ctimeNs": "1793551142396682585"
+    },
+    {
+      "at": "2026-11-01T16:39:02.409Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "29360128",
+      "mtimeNs": "1793551142405121291",
+      "ctimeNs": "1793551142405121291"
+    },
+    {
+      "at": "2026-11-01T16:39:02.419Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "30146560",
+      "mtimeNs": "1793551142419016677",
+      "ctimeNs": "1793551142419016677"
+    },
+    {
+      "at": "2026-11-01T16:39:02.429Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "30670848",
+      "mtimeNs": "1793551142428332764",
+      "ctimeNs": "1793551142428332764"
+    },
+    {
+      "at": "2026-11-01T16:39:02.440Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "31195136",
+      "mtimeNs": "1793551142437285419",
+      "ctimeNs": "1793551142437285419"
+    },
+    {
+      "at": "2026-11-01T16:39:02.452Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "31719424",
+      "mtimeNs": "1793551142449830712",
+      "ctimeNs": "1793551142449830712"
+    },
+    {
+      "at": "2026-11-01T16:39:02.492Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "31981568",
+      "mtimeNs": "1793551142484259933",
+      "ctimeNs": "1793551142484259933"
+    },
+    {
+      "at": "2026-11-01T16:39:02.513Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "32243712",
+      "mtimeNs": "1793551142509115001",
+      "ctimeNs": "1793551142509115001"
+    },
+    {
+      "at": "2026-11-01T16:39:02.523Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "32505856",
+      "mtimeNs": "1793551142520579733",
+      "ctimeNs": "1793551142520579733"
+    },
+    {
+      "at": "2026-11-01T16:39:02.533Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "32768000",
+      "mtimeNs": "1793551142531608055",
+      "ctimeNs": "1793551142531608055"
+    },
+    {
+      "at": "2026-11-01T16:39:02.543Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "33030144",
+      "mtimeNs": "1793551142543135818",
+      "ctimeNs": "1793551142543135818"
+    },
+    {
+      "at": "2026-11-01T16:39:02.564Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "33292288",
+      "mtimeNs": "1793551142554312393",
+      "ctimeNs": "1793551142554312393"
+    },
+    {
+      "at": "2026-11-01T16:39:02.574Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "33554432",
+      "mtimeNs": "1793551142566650150",
+      "ctimeNs": "1793551142566650150"
+    },
+    {
+      "at": "2026-11-01T16:39:02.585Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "33816576",
+      "mtimeNs": "1793551142579382359",
+      "ctimeNs": "1793551142579382359"
+    },
+    {
+      "at": "2026-11-01T16:39:02.595Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "34078720",
+      "mtimeNs": "1793551142590443398",
+      "ctimeNs": "1793551142590443398"
+    },
+    {
+      "at": "2026-11-01T16:39:02.606Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "34340864",
+      "mtimeNs": "1793551142601067145",
+      "ctimeNs": "1793551142601067145"
+    },
+    {
+      "at": "2026-11-01T16:39:02.617Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "35127296",
+      "mtimeNs": "1793551142616772678",
+      "ctimeNs": "1793551142616772678"
+    },
+    {
+      "at": "2026-11-01T16:39:02.628Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "35651584",
+      "mtimeNs": "1793551142626157851",
+      "ctimeNs": "1793551142626157851"
+    },
+    {
+      "at": "2026-11-01T16:39:02.638Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "36175872",
+      "mtimeNs": "1793551142634645690",
+      "ctimeNs": "1793551142634645690"
+    },
+    {
+      "at": "2026-11-01T16:39:02.648Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "36962304",
+      "mtimeNs": "1793551142648145679",
+      "ctimeNs": "1793551142648145679"
+    },
+    {
+      "at": "2026-11-01T16:39:02.659Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "37486592",
+      "mtimeNs": "1793551142656160711",
+      "ctimeNs": "1793551142656160711"
+    },
+    {
+      "at": "2026-11-01T16:39:02.669Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "37748736",
+      "mtimeNs": "1793551142660220719",
+      "ctimeNs": "1793551142660220719"
+    },
+    {
+      "at": "2026-11-01T16:39:02.679Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "38010880",
+      "mtimeNs": "1793551142674160206",
+      "ctimeNs": "1793551142674160206"
+    },
+    {
+      "at": "2026-11-01T16:39:02.689Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "38273024",
+      "mtimeNs": "1793551142688413806",
+      "ctimeNs": "1793551142688413806"
+    },
+    {
+      "at": "2026-11-01T16:39:02.711Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "38535168",
+      "mtimeNs": "1793551142703589571",
+      "ctimeNs": "1793551142703589571"
+    },
+    {
+      "at": "2026-11-01T16:39:02.721Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "38797312",
+      "mtimeNs": "1793551142720159615",
+      "ctimeNs": "1793551142720159615"
+    },
+    {
+      "at": "2026-11-01T16:39:02.741Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "39059456",
+      "mtimeNs": "1793551142736885253",
+      "ctimeNs": "1793551142736885253"
+    },
+    {
+      "at": "2026-11-01T16:39:02.761Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "39321600",
+      "mtimeNs": "1793551142754605236",
+      "ctimeNs": "1793551142754605236"
+    },
+    {
+      "at": "2026-11-01T16:39:02.791Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "39583744",
+      "mtimeNs": "1793551142781459571",
+      "ctimeNs": "1793551142781459571"
+    },
+    {
+      "at": "2026-11-01T16:39:02.811Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "39845888",
+      "mtimeNs": "1793551142804038739",
+      "ctimeNs": "1793551142804038739"
+    },
+    {
+      "at": "2026-11-01T16:39:02.821Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "40108032",
+      "mtimeNs": "1793551142819261311",
+      "ctimeNs": "1793551142819261311"
+    },
+    {
+      "at": "2026-11-01T16:39:02.831Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "40632320",
+      "mtimeNs": "1793551142828139853",
+      "ctimeNs": "1793551142828139853"
+    },
+    {
+      "at": "2026-11-01T16:39:02.842Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "41418752",
+      "mtimeNs": "1793551142842349341",
+      "ctimeNs": "1793551142842349341"
+    },
+    {
+      "at": "2026-11-01T16:39:02.852Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "41943040",
+      "mtimeNs": "1793551142851384558",
+      "ctimeNs": "1793551142851384558"
+    },
+    {
+      "at": "2026-11-01T16:39:02.863Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "42467328",
+      "mtimeNs": "1793551142859916429",
+      "ctimeNs": "1793551142859916429"
+    },
+    {
+      "at": "2026-11-01T16:39:02.873Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "42991616",
+      "mtimeNs": "1793551142868930480",
+      "ctimeNs": "1793551142868930480"
+    },
+    {
+      "at": "2026-11-01T16:39:02.883Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "43253760",
+      "mtimeNs": "1793551142874036069",
+      "ctimeNs": "1793551142874036069"
+    },
+    {
+      "at": "2026-11-01T16:39:02.893Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "44040192",
+      "mtimeNs": "1793551142892576138",
+      "ctimeNs": "1793551142892576138"
+    },
+    {
+      "at": "2026-11-01T16:39:02.903Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "44564480",
+      "mtimeNs": "1793551142900534793",
+      "ctimeNs": "1793551142900534793"
+    },
+    {
+      "at": "2026-11-01T16:39:02.916Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "45350912",
+      "mtimeNs": "1793551142914163503",
+      "ctimeNs": "1793551142914163503"
+    },
+    {
+      "at": "2026-11-01T16:39:02.924Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "45613056",
+      "mtimeNs": "1793551142921895846",
+      "ctimeNs": "1793551142921895846"
+    },
+    {
+      "at": "2026-11-01T16:39:02.935Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "45875200",
+      "mtimeNs": "1793551142929292073",
+      "ctimeNs": "1793551142929292073"
+    },
+    {
+      "at": "2026-11-01T16:39:02.946Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "46399488",
+      "mtimeNs": "1793551142943216360",
+      "ctimeNs": "1793551142943216360"
+    },
+    {
+      "at": "2026-11-01T16:39:02.956Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "46923776",
+      "mtimeNs": "1793551142954113630",
+      "ctimeNs": "1793551142954113630"
+    },
+    {
+      "at": "2026-11-01T16:39:02.966Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "47448064",
+      "mtimeNs": "1793551142962815479",
+      "ctimeNs": "1793551142962815479"
+    },
+    {
+      "at": "2026-11-01T16:39:02.977Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "48234496",
+      "mtimeNs": "1793551142975466242",
+      "ctimeNs": "1793551142975466242"
+    },
+    {
+      "at": "2026-11-01T16:39:02.988Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "48758784",
+      "mtimeNs": "1793551142984887911",
+      "ctimeNs": "1793551142984887911"
+    },
+    {
+      "at": "2026-11-01T16:39:02.998Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "49545216",
+      "mtimeNs": "1793551142997509681",
+      "ctimeNs": "1793551142997509681"
+    },
+    {
+      "at": "2026-11-01T16:39:03.011Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "49807360",
+      "mtimeNs": "1793551143001445073",
+      "ctimeNs": "1793551143001445073"
+    },
+    {
+      "at": "2026-11-01T16:39:03.021Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "50069504",
+      "mtimeNs": "1793551143012987056",
+      "ctimeNs": "1793551143012987056"
+    },
+    {
+      "at": "2026-11-01T16:39:03.062Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "50331648",
+      "mtimeNs": "1793551143057196507",
+      "ctimeNs": "1793551143057196507"
+    },
+    {
+      "at": "2026-11-01T16:39:03.092Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "50593792",
+      "mtimeNs": "1793551143091758458",
+      "ctimeNs": "1793551143091758458"
+    },
+    {
+      "at": "2026-11-01T16:39:03.121Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "51118080",
+      "mtimeNs": "1793551143121413007",
+      "ctimeNs": "1793551143121413007"
+    },
+    {
+      "at": "2026-11-01T16:39:03.132Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "51642368",
+      "mtimeNs": "1793551143129825702",
+      "ctimeNs": "1793551143129825702"
+    },
+    {
+      "at": "2026-11-01T16:39:03.142Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "52428800",
+      "mtimeNs": "1793551143142086609",
+      "ctimeNs": "1793551143142086609"
+    },
+    {
+      "at": "2026-11-01T16:39:03.154Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "53215232",
+      "mtimeNs": "1793551143154016825",
+      "ctimeNs": "1793551143154016825"
+    },
+    {
+      "at": "2026-11-01T16:39:03.164Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "53739520",
+      "mtimeNs": "1793551143161836794",
+      "ctimeNs": "1793551143161836794"
+    },
+    {
+      "at": "2026-11-01T16:39:03.174Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "54263808",
+      "mtimeNs": "1793551143169667504",
+      "ctimeNs": "1793551143169667504"
+    },
+    {
+      "at": "2026-11-01T16:39:03.184Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "54525952",
+      "mtimeNs": "1793551143182840969",
+      "ctimeNs": "1793551143182840969"
+    },
+    {
+      "at": "2026-11-01T16:39:03.206Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "54788096",
+      "mtimeNs": "1793551143198867151",
+      "ctimeNs": "1793551143198867151"
+    },
+    {
+      "at": "2026-11-01T16:39:03.217Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "55050240",
+      "mtimeNs": "1793551143215466731",
+      "ctimeNs": "1793551143215466731"
+    },
+    {
+      "at": "2026-11-01T16:39:03.239Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "55312384",
+      "mtimeNs": "1793551143230008156",
+      "ctimeNs": "1793551143230008156"
+    },
+    {
+      "at": "2026-11-01T16:39:03.248Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "55574528",
+      "mtimeNs": "1793551143245542930",
+      "ctimeNs": "1793551143245542930"
+    },
+    {
+      "at": "2026-11-01T16:39:03.258Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "55836672",
+      "mtimeNs": "1793551143256761608",
+      "ctimeNs": "1793551143256761608"
+    },
+    {
+      "at": "2026-11-01T16:39:03.270Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "56623104",
+      "mtimeNs": "1793551143268808622",
+      "ctimeNs": "1793551143268808622"
+    },
+    {
+      "at": "2026-11-01T16:39:03.279Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "57147392",
+      "mtimeNs": "1793551143276939140",
+      "ctimeNs": "1793551143276939140"
+    },
+    {
+      "at": "2026-11-01T16:39:03.289Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "57671680",
+      "mtimeNs": "1793551143284954006",
+      "ctimeNs": "1793551143284954006"
+    },
+    {
+      "at": "2026-11-01T16:39:03.299Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "58458112",
+      "mtimeNs": "1793551143297091299",
+      "ctimeNs": "1793551143297091299"
+    },
+    {
+      "at": "2026-11-01T16:39:03.309Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "59244544",
+      "mtimeNs": "1793551143309223231",
+      "ctimeNs": "1793551143309223231"
+    },
+    {
+      "at": "2026-11-01T16:39:03.320Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "59768832",
+      "mtimeNs": "1793551143317513006",
+      "ctimeNs": "1793551143317513006"
+    },
+    {
+      "at": "2026-11-01T16:39:03.330Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "60555264",
+      "mtimeNs": "1793551143329643083",
+      "ctimeNs": "1793551143329643083"
+    },
+    {
+      "at": "2026-11-01T16:39:03.341Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "61079552",
+      "mtimeNs": "1793551143337782799",
+      "ctimeNs": "1793551143337782799"
+    },
+    {
+      "at": "2026-11-01T16:39:03.350Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "61865984",
+      "mtimeNs": "1793551143350448342",
+      "ctimeNs": "1793551143350448342"
+    },
+    {
+      "at": "2026-11-01T16:39:03.360Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "62390272",
+      "mtimeNs": "1793551143358381027",
+      "ctimeNs": "1793551143358381027"
+    },
+    {
+      "at": "2026-11-01T16:39:03.371Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "63176704",
+      "mtimeNs": "1793551143370783841",
+      "ctimeNs": "1793551143370783841"
+    },
+    {
+      "at": "2026-11-01T16:39:03.381Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "63700992",
+      "mtimeNs": "1793551143379619023",
+      "ctimeNs": "1793551143379619023"
+    },
+    {
+      "at": "2026-11-01T16:39:03.391Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "64225280",
+      "mtimeNs": "1793551143387622564",
+      "ctimeNs": "1793551143387622564"
+    },
+    {
+      "at": "2026-11-01T16:39:03.401Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "64613876",
+      "mtimeNs": "1793551143393662487",
+      "ctimeNs": "1793551143393662487"
+    },
+    {
+      "at": "2026-11-01T16:39:44.662Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "64613876",
+      "mtimeNs": "1793551143393662487",
+      "ctimeNs": "1793551184655829454"
+    },
+    {
+      "at": "2026-11-01T16:42:14.266Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "64613876",
+      "mtimeNs": "1793551334266276196",
+      "ctimeNs": "1793551334266276196"
+    },
+    {
+      "at": "2026-11-01T16:42:14.307Z",
+      "path": "/private/tmp/rio-pac-publication-xe4Cek/off/Media/Interruption.flac",
+      "inode": "24",
+      "size": "64613876",
+      "mtimeNs": "1793551334272926016",
+      "ctimeNs": "1793551334272926016"
+    }
+  ],
+  "reaEvidence": {
+    "records": [
+      {
+        "analysis_profile": null,
+        "authority": "controlled-replay",
+        "confidence": "observed",
+        "environment": {
+          "architecture": "x64",
+          "id": "darwin-x64",
+          "isolation": "process",
+          "platform": "darwin"
+        },
+        "evidence_id": "ev_19408a99958774717650095670f8a6046d5356888bb400d10ec30f3a28a7071a",
+        "evidence_links": [],
+        "limitations": [
+          "Artifact identity is unavailable for this observation.",
+          "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+          "Process trees are sampled and may omit short-lived descendants.",
+          "Filesystem observations are before/after snapshots, not syscall traces.",
+          "Inherited host environment variables are not recorded and may affect results.",
+          "No filesystem observation paths were selected; filesystem effects remain unknown.",
+          "Rendered frames were omitted because a normalization stage exceeded the remaining output_bytes budget; final rendered byte totals are unknown for those frames. See truncation_details.rendered_terminal."
+        ],
+        "locations": [],
+        "normalized_result": {
+          "cleanup": {
+            "owned_process_group": "verified",
+            "temporary_root": "removed"
+          },
+          "event_journal": [
+            {
+              "capture_order": 0,
+              "collection": "filesystem_checkpoints",
+              "index": 0
+            },
+            {
+              "capture_order": 1,
+              "collection": "frames",
+              "index": 0
+            },
+            {
+              "capture_order": 2,
+              "collection": "frames",
+              "index": 1
+            },
+            {
+              "capture_order": 3,
+              "collection": "frames",
+              "index": 2
+            },
+            {
+              "capture_order": 4,
+              "collection": "frames",
+              "index": 3
+            },
+            {
+              "capture_order": 5,
+              "collection": "rendered_frames",
+              "index": 0
+            },
+            {
+              "capture_order": 6,
+              "collection": "frames",
+              "index": 4
+            },
+            {
+              "capture_order": 7,
+              "collection": "rendered_frames",
+              "index": 1
+            },
+            {
+              "capture_order": 8,
+              "collection": "frames",
+              "index": 5
+            },
+            {
+              "capture_order": 9,
+              "collection": "rendered_frames",
+              "index": 2
+            },
+            {
+              "capture_order": 10,
+              "collection": "frames",
+              "index": 6
+            },
+            {
+              "capture_order": 11,
+              "collection": "rendered_frames",
+              "index": 3
+            },
+            {
+              "capture_order": 12,
+              "collection": "lifecycle",
+              "index": 0
+            },
+            {
+              "capture_order": 13,
+              "collection": "lifecycle",
+              "index": 1
+            },
+            {
+              "capture_order": 14,
+              "collection": "filesystem_checkpoints",
+              "index": 1
+            }
+          ],
+          "exit": {
+            "code": 0,
+            "reason": "exited",
+            "signal": 0
+          },
+          "files_after": [],
+          "files_before": [],
+          "filesystem_checkpoints": [
+            {
+              "at_ms": 0,
+              "effects": [],
+              "files": [],
+              "name": "before",
+              "truncated": false
+            },
+            {
+              "at_ms": 428,
+              "effects": [],
+              "files": [],
+              "name": "after_settlement",
+              "truncated": false
+            }
+          ],
+          "filesystem_effects": [],
+          "frames": [
+            {
+              "at_ms": 150,
+              "data": "p66664\r\nfcwd\r\ntDIR\r\nn/Users/marcelchapman/Library/Containers/com.markvapps.proaudioconverter/Data\r\nftxt\r\ntREG\r\n",
+              "sequence": 0
+            },
+            {
+              "at_ms": 150,
+              "data": "n/Applications/Pro Audio Converter.app/Contents/MacOS/Pro Audio Converter\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusenc.framework/Versions/A/opusenc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/ogg.framework/Versions/A/ogg\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusfile.framework/Versions/A/opusfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/flac.framework/Versions/A/flac\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/tta.framework/Versions/A/tta\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/wavpack.framework/Versions/A/wavpack\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libsndfile.framework/Versions/A/libsndfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mpg123.framework/Versions/A/mpg123\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemVersion.bundle/en_GB.lproj/SystemVersion.stri",
+              "sequence": 1
+            },
+            {
+              "at_ms": 150,
+              "data": "ngs\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libmodplug.framework/Versions/A/libmodplug\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libswresample.framework/Versions/A/libswresample\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/speex.framework/Versions/A/speex\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/speexdsp.framework/Versions/A/speexdsp\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libavformat.framework/Versions/A/libavformat\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbisfile.framework/Versions/A/vorbisfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opus.framework/Versions/A/opus\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbis.framework/Versions/A/vorbis\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mpc.framework/Versions/A/mpc\r\nftxt\r\ntREG\r\nn/Applicatio",
+              "sequence": 2
+            },
+            {
+              "at_ms": 150,
+              "data": "ns/Pro Audio Converter.app/Contents/Frameworks/mp4v2.framework/Versions/A/mp4v2\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/lame.framework/Versions/A/lame\r\nftxt\r\ntREG\r\nn/Library/Preferences/Logging/.plist-cache.VOsKf1Rm\r\nftxt\r\ntREG\r\nn/private/var/db/analyticsd/events.allowlist\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mac.framework/Versions/A/mac\r\nftxt\r\ntREG\r\nn/private/var/db/timezone/tz/2026e.1.0/icutz/icutz44l.dat\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbisenc.framework/Versions/A/vorbisenc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libavcodec.framework/Versions/A/libavcodec\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemAppearance.car\r\n",
+              "sequence": 3
+            },
+            {
+              "at_ms": 160,
+              "data": "ftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/InputManager.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/DictationManager.loctable\r\nftxt\r\ntREG\r\nn/usr/lib/libobjc-trampolines.dylib\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/taglib.framework/Versions/A/taglib\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libavutil.framework/Versions/A/libavutil\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/FauxVibrantLight.car\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/Common.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/Placeholders.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/Toolbar.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AudioToolbox.framework/Versions/A/Resources/FileTypeNames.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Components/Co",
+              "sequence": 4
+            },
+            {
+              "at_ms": 170,
+              "data": "reAudio.component/Contents/Resources/AudioUnits.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/MenuCommands.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Caches/com.apple.IntlDataCache.le.kbdx\r\nftxt\r\ntREG\r\nn/usr/share/icu/icudt76l.dat\r\nftxt\r\ntREG\r\nn/private/var/folders/gv/vdt07hl95rz28hpf_n4g_4s00000gn/0/com.apple.LaunchServices.dv/com.apple.LaunchServices-6291460-v2.csstore\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/Aqua.car\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/VibrantLight.car\r\nftxt\r\ntREG\r\nn/System/Library/Fonts/SFNS.ttf\r\nftxt\r\ntREG\r\nn/System/Library/PrivateFrameworks/SFSymbols.framework/Versions/A/Resources/CoreGlyphs.bundle/Contents/Resources/Assets.car\r\nftxt\r\ntREG\r\nn/System/Library/Fonts/Helvetica.ttc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Resources/Assets.car\r\nftxt\r\ntREG\r\nn/System/Library/Keyboard Layouts/AppleKeyboardLayouts.bundle/Contents/Resources/InfoPl",
+              "sequence": 5
+            },
+            {
+              "at_ms": 170,
+              "data": "ist.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/RoleDescriptions-BBBAA77A32-C4EBFEA440.strings\r\nftxt\r\ntREG\r\nn/System/Library/Components/CoreAudio.component/Contents/MacOS/CoreAudio\r\nftxt\r\ntREG\r\nn/System/Library/Keyboard Layouts/AppleKeyboardLayouts.bundle/Contents/Resources/AppleKeyboardLayouts-L.dat\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/RoleDescriptions.loctable\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/DarkAqua.car\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/Menus.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Frameworks/AppKit.framework/Versions/C/Resources/SavePanel.loctable\r\nftxt\r\ntREG\r\nn/System/Library/Components/AudioCodecs.component/Contents/MacOS/AudioCodecs\r\nf0\r\ntCHR\r\nn/dev/null\r\nf1\r\ntCHR\r\nn/dev/null\r\nf2\r\ntCHR\r\nn/dev/null\r\n",
+              "sequence": 6
+            }
+          ],
+          "interaction_events": [],
+          "limitations": [
+            "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+            "Process trees are sampled and may omit short-lived descendants.",
+            "Filesystem observations are before/after snapshots, not syscall traces.",
+            "Inherited host environment variables are not recorded and may affect results.",
+            "No filesystem observation paths were selected; filesystem effects remain unknown.",
+            "Rendered frames were omitted because a normalization stage exceeded the remaining output_bytes budget; final rendered byte totals are unknown for those frames. See truncation_details.rendered_terminal."
+          ],
+          "manifest": {
+            "architecture": "x64",
+            "comparison_contract": {
+              "ambient_environment": "unknown",
+              "environment": {},
+              "events": [],
+              "filesystem_observation_paths": [],
+              "idle_timeout_ms": 30000,
+              "limits": {
+                "file_bytes": 10000000,
+                "files": 10000,
+                "filesystem_depth": 16,
+                "output_bytes": 12000,
+                "processes": 1000
+              },
+              "normalization": {
+                "paths": false,
+                "patterns": [],
+                "pids": true,
+                "ports": true,
+                "time_bucket_ms": 10
+              },
+              "port_normalization_version": "contextual-endpoints-v2",
+              "rendered_line_format": "trailing-spaces-trimmed-v1",
+              "settle_ms": 100,
+              "terminal": {
+                "columns": 80,
+                "rows": 24,
+                "scrollback": 1000
+              },
+              "timeout_ms": 10000,
+              "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm"
+            },
+            "comparison_contract_sha256": "fac1dbbc58fa8647061af7513de75a2efe7d68d40807b0c65dd8bc75ae307666",
+            "completed_at": "2026-11-01T16:29:51.144Z",
+            "executable_identity": {
+              "reason": null,
+              "state": "path_metadata_unchanged"
+            },
+            "executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+            "full_scenario_sha256": "b3a13ea4d19bc11b48a6982c98906f221682e216a2d417b5b465e8dc39016230",
+            "normalization_sha256": "5c58aa1aa890197f15f9c59ef755d01120e6e07f356fa1ef2f20787e63b6fa87",
+            "platform": "darwin",
+            "provider_version": "3",
+            "pty_backend": "node-pty",
+            "rea_version": "6.7.0",
+            "scenario": {
+              "arguments": ["-nP", "-p", "66664", "-F", "pftn"],
+              "environment": {},
+              "events": [],
+              "executable": "/usr/sbin/lsof",
+              "executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+              "filesystem_observation_paths": [],
+              "idle_timeout_ms": 30000,
+              "limits": {
+                "file_bytes": 10000000,
+                "files": 10000,
+                "filesystem_depth": 16,
+                "output_bytes": 12000,
+                "processes": 1000
+              },
+              "normalization": {
+                "paths": false,
+                "patterns": [],
+                "pids": true,
+                "ports": true,
+                "time_bucket_ms": 10
+              },
+              "settle_ms": 100,
+              "terminal": {
+                "columns": 80,
+                "rows": 24,
+                "scrollback": 1000
+              },
+              "timeout_ms": 10000,
+              "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm"
+            },
+            "selected_executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+            "started_at": "2026-11-01T16:29:50.715Z"
+          },
+          "normalization": {
+            "paths": false,
+            "patterns": [],
+            "pids": true,
+            "ports": true,
+            "time_bucket_ms": 10
+          },
+          "process_samples": [],
+          "rendered_frames": [
+            {
+              "active_buffer": "normal",
+              "at_ms": 150,
+              "columns": 80,
+              "cursor_x": 0,
+              "cursor_y": 6,
+              "lines": [
+                "p66664",
+                "fcwd",
+                "tDIR",
+                "n/Users/marcelchapman/Library/Containers/com.markvapps.proaudioconverter/Data",
+                "ftxt",
+                "tREG",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "rows": 24,
+              "sequence": 0,
+              "serialized_state": "p66664\r\nfcwd\r\ntDIR\r\nn/Users/marcelchapman/Library/Containers/com.markvapps.proaudioconverter/Data\r\nftxt\r\ntREG\u001b[1B\u001b[4D"
+            },
+            {
+              "active_buffer": "normal",
+              "at_ms": 150,
+              "columns": 80,
+              "cursor_x": 1,
+              "cursor_y": 23,
+              "lines": [
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/flac.framework/Versio",
+                "ns/A/flac",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/tta.framework/Version",
+                "s/A/tta",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/wavpack.framework/Ver",
+                "sions/A/wavpack",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/libsndfile.framework/",
+                "Versions/A/libsndfile",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/mpg123.framework/Vers",
+                "ions/A/mpg123",
+                "ftxt",
+                "tREG",
+                "n/System/Library/CoreServices/SystemVersion.bundle/en_GB.lproj/SystemVersion.str",
+                "i"
+              ],
+              "rows": 24,
+              "sequence": 1,
+              "serialized_state": "p66664\r\nfcwd\r\ntDIR\r\nn/Users/marcelchapman/Library/Containers/com.markvapps.proaudioconverter/Data\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/MacOS/Pro Audio Converter\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusenc.framework/Versions/A/opusenc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/ogg.framework/Versions/A/ogg\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusfile.framework/Versions/A/opusfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/flac.framework/Versions/A/flac\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/tta.framework/Versions/A/tta\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/wavpack.framework/Versions/A/wavpack\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libsndfile.framework/Versions/A/libsndfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mpg123.framework/Versions/A/mpg123\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemVersion.bundle/en_GB.lproj/SystemVersion.stri"
+            },
+            {
+              "active_buffer": "normal",
+              "at_ms": 150,
+              "columns": 80,
+              "cursor_x": 12,
+              "cursor_y": 23,
+              "lines": [
+                "rsions/A/speexdsp",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/libavformat.framework",
+                "/Versions/A/libavformat",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbisfile.framework/",
+                "Versions/A/vorbisfile",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/opus.framework/Versio",
+                "ns/A/opus",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbis.framework/Vers",
+                "ions/A/vorbis",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/mpc.framework/Version",
+                "s/A/mpc",
+                "ftxt",
+                "tREG",
+                "n/Applicatio"
+              ],
+              "rows": 24,
+              "sequence": 2,
+              "serialized_state": "p66664\r\nfcwd\r\ntDIR\r\nn/Users/marcelchapman/Library/Containers/com.markvapps.proaudioconverter/Data\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/MacOS/Pro Audio Converter\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusenc.framework/Versions/A/opusenc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/ogg.framework/Versions/A/ogg\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusfile.framework/Versions/A/opusfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/flac.framework/Versions/A/flac\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/tta.framework/Versions/A/tta\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/wavpack.framework/Versions/A/wavpack\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libsndfile.framework/Versions/A/libsndfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mpg123.framework/Versions/A/mpg123\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemVersion.bundle/en_GB.lproj/SystemVersion.strings\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libmodplug.framework/Versions/A/libmodplug\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libswresample.framework/Versions/A/libswresample\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/speex.framework/Versions/A/speex\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/speexdsp.framework/Versions/A/speexdsp\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libavformat.framework/Versions/A/libavformat\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbisfile.framework/Versions/A/vorbisfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opus.framework/Versions/A/opus\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbis.framework/Versions/A/vorbis\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mpc.framework/Versions/A/mpc\r\nftxt\r\ntREG\r\nn/Applicatio"
+            },
+            {
+              "active_buffer": "normal",
+              "at_ms": 150,
+              "columns": 80,
+              "cursor_x": 0,
+              "cursor_y": 23,
+              "lines": [
+                "n/Library/Preferences/Logging/.plist-cache.VOsKf1Rm",
+                "ftxt",
+                "tREG",
+                "n/private/var/db/analyticsd/events.allowlist",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/mac.framework/Version",
+                "s/A/mac",
+                "ftxt",
+                "tREG",
+                "n/private/var/db/timezone/tz/2026e.1.0/icutz/icutz44l.dat",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbisenc.framework/V",
+                "ersions/A/vorbisenc",
+                "ftxt",
+                "tREG",
+                "n/Applications/Pro Audio Converter.app/Contents/Frameworks/libavcodec.framework/",
+                "Versions/A/libavcodec",
+                "ftxt",
+                "tREG",
+                "n/System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemA",
+                "ppearance.car",
+                ""
+              ],
+              "rows": 24,
+              "sequence": 3,
+              "serialized_state": "p66664\r\nfcwd\r\ntDIR\r\nn/Users/marcelchapman/Library/Containers/com.markvapps.proaudioconverter/Data\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/MacOS/Pro Audio Converter\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusenc.framework/Versions/A/opusenc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/ogg.framework/Versions/A/ogg\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opusfile.framework/Versions/A/opusfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/flac.framework/Versions/A/flac\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/tta.framework/Versions/A/tta\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/wavpack.framework/Versions/A/wavpack\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libsndfile.framework/Versions/A/libsndfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mpg123.framework/Versions/A/mpg123\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemVersion.bundle/en_GB.lproj/SystemVersion.strings\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libmodplug.framework/Versions/A/libmodplug\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libswresample.framework/Versions/A/libswresample\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/speex.framework/Versions/A/speex\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/speexdsp.framework/Versions/A/speexdsp\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libavformat.framework/Versions/A/libavformat\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbisfile.framework/Versions/A/vorbisfile\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/opus.framework/Versions/A/opus\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbis.framework/Versions/A/vorbis\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mpc.framework/Versions/A/mpc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mp4v2.framework/Versions/A/mp4v2\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/lame.framework/Versions/A/lame\r\nftxt\r\ntREG\r\nn/Library/Preferences/Logging/.plist-cache.VOsKf1Rm\r\nftxt\r\ntREG\r\nn/private/var/db/analyticsd/events.allowlist\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/mac.framework/Versions/A/mac\r\nftxt\r\ntREG\r\nn/private/var/db/timezone/tz/2026e.1.0/icutz/icutz44l.dat\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/vorbisenc.framework/Versions/A/vorbisenc\r\nftxt\r\ntREG\r\nn/Applications/Pro Audio Converter.app/Contents/Frameworks/libavcodec.framework/Versions/A/libavcodec\r\nftxt\r\ntREG\r\nn/System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemAppearance.car\r\n"
+            }
+          ],
+          "residual_unknowns": [
+            {
+              "reason": "Process trees are sampled and may omit short-lived descendants.",
+              "scope": "process"
+            },
+            {
+              "reason": "The executable digest is a prelaunch file sample; operating-system image binding is not atomically observed.",
+              "scope": "process"
+            },
+            {
+              "reason": "Inherited host environment variables are not recorded.",
+              "scope": "environment"
+            },
+            {
+              "reason": "Network activity is not observed by this capture.",
+              "scope": "network"
+            },
+            {
+              "reason": "No filesystem observation paths were selected; filesystem effects remain unknown.",
+              "scope": "filesystem"
+            }
+          ],
+          "settlement": {
+            "cleanup_outcome": "not_required",
+            "elapsed_ms": 215,
+            "state": "quiesced"
+          },
+          "truncated": true,
+          "truncation_details": {
+            "filesystem_after": {
+              "depth_limit": 16,
+              "enumeration_omissions": [],
+              "enumeration_reasons": [],
+              "enumeration_truncated": false,
+              "files_limit": 10000,
+              "hash_budget_bytes": 10000000,
+              "hash_omissions": [],
+              "hashed_bytes": 0
+            },
+            "filesystem_before": {
+              "depth_limit": 16,
+              "enumeration_omissions": [],
+              "enumeration_reasons": [],
+              "enumeration_truncated": false,
+              "files_limit": 10000,
+              "hash_budget_bytes": 10000000,
+              "hash_omissions": [],
+              "hashed_bytes": 0
+            },
+            "normalized_terminal": {
+              "budget_bytes": 12000,
+              "omitted_frames": 0,
+              "retained_bytes": 6032
+            },
+            "process": {
+              "coverage": "sampled",
+              "first_sampling_failure": null,
+              "retained_samples": 0,
+              "sample_limit": 1000,
+              "sample_limit_reached": false,
+              "sampling_failures": 0,
+              "sampling_partial": false
+            },
+            "raw_terminal": {
+              "budget_bytes": 12000,
+              "observed_bytes": 6032,
+              "observed_frames": 7,
+              "retained_bytes": 6032,
+              "retained_frames": 7
+            },
+            "rendered_terminal": {
+              "budget_bytes": 12000,
+              "observed_bytes": 8207,
+              "observed_frames": 7,
+              "retained_bytes": 8207,
+              "retained_frames": 4,
+              "unknown_size_frames": 3
+            }
+          }
+        },
+        "operation": "capture_process_scenario",
+        "parameters": {
+          "argument_count": 5,
+          "event_count": 0,
+          "executable_name": "lsof",
+          "filesystem_observation_path_count": 0,
+          "normalization": {
+            "paths": false,
+            "patterns": [],
+            "pids": true,
+            "ports": true,
+            "time_bucket_ms": 10
+          }
+        },
+        "predicate_type": "rea.process-capture",
+        "provider": {
+          "id": "rea-process",
+          "name": "REA process capture",
+          "version": "3"
+        },
+        "raw_result": null,
+        "relationship_coverage": null,
+        "subject": null
+      },
+      {
+        "analysis_profile": null,
+        "authority": "controlled-replay",
+        "confidence": "observed",
+        "environment": {
+          "architecture": "x64",
+          "id": "darwin-x64",
+          "isolation": "process",
+          "platform": "darwin"
+        },
+        "evidence_id": "ev_519efe3b4517cbae7b0541aad6e900a4db4207523d99aee35b2c174803b14385",
+        "evidence_links": [],
+        "limitations": [
+          "Artifact identity is unavailable for this observation.",
+          "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+          "Process trees are sampled and may omit short-lived descendants.",
+          "Filesystem observations are before/after snapshots, not syscall traces.",
+          "Inherited host environment variables are not recorded and may affect results.",
+          "No filesystem observation paths were selected; filesystem effects remain unknown."
+        ],
+        "locations": [],
+        "normalized_result": {
+          "cleanup": {
+            "owned_process_group": "verified",
+            "temporary_root": "removed"
+          },
+          "event_journal": [
+            {
+              "capture_order": 0,
+              "collection": "filesystem_checkpoints",
+              "index": 0
+            },
+            {
+              "capture_order": 1,
+              "collection": "lifecycle",
+              "index": 0
+            },
+            {
+              "capture_order": 2,
+              "collection": "lifecycle",
+              "index": 1
+            },
+            {
+              "capture_order": 3,
+              "collection": "filesystem_checkpoints",
+              "index": 1
+            }
+          ],
+          "exit": {
+            "code": 1,
+            "reason": "exited",
+            "signal": 0
+          },
+          "files_after": [],
+          "files_before": [],
+          "filesystem_checkpoints": [
+            {
+              "at_ms": 0,
+              "effects": [],
+              "files": [],
+              "name": "before",
+              "truncated": false
+            },
+            {
+              "at_ms": 307,
+              "effects": [],
+              "files": [],
+              "name": "after_settlement",
+              "truncated": false
+            }
+          ],
+          "filesystem_effects": [],
+          "frames": [],
+          "interaction_events": [],
+          "limitations": [
+            "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+            "Process trees are sampled and may omit short-lived descendants.",
+            "Filesystem observations are before/after snapshots, not syscall traces.",
+            "Inherited host environment variables are not recorded and may affect results.",
+            "No filesystem observation paths were selected; filesystem effects remain unknown."
+          ],
+          "manifest": {
+            "architecture": "x64",
+            "comparison_contract": {
+              "ambient_environment": "unknown",
+              "environment": {},
+              "events": [],
+              "filesystem_observation_paths": [],
+              "idle_timeout_ms": 30000,
+              "limits": {
+                "file_bytes": 10000000,
+                "files": 10000,
+                "filesystem_depth": 16,
+                "output_bytes": 4000,
+                "processes": 1000
+              },
+              "normalization": {
+                "paths": false,
+                "patterns": [],
+                "pids": true,
+                "ports": true,
+                "time_bucket_ms": 10
+              },
+              "port_normalization_version": "contextual-endpoints-v2",
+              "rendered_line_format": "trailing-spaces-trimmed-v1",
+              "settle_ms": 100,
+              "terminal": {
+                "columns": 80,
+                "rows": 24,
+                "scrollback": 1000
+              },
+              "timeout_ms": 10000,
+              "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm"
+            },
+            "comparison_contract_sha256": "5218becb0aa748c387a4b29beec3813299359211b07e070102e1b265ec18802e",
+            "completed_at": "2026-11-01T16:31:02.514Z",
+            "executable_identity": {
+              "reason": null,
+              "state": "path_metadata_unchanged"
+            },
+            "executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+            "full_scenario_sha256": "8c1449830cc9b2554528d876e2dbc955205a4d39b8922d9d652b3d1480a954bc",
+            "normalization_sha256": "5c58aa1aa890197f15f9c59ef755d01120e6e07f356fa1ef2f20787e63b6fa87",
+            "platform": "darwin",
+            "provider_version": "3",
+            "pty_backend": "node-pty",
+            "rea_version": "6.7.0",
+            "scenario": {
+              "arguments": [
+                "-nP",
+                "-a",
+                "-p",
+                "66664",
+                "+d",
+                "/private/tmp/rio-pac-publication-xe4Cek/off/Media"
+              ],
+              "environment": {},
+              "events": [],
+              "executable": "/usr/sbin/lsof",
+              "executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+              "filesystem_observation_paths": [],
+              "idle_timeout_ms": 30000,
+              "limits": {
+                "file_bytes": 10000000,
+                "files": 10000,
+                "filesystem_depth": 16,
+                "output_bytes": 4000,
+                "processes": 1000
+              },
+              "normalization": {
+                "paths": false,
+                "patterns": [],
+                "pids": true,
+                "ports": true,
+                "time_bucket_ms": 10
+              },
+              "settle_ms": 100,
+              "terminal": {
+                "columns": 80,
+                "rows": 24,
+                "scrollback": 1000
+              },
+              "timeout_ms": 10000,
+              "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm"
+            },
+            "selected_executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+            "started_at": "2026-11-01T16:31:02.208Z"
+          },
+          "normalization": {
+            "paths": false,
+            "patterns": [],
+            "pids": true,
+            "ports": true,
+            "time_bucket_ms": 10
+          },
+          "process_samples": [],
+          "rendered_frames": [],
+          "residual_unknowns": [
+            {
+              "reason": "Process trees are sampled and may omit short-lived descendants.",
+              "scope": "process"
+            },
+            {
+              "reason": "The executable digest is a prelaunch file sample; operating-system image binding is not atomically observed.",
+              "scope": "process"
+            },
+            {
+              "reason": "Inherited host environment variables are not recorded.",
+              "scope": "environment"
+            },
+            {
+              "reason": "Network activity is not observed by this capture.",
+              "scope": "network"
+            },
+            {
+              "reason": "No filesystem observation paths were selected; filesystem effects remain unknown.",
+              "scope": "filesystem"
+            }
+          ],
+          "settlement": {
+            "cleanup_outcome": "cleaned",
+            "elapsed_ms": 105,
+            "state": "unverifiable"
+          },
+          "truncated": false,
+          "truncation_details": {
+            "filesystem_after": {
+              "depth_limit": 16,
+              "enumeration_omissions": [],
+              "enumeration_reasons": [],
+              "enumeration_truncated": false,
+              "files_limit": 10000,
+              "hash_budget_bytes": 10000000,
+              "hash_omissions": [],
+              "hashed_bytes": 0
+            },
+            "filesystem_before": {
+              "depth_limit": 16,
+              "enumeration_omissions": [],
+              "enumeration_reasons": [],
+              "enumeration_truncated": false,
+              "files_limit": 10000,
+              "hash_budget_bytes": 10000000,
+              "hash_omissions": [],
+              "hashed_bytes": 0
+            },
+            "normalized_terminal": {
+              "budget_bytes": 4000,
+              "omitted_frames": 0,
+              "retained_bytes": 0
+            },
+            "process": {
+              "coverage": "sampled",
+              "first_sampling_failure": null,
+              "retained_samples": 0,
+              "sample_limit": 1000,
+              "sample_limit_reached": false,
+              "sampling_failures": 0,
+              "sampling_partial": false
+            },
+            "raw_terminal": {
+              "budget_bytes": 4000,
+              "observed_bytes": 0,
+              "observed_frames": 0,
+              "retained_bytes": 0,
+              "retained_frames": 0
+            },
+            "rendered_terminal": {
+              "budget_bytes": 4000,
+              "observed_bytes": 0,
+              "observed_frames": 0,
+              "retained_bytes": 0,
+              "retained_frames": 0
+            }
+          }
+        },
+        "operation": "capture_process_scenario",
+        "parameters": {
+          "argument_count": 6,
+          "event_count": 0,
+          "executable_name": "lsof",
+          "filesystem_observation_path_count": 0,
+          "normalization": {
+            "paths": false,
+            "patterns": [],
+            "pids": true,
+            "ports": true,
+            "time_bucket_ms": 10
+          }
+        },
+        "predicate_type": "rea.process-capture",
+        "provider": {
+          "id": "rea-process",
+          "name": "REA process capture",
+          "version": "3"
+        },
+        "raw_result": null,
+        "relationship_coverage": null,
+        "subject": null
+      },
+      {
+        "analysis_profile": null,
+        "authority": "controlled-replay",
+        "confidence": "observed",
+        "environment": {
+          "architecture": "x64",
+          "id": "darwin-x64",
+          "isolation": "process",
+          "platform": "darwin"
+        },
+        "evidence_id": "ev_ab31a4cc381818f083808fc152696af2ce45d27a3da87df02665b49c727cd716",
+        "evidence_links": [],
+        "limitations": [
+          "Artifact identity is unavailable for this observation.",
+          "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+          "Process trees are sampled and may omit short-lived descendants.",
+          "Filesystem observations are before/after snapshots, not syscall traces.",
+          "Inherited host environment variables are not recorded and may affect results.",
+          "No filesystem observation paths were selected; filesystem effects remain unknown."
+        ],
+        "locations": [],
+        "normalized_result": {
+          "cleanup": {
+            "owned_process_group": "verified",
+            "temporary_root": "removed"
+          },
+          "event_journal": [
+            {
+              "capture_order": 0,
+              "collection": "filesystem_checkpoints",
+              "index": 0
+            },
+            {
+              "capture_order": 1,
+              "collection": "lifecycle",
+              "index": 0
+            },
+            {
+              "capture_order": 2,
+              "collection": "lifecycle",
+              "index": 1
+            },
+            {
+              "capture_order": 3,
+              "collection": "filesystem_checkpoints",
+              "index": 1
+            }
+          ],
+          "exit": {
+            "code": 1,
+            "reason": "exited",
+            "signal": 0
+          },
+          "files_after": [],
+          "files_before": [],
+          "filesystem_checkpoints": [
+            {
+              "at_ms": 0,
+              "effects": [],
+              "files": [],
+              "name": "before",
+              "truncated": false
+            },
+            {
+              "at_ms": 428,
+              "effects": [],
+              "files": [],
+              "name": "after_settlement",
+              "truncated": false
+            }
+          ],
+          "filesystem_effects": [],
+          "frames": [],
+          "interaction_events": [],
+          "limitations": [
+            "The executable digest is a prelaunch file sample; matching path metadata immediately after spawn does not prove an atomic operating-system image binding.",
+            "Process trees are sampled and may omit short-lived descendants.",
+            "Filesystem observations are before/after snapshots, not syscall traces.",
+            "Inherited host environment variables are not recorded and may affect results.",
+            "No filesystem observation paths were selected; filesystem effects remain unknown."
+          ],
+          "manifest": {
+            "architecture": "x64",
+            "comparison_contract": {
+              "ambient_environment": "unknown",
+              "environment": {},
+              "events": [],
+              "filesystem_observation_paths": [],
+              "idle_timeout_ms": 30000,
+              "limits": {
+                "file_bytes": 10000000,
+                "files": 10000,
+                "filesystem_depth": 16,
+                "output_bytes": 4000,
+                "processes": 1000
+              },
+              "normalization": {
+                "paths": false,
+                "patterns": [],
+                "pids": true,
+                "ports": true,
+                "time_bucket_ms": 10
+              },
+              "port_normalization_version": "contextual-endpoints-v2",
+              "rendered_line_format": "trailing-spaces-trimmed-v1",
+              "settle_ms": 100,
+              "terminal": {
+                "columns": 80,
+                "rows": 24,
+                "scrollback": 1000
+              },
+              "timeout_ms": 10000,
+              "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm"
+            },
+            "comparison_contract_sha256": "5218becb0aa748c387a4b29beec3813299359211b07e070102e1b265ec18802e",
+            "completed_at": "2026-11-01T16:36:39.166Z",
+            "executable_identity": {
+              "reason": null,
+              "state": "path_metadata_unchanged"
+            },
+            "executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+            "full_scenario_sha256": "8c1449830cc9b2554528d876e2dbc955205a4d39b8922d9d652b3d1480a954bc",
+            "normalization_sha256": "5c58aa1aa890197f15f9c59ef755d01120e6e07f356fa1ef2f20787e63b6fa87",
+            "platform": "darwin",
+            "provider_version": "3",
+            "pty_backend": "node-pty",
+            "rea_version": "6.7.0",
+            "scenario": {
+              "arguments": [
+                "-nP",
+                "-a",
+                "-p",
+                "66664",
+                "+d",
+                "/private/tmp/rio-pac-publication-xe4Cek/off/Media"
+              ],
+              "environment": {},
+              "events": [],
+              "executable": "/usr/sbin/lsof",
+              "executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+              "filesystem_observation_paths": [],
+              "idle_timeout_ms": 30000,
+              "limits": {
+                "file_bytes": 10000000,
+                "files": 10000,
+                "filesystem_depth": 16,
+                "output_bytes": 4000,
+                "processes": 1000
+              },
+              "normalization": {
+                "paths": false,
+                "patterns": [],
+                "pids": true,
+                "ports": true,
+                "time_bucket_ms": 10
+              },
+              "settle_ms": 100,
+              "terminal": {
+                "columns": 80,
+                "rows": 24,
+                "scrollback": 1000
+              },
+              "timeout_ms": 10000,
+              "working_directory": "/Volumes/External Disk/Dropbox/GitHub/Rhythm"
+            },
+            "selected_executable_sha256": "d3254a0e396b722e99b822a648b8f22934c6ea2bfc1eee8a9fd27d479e3eda80",
+            "started_at": "2026-11-01T16:36:38.738Z"
+          },
+          "normalization": {
+            "paths": false,
+            "patterns": [],
+            "pids": true,
+            "ports": true,
+            "time_bucket_ms": 10
+          },
+          "process_samples": [],
+          "rendered_frames": [],
+          "residual_unknowns": [
+            {
+              "reason": "Process trees are sampled and may omit short-lived descendants.",
+              "scope": "process"
+            },
+            {
+              "reason": "The executable digest is a prelaunch file sample; operating-system image binding is not atomically observed.",
+              "scope": "process"
+            },
+            {
+              "reason": "Inherited host environment variables are not recorded.",
+              "scope": "environment"
+            },
+            {
+              "reason": "Network activity is not observed by this capture.",
+              "scope": "network"
+            },
+            {
+              "reason": "No filesystem observation paths were selected; filesystem effects remain unknown.",
+              "scope": "filesystem"
+            }
+          ],
+          "settlement": {
+            "cleanup_outcome": "cleaned",
+            "elapsed_ms": 189,
+            "state": "unverifiable"
+          },
+          "truncated": false,
+          "truncation_details": {
+            "filesystem_after": {
+              "depth_limit": 16,
+              "enumeration_omissions": [],
+              "enumeration_reasons": [],
+              "enumeration_truncated": false,
+              "files_limit": 10000,
+              "hash_budget_bytes": 10000000,
+              "hash_omissions": [],
+              "hashed_bytes": 0
+            },
+            "filesystem_before": {
+              "depth_limit": 16,
+              "enumeration_omissions": [],
+              "enumeration_reasons": [],
+              "enumeration_truncated": false,
+              "files_limit": 10000,
+              "hash_budget_bytes": 10000000,
+              "hash_omissions": [],
+              "hashed_bytes": 0
+            },
+            "normalized_terminal": {
+              "budget_bytes": 4000,
+              "omitted_frames": 0,
+              "retained_bytes": 0
+            },
+            "process": {
+              "coverage": "sampled",
+              "first_sampling_failure": null,
+              "retained_samples": 0,
+              "sample_limit": 1000,
+              "sample_limit_reached": false,
+              "sampling_failures": 0,
+              "sampling_partial": false
+            },
+            "raw_terminal": {
+              "budget_bytes": 4000,
+              "observed_bytes": 0,
+              "observed_frames": 0,
+              "retained_bytes": 0,
+              "retained_frames": 0
+            },
+            "rendered_terminal": {
+              "budget_bytes": 4000,
+              "observed_bytes": 0,
+              "observed_frames": 0,
+              "retained_bytes": 0,
+              "retained_frames": 0
+            }
+          }
+        },
+        "operation": "capture_process_scenario",
+        "parameters": {
+          "argument_count": 6,
+          "event_count": 0,
+          "executable_name": "lsof",
+          "filesystem_observation_path_count": 0,
+          "normalization": {
+            "paths": false,
+            "patterns": [],
+            "pids": true,
+            "ports": true,
+            "time_bucket_ms": 10
+          }
+        },
+        "predicate_type": "rea.process-capture",
+        "provider": {
+          "id": "rea-process",
+          "name": "REA process capture",
+          "version": "3"
+        },
+        "raw_result": null,
+        "relationship_coverage": null,
+        "subject": null
+      }
+    ],
+    "limitations": "Initial rendered terminal capture was truncated; retained raw lsof frames were complete. Idle lsof snapshots have no matching media descriptors; short-lived handles remain outside that sample."
+  },
+  "validation": {
+    "normalEdits": 4,
+    "ordinaryChangeCases": 4,
+    "interruptionCases": 1,
+    "assertions": "passed",
+    "productionNativeSourceUnchanged": true,
+    "productionNativeBinaryUnchanged": true
+  },
+  "limitations": [
+    "Behavior on this version/host/fixtures only; no private-code analysis or hidden safety guarantees inferred",
+    "No systematic power-loss or all-timing qualification",
+    "No cross-UID, adversarial substitution or security changes",
+    "Small-file metadata writes were sub-millisecond; only one large-file interruption was attempted",
+    "No Rio production code changed or application package built"
+  ]
+}

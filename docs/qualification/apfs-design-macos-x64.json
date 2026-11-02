@@ -1,0 +1,4150 @@
+{
+  "date": "2026-11-01",
+  "system": "ProductName:\t\tmacOS\nProductVersion:\t\t15.8.1\nBuildVersion:\t\t24H32\n",
+  "architecture": "x64",
+  "sdk": "26.2",
+  "mounts": [
+    "/dev/disk5s1 on /private/tmp/rio-apfs-design-nu14wA/on (apfs, local, nodev, nosuid, journaled, nobrowse, mounted by marcelchapman)",
+    "/dev/disk7s1 on /private/tmp/rio-apfs-design-nu14wA/off (apfs, local, nodev, nosuid, journaled, noowners, nobrowse, mounted by marcelchapman)"
+  ],
+  "scope": "Documented APIs; ordinary own-file changes and self-SIGKILL of disposable model processes only. No cross-UID or offensive/adversarial probing.",
+  "productionSourceSha256": "a8d2fbf8b5920108648b6f2431ba7bdcc11bb5f94d14bd89349d1df5f44fcea1",
+  "productionBinarySha256": "fe5f066ccf46b33415142e8969fb28495c46f123f5371821aadf51b43a0f0406",
+  "primitives": [
+    {
+      "mode": "on",
+      "noowners": false,
+      "fdRetainsOriginal": true,
+      "swapUsesCurrentEntries": true,
+      "swapPreservesBoth": true,
+      "exclusiveRenameCollisionErrno": 17,
+      "exclusiveRenameSourceIsPathBound": true,
+      "descriptorCloneOriginal": true,
+      "pathnameCloneCurrentEntry": true,
+      "cloneCollisionErrno": 17,
+      "descriptorCopyOriginal": true,
+      "fcopyfilePreservesOffsets": true,
+      "fileportOriginal": true,
+      "exchangedataErrno": 45,
+      "crossRenameErrno": 18,
+      "crossCloneErrno": 18,
+      "nofollowErrno": 62,
+      "hardlinkCount": 2,
+      "fullfsyncReturnedSuccess": true
+    },
+    {
+      "mode": "off",
+      "noowners": true,
+      "fdRetainsOriginal": true,
+      "swapUsesCurrentEntries": true,
+      "swapPreservesBoth": true,
+      "exclusiveRenameCollisionErrno": 17,
+      "exclusiveRenameSourceIsPathBound": true,
+      "descriptorCloneOriginal": true,
+      "pathnameCloneCurrentEntry": true,
+      "cloneCollisionErrno": 17,
+      "descriptorCopyOriginal": true,
+      "fcopyfilePreservesOffsets": true,
+      "fileportOriginal": true,
+      "exchangedataErrno": 45,
+      "crossRenameErrno": 18,
+      "crossCloneErrno": 18,
+      "nofollowErrno": 62,
+      "hardlinkCount": 2,
+      "fullfsyncReturnedSuccess": true
+    }
+  ],
+  "model": {
+    "description": "New unique media object + private ownership-enabled SQLite reference transaction; no destructive media cleanup. One attempt per DB research demonstrator only, not Rio integration or complete architecture qualification.",
+    "maxFileBytes": 67108864,
+    "reservedAttemptsLimit": 1,
+    "cleanup": "retain only; no unlink/rename/replace",
+    "rows": [
+      {
+        "mode": "on",
+        "test": {
+          "kind": "normal"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "d63bfec6-c65f-491e-b8b0-f7b06c9e8912",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-d63bfec6-c65f-491e-b8b0-f7b06c9e8912.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "39",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549550423518157",
+                "ctime": "1793549550423518157",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            },
+            "verification": {
+              "format": "FLAC",
+              "backend": "emscripten",
+              "engineVersion": "2.4.0 (TagLib 2.3.2)",
+              "originalSha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491",
+              "candidateSha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b",
+              "audioSha256": "6cf33d95ac90219028260d3ad1c76637c50416d0dce18b44c023913e411237f1",
+              "audioBytes": 1046,
+              "frames": 2,
+              "preservedCommentFields": 12,
+              "preservedPictureCount": 0,
+              "preservedBlockTypes": [0, 2]
+            }
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-d63bfec6-c65f-491e-b8b0-f7b06c9e8912.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            },
+            {
+              "phase": "after-reconcile"
+            },
+            {
+              "operation": "retain-superseded-and-orphan-evidence"
+            },
+            {
+              "phase": "retention-recorded"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "d63bfec6-c65f-491e-b8b0-f7b06c9e8912",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-d63bfec6-c65f-491e-b8b0-f7b06c9e8912.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "39",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549550423518157",
+                "ctime": "1793549550423518157",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "retentionLimit": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: single-attempt retention budget exhausted\n\n1 !== 0\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-d63bfec6-c65f-491e-b8b0-f7b06c9e8912.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-intent"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "47",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549551575547999",
+                "ctime": "1793549551575547999",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": ["Track.flac"],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-create"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "60",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549553085299465",
+                "ctime": "1793549553085299465",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-1093c0e9-709e-45c9-875a-87f02d4a251e.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "during-write"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "75",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549554697094499",
+                "ctime": "1793549554697094499",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-beb864b9-d135-4a15-9633-0b4b56f1838f.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-verify"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "90",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549556138834782",
+                "ctime": "1793549556138834782",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-d766508e-6bcd-4cce-8191-e3ab7fe0acb9.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-revalidate"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "106",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549558009529181",
+                "ctime": "1793549558009529181",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-94e95c83-1b76-4a0c-93fd-26d5deb62620.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "during-pointer-transaction"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "122",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549559699016349",
+                "ctime": "1793549559699016349",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-686c9957-17c6-4ad1-8117-a6aae3304ea9.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-commit"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "b165e756-452c-441e-a91a-206c5a775203",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-b165e756-452c-441e-a91a-206c5a775203.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "147",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549562822917461",
+                "ctime": "1793549562822917461",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-b165e756-452c-441e-a91a-206c5a775203.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "before-reconcile"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "cfb44ad7-fc71-4908-a0e4-78d78212dd23",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-cfb44ad7-fc71-4908-a0e4-78d78212dd23.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "164",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549565336159139",
+                "ctime": "1793549565336159139",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-cfb44ad7-fc71-4908-a0e4-78d78212dd23.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-reconcile"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "810e86e5-34e6-435f-8b2c-82366482570c",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-810e86e5-34e6-435f-8b2c-82366482570c.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "181",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549567326835070",
+                "ctime": "1793549567326835070",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-810e86e5-34e6-435f-8b2c-82366482570c.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "crash",
+          "crashAt": "retention-recorded"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "1eef445e-8755-42d4-855c-36deef9fb642",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-1eef445e-8755-42d4-855c-36deef9fb642.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "198",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549569304108932",
+                "ctime": "1793549569304108932",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-1eef445e-8755-42d4-855c-36deef9fb642.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "rename",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: No such file or directory"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-ad3be52c-0338-4aa7-a3ef-f15f91bcb539.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "rename",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-11/Media/.rio-version-ad3be52c-0338-4aa7-a3ef-f15f91bcb539.flac",
+                    "device": "16777235",
+                    "inode": "215",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-11/Media/external-saved.flac",
+                    "device": "16777235",
+                    "inode": "206",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: No such file or directory"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-ad3be52c-0338-4aa7-a3ef-f15f91bcb539.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "replace",
+          "changeTarget": "source",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-d271ba8d-33bc-4844-bee5-e634f8cf8294.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "replace",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-12/Media/.rio-version-d271ba8d-33bc-4844-bee5-e634f8cf8294.flac",
+                    "device": "16777235",
+                    "inode": "231",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-12/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "234",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-12/Media/external-saved.flac",
+                    "device": "16777235",
+                    "inode": "222",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-d271ba8d-33bc-4844-bee5-e634f8cf8294.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "remove-recreate",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-866cd4c5-349f-4354-b8ed-bd1b84f2eec6.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "remove-recreate",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-13/Media/.rio-version-866cd4c5-349f-4354-b8ed-bd1b84f2eec6.flac",
+                    "device": "16777235",
+                    "inode": "249",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-13/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "252",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-866cd4c5-349f-4354-b8ed-bd1b84f2eec6.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "modify",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549577780581966',\n-   ctime: '1793549576196708119',\n    device: '16777235',\n    directory: false,\n    file: true,\n    inode: '257',\n    links: '1',\n+   mtime: '1793549577780581966',\n+   size: '1234'\n-   mtime: '1793549576196708119',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-894c1339-c106-42d9-b1e4-a4f27c68b1d1.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "modify",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-14/Media/.rio-version-894c1339-c106-42d9-b1e4-a4f27c68b1d1.flac",
+                    "device": "16777235",
+                    "inode": "266",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-14/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "257",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549577780581966',\n-   ctime: '1793549576196708119',\n    device: '16777235',\n    directory: false,\n    file: true,\n    inode: '257',\n    links: '1',\n+   mtime: '1793549577780581966',\n+   size: '1234'\n-   mtime: '1793549576196708119',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-894c1339-c106-42d9-b1e4-a4f27c68b1d1.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "symlink",
+          "changeTarget": "source",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-7ae40706-fd73-4714-840c-4968f51ce147.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "symlink",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-15/Media/.rio-version-7ae40706-fd73-4714-840c-4968f51ce147.flac",
+                    "device": "16777235",
+                    "inode": "282",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-15/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "285",
+                    "links": "1",
+                    "symlink": true,
+                    "value": "/private/tmp/rio-apfs-design-nu14wA/on/Control/case-15/other.flac"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-15/Media/external-saved.flac",
+                    "device": "16777235",
+                    "inode": "273",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-7ae40706-fd73-4714-840c-4968f51ce147.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "hardlink",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-b0a809a5-a421-4169-859b-aa103a1a1549.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "hardlink",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-16/Media/.rio-version-b0a809a5-a421-4169-859b-aa103a1a1549.flac",
+                    "device": "16777235",
+                    "inode": "300",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-16/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "291",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-16/Media/external-hardlink.flac",
+                    "device": "16777235",
+                    "inode": "291",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-b0a809a5-a421-4169-859b-aa103a1a1549.flac",
+          "Track.flac",
+          "external-hardlink.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "rename",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: No such file or directory"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-8a8340d5-f9f1-4c2c-8889-3f0a73eb8ae8.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "rename",
+                "name": ".rio-version-8a8340d5-f9f1-4c2c-8889-3f0a73eb8ae8.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-17/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "309",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-17/Media/external-saved.flac",
+                    "device": "16777235",
+                    "inode": "318",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "309",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549582516671884",
+                "ctime": "1793549582516671884",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": ["Track.flac", "external-saved.flac"],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "replace",
+          "changeTarget": "candidate",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-582677c4-763b-4f98-a075-043fd4fa547d.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "replace",
+                "name": ".rio-version-582677c4-763b-4f98-a075-043fd4fa547d.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-18/Media/.rio-version-582677c4-763b-4f98-a075-043fd4fa547d.flac",
+                    "device": "16777235",
+                    "inode": "338",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-18/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "326",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-18/Media/external-saved.flac",
+                    "device": "16777235",
+                    "inode": "335",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-582677c4-763b-4f98-a075-043fd4fa547d.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "remove-recreate",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-4cd48879-d1b6-432d-b6fb-ba5a78f15277.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "remove-recreate",
+                "name": ".rio-version-4cd48879-d1b6-432d-b6fb-ba5a78f15277.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-19/Media/.rio-version-4cd48879-d1b6-432d-b6fb-ba5a78f15277.flac",
+                    "device": "16777235",
+                    "inode": "356",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-19/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "344",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "344",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549587029082932",
+                "ctime": "1793549587029082932",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-4cd48879-d1b6-432d-b6fb-ba5a78f15277.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "modify",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb'\n- 'c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b'\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-8ef1959a-8d79-426b-bb99-9bacef075363.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "modify",
+                "name": ".rio-version-8ef1959a-8d79-426b-bb99-9bacef075363.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-20/Media/.rio-version-8ef1959a-8d79-426b-bb99-9bacef075363.flac",
+                    "device": "16777235",
+                    "inode": "371",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-20/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "362",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "362",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549589046448407",
+                "ctime": "1793549589046448407",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-8ef1959a-8d79-426b-bb99-9bacef075363.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "symlink",
+          "changeTarget": "candidate",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-ca7fe967-b0e4-41ad-87f8-d02a8dae7b68.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "symlink",
+                "name": ".rio-version-ca7fe967-b0e4-41ad-87f8-d02a8dae7b68.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-21/Media/.rio-version-ca7fe967-b0e4-41ad-87f8-d02a8dae7b68.flac",
+                    "device": "16777235",
+                    "inode": "391",
+                    "links": "1",
+                    "symlink": true,
+                    "value": "/private/tmp/rio-apfs-design-nu14wA/on/Control/case-21/other.flac"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-21/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "379",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-21/Media/external-saved.flac",
+                    "device": "16777235",
+                    "inode": "388",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-ca7fe967-b0e4-41ad-87f8-d02a8dae7b68.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "hardlink",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-a253f6ab-14a3-4c9c-864a-53297a6035ea.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "hardlink",
+                "name": ".rio-version-a253f6ab-14a3-4c9c-864a-53297a6035ea.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-22/Media/.rio-version-a253f6ab-14a3-4c9c-864a-53297a6035ea.flac",
+                    "device": "16777235",
+                    "inode": "406",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-22/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "397",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-22/Media/external-hardlink.flac",
+                    "device": "16777235",
+                    "inode": "406",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777235",
+                "inode": "397",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549593372625430",
+                "ctime": "1793549593372625430",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-a253f6ab-14a3-4c9c-864a-53297a6035ea.flac",
+          "Track.flac",
+          "external-hardlink.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "replace",
+          "changeTarget": "candidate",
+          "changeAt": "after-commit"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-791990cd-fd4e-429f-bdde-7356110d9bf2.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "replace",
+                "name": ".rio-version-791990cd-fd4e-429f-bdde-7356110d9bf2.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-23/Media/.rio-version-791990cd-fd4e-429f-bdde-7356110d9bf2.flac",
+                    "device": "16777235",
+                    "inode": "429",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-23/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "416",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-23/Media/external-saved.flac",
+                    "device": "16777235",
+                    "inode": "425",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-791990cd-fd4e-429f-bdde-7356110d9bf2.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "modify",
+          "changeTarget": "candidate",
+          "changeAt": "before-reconcile"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549599669939039',\n-   ctime: '1793549599000317622',\n    device: '16777235',\n    directory: false,\n    file: true,\n    inode: '443',\n    links: '1',\n+   mtime: '1793549599669939039',\n+   size: '1234'\n-   mtime: '1793549599000317622',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-60eecd1d-0398-49d0-b5dd-6e9778b44b11.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "modify",
+                "name": ".rio-version-60eecd1d-0398-49d0-b5dd-6e9778b44b11.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-24/Media/.rio-version-60eecd1d-0398-49d0-b5dd-6e9778b44b11.flac",
+                    "device": "16777235",
+                    "inode": "443",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-24/Media/Track.flac",
+                    "device": "16777235",
+                    "inode": "434",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549599669939039',\n-   ctime: '1793549599000317622',\n    device: '16777235',\n    directory: false,\n    file: true,\n    inode: '443',\n    links: '1',\n+   mtime: '1793549599669939039',\n+   size: '1234'\n-   mtime: '1793549599000317622',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-60eecd1d-0398-49d0-b5dd-6e9778b44b11.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "directory",
+          "changeTarget": "source",
+          "changeAt": "after-intent"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "directory",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-25/Media/ordinary-file.flac",
+                    "device": "16777235",
+                    "inode": "461",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c707672ced6506ecdf65c7a1b4935b1bcafcb549a05e553b184b9730e182b380"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-25/Media-moved/Track.flac",
+                    "device": "16777235",
+                    "inode": "451",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-a1598838-e01e-41b3-aefa-8841d6e11544.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": ["ordinary-file.flac"],
+        "movedDirectoryNames": [
+          ".rio-version-a1598838-e01e-41b3-aefa-8841d6e11544.flac",
+          "Track.flac"
+        ]
+      },
+      {
+        "mode": "on",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "directory",
+          "changeTarget": "source",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-d4188abd-a192-4481-990d-643b17b6d9fe.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "directory",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-26/Media/ordinary-file.flac",
+                    "device": "16777235",
+                    "inode": "482",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c707672ced6506ecdf65c7a1b4935b1bcafcb549a05e553b184b9730e182b380"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-26/Media-moved/.rio-version-d4188abd-a192-4481-990d-643b17b6d9fe.flac",
+                    "device": "16777235",
+                    "inode": "478",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/on/case-26/Media-moved/Track.flac",
+                    "device": "16777235",
+                    "inode": "469",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": ["ordinary-file.flac"],
+        "movedDirectoryNames": [
+          ".rio-version-d4188abd-a192-4481-990d-643b17b6d9fe.flac",
+          "Track.flac"
+        ]
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "normal"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "2b1767f0-e758-475c-a88a-0a9abc01dd47",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-2b1767f0-e758-475c-a88a-0a9abc01dd47.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "29",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549606767033576",
+                "ctime": "1793549606767033576",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            },
+            "verification": {
+              "format": "FLAC",
+              "backend": "emscripten",
+              "engineVersion": "2.4.0 (TagLib 2.3.2)",
+              "originalSha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491",
+              "candidateSha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b",
+              "audioSha256": "6cf33d95ac90219028260d3ad1c76637c50416d0dce18b44c023913e411237f1",
+              "audioBytes": 1046,
+              "frames": 2,
+              "preservedCommentFields": 12,
+              "preservedPictureCount": 0,
+              "preservedBlockTypes": [0, 2]
+            }
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-2b1767f0-e758-475c-a88a-0a9abc01dd47.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            },
+            {
+              "phase": "after-reconcile"
+            },
+            {
+              "operation": "retain-superseded-and-orphan-evidence"
+            },
+            {
+              "phase": "retention-recorded"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "2b1767f0-e758-475c-a88a-0a9abc01dd47",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-2b1767f0-e758-475c-a88a-0a9abc01dd47.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "29",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549606767033576",
+                "ctime": "1793549606767033576",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "retentionLimit": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: single-attempt retention budget exhausted\n\n1 !== 0\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-2b1767f0-e758-475c-a88a-0a9abc01dd47.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-intent"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "32",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549607837115522",
+                "ctime": "1793549607837115522",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": ["Track.flac"],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-create"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "35",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549609643497279",
+                "ctime": "1793549609643497279",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-d1c3dcea-dffa-46de-85d6-bafbf8539d7f.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "during-write"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "39",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549611350399133",
+                "ctime": "1793549611350399133",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-4733d96c-663f-491c-a409-196082fb0c89.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-verify"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "43",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549612903606869",
+                "ctime": "1793549612903606869",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-8a555b78-9cac-4829-aa4e-771c0a3705f5.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-revalidate"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "47",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549614596253374",
+                "ctime": "1793549614596253374",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-300def36-a845-4768-9e01-bd2251b639f8.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "during-pointer-transaction"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "51",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549616337338871",
+                "ctime": "1793549616337338871",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-9dd12977-f289-40f7-a94a-f72a9a663d05.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-commit"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "3987fbbb-bb48-4806-9cd0-4c55729e6f0e",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-3987fbbb-bb48-4806-9cd0-4c55729e6f0e.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "56",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549619156932136",
+                "ctime": "1793549619156932136",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-3987fbbb-bb48-4806-9cd0-4c55729e6f0e.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "before-reconcile"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "65239bce-828b-4a8e-9979-96b761d02380",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-65239bce-828b-4a8e-9979-96b761d02380.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "60",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549621285877384",
+                "ctime": "1793549621285877384",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-65239bce-828b-4a8e-9979-96b761d02380.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "after-reconcile"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "a78929a7-c72d-4f47-8057-81019dc7f47a",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-a78929a7-c72d-4f47-8057-81019dc7f47a.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "64",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549623667729254",
+                "ctime": "1793549623667729254",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-a78929a7-c72d-4f47-8057-81019dc7f47a.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "crash",
+          "crashAt": "retention-recorded"
+        },
+        "publisherSignal": "SIGKILL",
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "new-generation",
+            "ref": {
+              "token": "95b04aee-06fd-40ff-ab71-13a2a53bc1a1",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": ".rio-version-95b04aee-06fd-40ff-ab71-13a2a53bc1a1.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "68",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549625898199410",
+                "ctime": "1793549625898199410",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+            }
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-95b04aee-06fd-40ff-ab71-13a2a53bc1a1.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "rename",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: No such file or directory"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-14373bf4-05aa-4a86-b7a5-b89f9c36ecc5.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "rename",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-38/Media/.rio-version-14373bf4-05aa-4a86-b7a5-b89f9c36ecc5.flac",
+                    "device": "16777239",
+                    "inode": "72",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-38/Media/external-saved.flac",
+                    "device": "16777239",
+                    "inode": "71",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: No such file or directory"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-14373bf4-05aa-4a86-b7a5-b89f9c36ecc5.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "replace",
+          "changeTarget": "source",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-7ab6226c-ffcb-46e8-9ceb-fcd01077bf74.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "replace",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-39/Media/.rio-version-7ab6226c-ffcb-46e8-9ceb-fcd01077bf74.flac",
+                    "device": "16777239",
+                    "inode": "76",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-39/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "77",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-39/Media/external-saved.flac",
+                    "device": "16777239",
+                    "inode": "75",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-7ab6226c-ffcb-46e8-9ceb-fcd01077bf74.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "remove-recreate",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-9eaf08b2-f0e7-46b2-a269-b086e047a17f.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "remove-recreate",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-40/Media/.rio-version-9eaf08b2-f0e7-46b2-a269-b086e047a17f.flac",
+                    "device": "16777239",
+                    "inode": "81",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-40/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "82",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-9eaf08b2-f0e7-46b2-a269-b086e047a17f.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "modify",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549635277074713',\n-   ctime: '1793549633681218071',\n    device: '16777239',\n    directory: false,\n    file: true,\n    inode: '85',\n    links: '1',\n+   mtime: '1793549635277074713',\n+   size: '1234'\n-   mtime: '1793549633681218071',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-7fb560d3-be3b-4b6a-8bd2-31d7286cce39.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "modify",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-41/Media/.rio-version-7fb560d3-be3b-4b6a-8bd2-31d7286cce39.flac",
+                    "device": "16777239",
+                    "inode": "86",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-41/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "85",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549635277074713',\n-   ctime: '1793549633681218071',\n    device: '16777239',\n    directory: false,\n    file: true,\n    inode: '85',\n    links: '1',\n+   mtime: '1793549635277074713',\n+   size: '1234'\n-   mtime: '1793549633681218071',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-7fb560d3-be3b-4b6a-8bd2-31d7286cce39.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "symlink",
+          "changeTarget": "source",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-dcc1ac9a-a6f8-4c09-ae49-160f84b3dcb2.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "symlink",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-42/Media/.rio-version-dcc1ac9a-a6f8-4c09-ae49-160f84b3dcb2.flac",
+                    "device": "16777239",
+                    "inode": "90",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-42/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "91",
+                    "links": "1",
+                    "symlink": true,
+                    "value": "/private/tmp/rio-apfs-design-nu14wA/on/Control/case-42/other.flac"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-42/Media/external-saved.flac",
+                    "device": "16777239",
+                    "inode": "89",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-dcc1ac9a-a6f8-4c09-ae49-160f84b3dcb2.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "hardlink",
+          "changeTarget": "source",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-3507c55a-1114-4aef-8b32-f049c1b5cd76.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "hardlink",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-43/Media/.rio-version-3507c55a-1114-4aef-8b32-f049c1b5cd76.flac",
+                    "device": "16777239",
+                    "inode": "95",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-43/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "94",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-43/Media/external-hardlink.flac",
+                    "device": "16777239",
+                    "inode": "94",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-3507c55a-1114-4aef-8b32-f049c1b5cd76.flac",
+          "Track.flac",
+          "external-hardlink.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "rename",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: No such file or directory"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-65e6d36f-de39-4fa7-b7a6-02348b2bdf90.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "rename",
+                "name": ".rio-version-65e6d36f-de39-4fa7-b7a6-02348b2bdf90.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-44/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "100",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-44/Media/external-saved.flac",
+                    "device": "16777239",
+                    "inode": "101",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "100",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549639664503525",
+                "ctime": "1793549639664503525",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": ["Track.flac", "external-saved.flac"],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "replace",
+          "changeTarget": "candidate",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-685cb430-9b5f-44a3-965b-7eef23f803d1.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "replace",
+                "name": ".rio-version-685cb430-9b5f-44a3-965b-7eef23f803d1.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-45/Media/.rio-version-685cb430-9b5f-44a3-965b-7eef23f803d1.flac",
+                    "device": "16777239",
+                    "inode": "106",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-45/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "104",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-45/Media/external-saved.flac",
+                    "device": "16777239",
+                    "inode": "105",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-685cb430-9b5f-44a3-965b-7eef23f803d1.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "remove-recreate",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-cdf33788-31fb-4c34-b9af-88925e5ab14c.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "remove-recreate",
+                "name": ".rio-version-cdf33788-31fb-4c34-b9af-88925e5ab14c.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-46/Media/.rio-version-cdf33788-31fb-4c34-b9af-88925e5ab14c.flac",
+                    "device": "16777239",
+                    "inode": "111",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-46/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "109",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "109",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549643926677248",
+                "ctime": "1793549643926677248",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-cdf33788-31fb-4c34-b9af-88925e5ab14c.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "modify",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb'\n- 'c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b'\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-1ea221f0-530c-4622-9320-32a688a9cb83.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "modify",
+                "name": ".rio-version-1ea221f0-530c-4622-9320-32a688a9cb83.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-47/Media/.rio-version-1ea221f0-530c-4622-9320-32a688a9cb83.flac",
+                    "device": "16777239",
+                    "inode": "115",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-47/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "114",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "114",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549645989429127",
+                "ctime": "1793549645989429127",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-1ea221f0-530c-4622-9320-32a688a9cb83.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "symlink",
+          "changeTarget": "candidate",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-2bcff0a4-2957-4f6a-b242-5ec9e7fb204f.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "symlink",
+                "name": ".rio-version-2bcff0a4-2957-4f6a-b242-5ec9e7fb204f.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-48/Media/.rio-version-2bcff0a4-2957-4f6a-b242-5ec9e7fb204f.flac",
+                    "device": "16777239",
+                    "inode": "120",
+                    "links": "1",
+                    "symlink": true,
+                    "value": "/private/tmp/rio-apfs-design-nu14wA/on/Control/case-48/other.flac"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-48/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "118",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-48/Media/external-saved.flac",
+                    "device": "16777239",
+                    "inode": "119",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "Error: read open: Too many levels of symbolic links"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-2bcff0a4-2957-4f6a-b242-5ec9e7fb204f.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "hardlink",
+          "changeTarget": "candidate",
+          "changeAt": "after-verify"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-ab29f036-4ca1-4951-ae29-9ebb2a7aaca4.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "hardlink",
+                "name": ".rio-version-ab29f036-4ca1-4951-ae29-9ebb2a7aaca4.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-49/Media/.rio-version-ab29f036-4ca1-4951-ae29-9ebb2a7aaca4.flac",
+                    "device": "16777239",
+                    "inode": "124",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-49/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "123",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-49/Media/external-hardlink.flac",
+                    "device": "16777239",
+                    "inode": "124",
+                    "links": "2",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "original",
+            "ref": {
+              "token": "original",
+              "trackId": "3d44163b8bec9181a15f65e409290a6552271bd76ad77e9b6af51e95ddc6a39b",
+              "name": "Track.flac",
+              "identity": {
+                "device": "16777239",
+                "inode": "123",
+                "size": "1604",
+                "links": "1",
+                "mtime": "1793549650778803018",
+                "ctime": "1793549650778803018",
+                "file": true,
+                "directory": false
+              },
+              "sha256": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+            }
+          },
+          "ledger": [
+            {
+              "operation": "recovery-retain-only"
+            }
+          ]
+        },
+        "mediaNames": [
+          ".rio-version-ab29f036-4ca1-4951-ae29-9ebb2a7aaca4.flac",
+          "Track.flac",
+          "external-hardlink.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "replace",
+          "changeTarget": "candidate",
+          "changeAt": "after-commit"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-1a8b6023-bb6a-473d-a6f6-c1293935a214.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "replace",
+                "name": ".rio-version-1a8b6023-bb6a-473d-a6f6-c1293935a214.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-50/Media/.rio-version-1a8b6023-bb6a-473d-a6f6-c1293935a214.flac",
+                    "device": "16777239",
+                    "inode": "131",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-50/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "129",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-50/Media/external-saved.flac",
+                    "device": "16777239",
+                    "inode": "130",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(s, ref.identity) && s.links === \"1\" && s.file)\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-1a8b6023-bb6a-473d-a6f6-c1293935a214.flac",
+          "Track.flac",
+          "external-saved.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "modify",
+          "changeTarget": "candidate",
+          "changeAt": "before-reconcile"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549657165996455',\n-   ctime: '1793549656606995002',\n    device: '16777239',\n    directory: false,\n    file: true,\n    inode: '135',\n    links: '1',\n+   mtime: '1793549657165996455',\n+   size: '1234'\n-   mtime: '1793549656606995002',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-ac1dfc52-0a34-462d-99cf-e2a9f1e880d5.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "modify",
+                "name": ".rio-version-ac1dfc52-0a34-462d-99cf-e2a9f1e880d5.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-51/Media/.rio-version-ac1dfc52-0a34-462d-99cf-e2a9f1e880d5.flac",
+                    "device": "16777239",
+                    "inode": "135",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "f8da2e6d0c91277024752be3e46883622b6ef0b136e3c787df2b66425f2d6bcb"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-51/Media/Track.flac",
+                    "device": "16777239",
+                    "inode": "134",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n+   ctime: '1793549657165996455',\n-   ctime: '1793549656606995002',\n    device: '16777239',\n    directory: false,\n    file: true,\n    inode: '135',\n    links: '1',\n+   mtime: '1793549657165996455',\n+   size: '1234'\n-   mtime: '1793549656606995002',\n-   size: '1604'\n  }\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": [
+          ".rio-version-ac1dfc52-0a34-462d-99cf-e2a9f1e880d5.flac",
+          "Track.flac"
+        ],
+        "movedDirectoryNames": []
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "directory",
+          "changeTarget": "source",
+          "changeAt": "after-intent"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "directory",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-52/Media/ordinary-file.flac",
+                    "device": "16777239",
+                    "inode": "140",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c707672ced6506ecdf65c7a1b4935b1bcafcb549a05e553b184b9730e182b380"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-52/Media-moved/Track.flac",
+                    "device": "16777239",
+                    "inode": "138",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-7d0de681-7c11-4953-9d0d-9381f1d03a8a.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": ["ordinary-file.flac"],
+        "movedDirectoryNames": [
+          ".rio-version-7d0de681-7c11-4953-9d0d-9381f1d03a8a.flac",
+          "Track.flac"
+        ]
+      },
+      {
+        "mode": "off",
+        "test": {
+          "kind": "ordinary-change",
+          "change": "directory",
+          "changeTarget": "source",
+          "changeAt": "after-revalidate"
+        },
+        "publisherSignal": null,
+        "publication": {
+          "mode": "publish",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": [
+            {
+              "phase": "after-intent"
+            },
+            {
+              "operation": "create-exclusive",
+              "name": ".rio-version-47869c92-2af6-4171-b314-51e4df5bddd1.flac"
+            },
+            {
+              "phase": "after-create"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "during-write"
+            },
+            {
+              "operation": "write-created-fd",
+              "bytes": 802
+            },
+            {
+              "phase": "after-verify"
+            },
+            {
+              "phase": "after-revalidate"
+            },
+            {
+              "ordinaryProcess": {
+                "change": "directory",
+                "name": "Track.flac",
+                "preserved": [
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-53/Media/ordinary-file.flac",
+                    "device": "16777239",
+                    "inode": "147",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c707672ced6506ecdf65c7a1b4935b1bcafcb549a05e553b184b9730e182b380"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-53/Media-moved/.rio-version-47869c92-2af6-4171-b314-51e4df5bddd1.flac",
+                    "device": "16777239",
+                    "inode": "145",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "c00ef663c513bdeaa44ab4f7c2d5cf6b611257304ae970703574ecd17315e18b"
+                  },
+                  {
+                    "file": "/private/tmp/rio-apfs-design-nu14wA/off/case-53/Media-moved/Track.flac",
+                    "device": "16777239",
+                    "inode": "144",
+                    "links": "1",
+                    "symlink": false,
+                    "value": "5603d0633b853954eaea4ca7a30668685e211a461855a6d693fb02ad31581491"
+                  }
+                ]
+              }
+            },
+            {
+              "phase": "during-pointer-transaction"
+            },
+            {
+              "operation": "publish-db-reference"
+            },
+            {
+              "phase": "after-commit"
+            },
+            {
+              "phase": "before-reconcile"
+            }
+          ]
+        },
+        "recovery": {
+          "mode": "recover",
+          "result": {
+            "status": "fail-closed",
+            "reason": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(object(stat(fd), c.rootIdentity))\n"
+          },
+          "ledger": []
+        },
+        "mediaNames": ["ordinary-file.flac"],
+        "movedDirectoryNames": [
+          ".rio-version-47869c92-2af6-4171-b314-51e4df5bddd1.flac",
+          "Track.flac"
+        ]
+      }
+    ]
+  },
+  "unresolved": [
+    "Hostile/cross-UID testing not performed under revised mission limits",
+    "Complete trusted-control-store and recovery namespace proof",
+    "Multi-generation recovery and production retention budgeting",
+    "I/O/flush/ENOSPC faults, unavailable volumes and physical power failure",
+    "Production Library/receipt/playback/UI/packaged integration",
+    "All supported macOS/APFS versions",
+    "Whether user accepts changed authoritative path and storage retention"
+  ]
+}

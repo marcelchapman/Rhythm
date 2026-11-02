@@ -1,0 +1,192 @@
+{
+  "study": "Rio Phase 2C.1",
+  "date": "2026-11-01",
+  "decision": "No safe support in the current publication design; retain noowners rejection",
+  "productionChanges": [],
+  "environment": {
+    "macOS": "15.8.1",
+    "build": "24H32",
+    "architecture": "x64"
+  },
+  "productionNativeSourceSha256": "a8d2fbf8b5920108648b6f2431ba7bdcc11bb5f94d14bd89349d1df5f44fcea1",
+  "nativeManifest": {
+    "fingerprint": "a8cca9b4d15bdcbc2ee07b8394c18f3d63e0b289d82be16655c046c1a4f124c5",
+    "platform": "darwin",
+    "arch": "x64",
+    "napi": 8,
+    "testing": false,
+    "compiler": "Apple clang version 17.0.0 (clang-1700.6.4.2)",
+    "sha256": "fe5f066ccf46b33415142e8969fb28495c46f123f5371821aadf51b43a0f0406"
+  },
+  "volumes": [
+    {
+      "ownership": "on",
+      "syscalls": {
+        "filesystem": "apfs",
+        "flags": 76583448,
+        "noowners": false,
+        "uid": 501,
+        "gid": 20,
+        "reportedOwner": 501,
+        "reportedGroup": 20,
+        "mode": 448,
+        "atomicExchange": true,
+        "noOverwrite": true,
+        "inodeIdentity": true,
+        "symlinkRefused": true,
+        "hardlinkVisible": true,
+        "staleIdentityDistinguished": true,
+        "fsync": true,
+        "fullfsync": true,
+        "sameUidCanRemoveDenyAcl": true
+      },
+      "probe": {
+        "status": "supported",
+        "filesystem": "apfs",
+        "barrier": "fullfsync"
+      },
+      "open": {
+        "status": "ready"
+      },
+      "coordinator": "same ID/path commit; pre/post-publication startup recovery passed"
+    },
+    {
+      "ownership": "off",
+      "syscalls": {
+        "filesystem": "apfs",
+        "flags": 78680600,
+        "noowners": true,
+        "uid": 501,
+        "gid": 20,
+        "reportedOwner": 501,
+        "reportedGroup": 20,
+        "mode": 448,
+        "atomicExchange": true,
+        "noOverwrite": true,
+        "inodeIdentity": true,
+        "symlinkRefused": true,
+        "hardlinkVisible": true,
+        "staleIdentityDistinguished": true,
+        "fsync": true,
+        "fullfsync": true,
+        "sameUidCanRemoveDenyAcl": true
+      },
+      "probe": {
+        "status": "unsupported",
+        "reason": "Require local writable APFS with ownership enabled"
+      },
+      "open": {
+        "status": "unsupported",
+        "reason": "Require local writable APFS with ownership enabled"
+      },
+      "coordinator": "refused before publication; bytes/DB unchanged, journal aborted"
+    }
+  ],
+  "ownershipEnabledNativeCases": [
+    "production probe, exchange, sync, reopen inspection and committed cleanup",
+    "production abort preserves original and removes only private artifacts",
+    "production rejects a substituted target without deleting it",
+    "filesystem capabilities and occupied no-overwrite probe",
+    "expected exchange retains candidate, displaced A and independent rollback",
+    "substitution before entry produces no namespace change",
+    "unexpected B at exact precheck/exchange boundary is preserved as conflict",
+    "same-inode in-place mutation at exchange boundary fails digest verification",
+    "unexpected directory at exact exchange boundary is retained intact",
+    "unexpected symlink at exchange boundary never edits its referent",
+    "independent digest check rejects a falsely positive native observation",
+    "failed preparation reports retained workspace without changing public file",
+    "leaf symlink rejected without touching referent",
+    "parent substitution before exchange is refused",
+    "parent swapped at syscall boundary cannot redirect anchored exchange",
+    "changed registered root and forged expected digest are rejected",
+    "hard-linked target rejected",
+    "non-regular target rejected",
+    "traversal and candidate paths cannot enter publication API",
+    "foreign-device guard rejects cross-filesystem artifacts where available",
+    "candidate substitution before exchange is refused",
+    "cleanup preserves unexpected slot substitution",
+    "cleanup preserves changed rollback bytes",
+    "unknown workspace entries prevent cleanup",
+    "cancellation-style abort cleans only owned private artifacts",
+    "workspace permission or identity substitution refuses operations",
+    "extended workspace ACL is rejected despite mode 0700",
+    "interrupted exchange is inspectable after original lease closes",
+    "post-exchange observation interruption reports recovery-required",
+    "synchronization error is propagated with evidence intact",
+    "lease records are snapshots and closed handles cannot mutate",
+    "SIGKILL at prepared boundary retains inspectable evidence",
+    "SIGKILL at before boundary retains inspectable evidence",
+    "SIGKILL at after boundary retains inspectable evidence",
+    "SIGKILL at synced boundary retains inspectable evidence"
+  ],
+  "crossUid": {
+    "executed": true,
+    "uid": 4294967294,
+    "gid": 4294967294,
+    "supplementaryGroups": [],
+    "observations": [
+      {
+        "uid": 4294967294,
+        "gid": 4294967294,
+        "entered": 0,
+        "reportedOwner": null,
+        "mode": null,
+        "readWriteBeforeAclRemoval": 0,
+        "createdEntry": 0,
+        "chmodAllowed": 0,
+        "removedAcl": 0,
+        "readWriteAfterAclRemoval": 0,
+        "ownership": "enabled",
+        "workspace": "0700, empty ACL"
+      },
+      {
+        "uid": 4294967294,
+        "gid": 4294967294,
+        "entered": 0,
+        "reportedOwner": null,
+        "mode": null,
+        "readWriteBeforeAclRemoval": 0,
+        "createdEntry": 0,
+        "chmodAllowed": 0,
+        "removedAcl": 0,
+        "readWriteAfterAclRemoval": 0,
+        "ownership": "enabled",
+        "workspace": "named-user allow + everyone deny ACL"
+      },
+      {
+        "uid": 4294967294,
+        "gid": 4294967294,
+        "entered": 1,
+        "reportedOwner": 4294967294,
+        "mode": 448,
+        "readWriteBeforeAclRemoval": 1,
+        "createdEntry": 1,
+        "chmodAllowed": 1,
+        "removedAcl": 1,
+        "readWriteAfterAclRemoval": 1,
+        "ownership": "noowners",
+        "workspace": "0700, empty ACL"
+      },
+      {
+        "uid": 4294967294,
+        "gid": 4294967294,
+        "entered": 0,
+        "reportedOwner": null,
+        "mode": null,
+        "readWriteBeforeAclRemoval": 0,
+        "createdEntry": 0,
+        "chmodAllowed": 0,
+        "removedAcl": 1,
+        "readWriteAfterAclRemoval": 1,
+        "ownership": "noowners",
+        "workspace": "named-user allow + everyone deny ACL"
+      }
+    ]
+  },
+  "limitations": [
+    "Return-value and SIGKILL qualification, not physical power-loss testing",
+    "Intel macOS 15.8.1 only; no arm64 qualification",
+    "No noowners production publication bypass; raw syscall tests are not product support",
+    "No new packaged UI qualification because support was not enabled"
+  ]
+}

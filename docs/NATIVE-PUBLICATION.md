@@ -137,6 +137,39 @@ successful actual operation/barrier probes. Node-only pathname/device equality
 is not treated as proof: Linux bind mounts can share a device while being
 different mounts. There is no EXDEV copy/delete fallback.
 
+Phase 2C.1 investigated APFS `noowners` on disposable images. Atomic exchange and
+barrier calls worked, but a separate ordinary UID could enter 0700 staging and
+remove a restrictive ACL. The required private namespace exclusion was not
+preserved, so the strong publisher still rejects that mount policy. See [APFS-NOOWNERS.md](APFS-NOOWNERS.md) for
+the safety argument, cross-UID evidence and qualification matrix.
+
+Phase 2C.2 separately tested the proposed integrity-only noowners reuse. A
+second UID could substitute an unrelated inode after the final cleanup check;
+the experimental copy returned `cleaned` after deleting its last link. The
+strong adapter was not changed and no second adapter was enabled. See
+[APFS-NOOWNERS-ADAPTER.md](APFS-NOOWNERS-ADAPTER.md) for the exact interleave,
+controls, retained production refusal and remaining cleanup invariant.
+
+Phase 2C.3 examined documented object/path binding and a disposable versioned-media
+reference model with no destructive media cleanup. The model changes pathname
+semantics and is not a qualified production adapter; the strong staged publisher
+continues to refuse noowners.
+See [APFS-NOOWNERS-ARCHITECTURE.md](APFS-NOOWNERS-ARCHITECTURE.md) for API results,
+process-crash observations, alternatives and unresolved qualification requirements.
+
+Phase 2C finalization adds separate `metadataSupport` and
+`writeMetadataInPlace` native operations for local writable APFS, including
+`noowners`. They do not relax this strong publisher. They open an anchored target
+without symlink traversal, require a bounded regular single-link writable file,
+check expected fingerprint/original bytes, and rewrite through the retained
+descriptor. Named/held identity is checked during the rewrite; normal `fsync`,
+reread and close follow. There is no exchange, private staging, backup or pathname
+cleanup in that path. The coordinator supplies the verified FLAC candidate and
+performs independent post-write verification and catalog reconciliation. This is
+practical desktop in-place publication, **not crash-atomic publication** or
+exclusion of hostile concurrent writers. See [METADATA-EDITING.md](METADATA-EDITING.md)
+for selection, playback safeguards and interrupted-write recovery.
+
 Network, FUSE, overlay and other filesystem types fail policy. Hydrated
 provider/sync-managed files can resemble ordinary local files and are not thereby
 qualified; reliable identification and live-writer exclusion remain integration
@@ -223,7 +256,8 @@ remain in place.
 
 Current local qualification: Intel macOS 15.8.1, internal APFS with ownership
 enabled, Node 26.12.0 and Electron 44.9.2 / Node 24.22.0. The external APFS workspace
-volume is separately detected as `noowners` and reports unsupported. These results
+volume is separately detected as `noowners` and reports unsupported for the
+strong staged publisher; the separate in-place capability is qualified below. These results
 do not qualify every APFS mount, macOS 13, native arm64, Linux, storage hardware,
 file-provider behavior or actual power loss.
 
@@ -256,3 +290,19 @@ adapter's new candidate is mode 0600 and does not clone original attributes);
 provide playback-release and external-conflict handling. Restart inspection is
 intentionally not a mutating recovery capability. Signed/notarized distribution
 and the already-documented TagLib/WASM license work remain separate release gates.
+
+## Local APFS metadata in-place qualification
+
+Phase 2C finalization retained the existing production and instrumented strong
+publication qualification. Its APFS ownership requirement is unchanged. Separate
+coordinator tests cover real descriptor-bound in-place edits, stale identity,
+partial-write failure and startup before/after physical mutation. Source and
+freshly packaged Intel macOS Track Info acceptance passed on a disposable
+`noowners` APFS image and packaged acceptance passed on a disposable folder on
+the real external APFS `noowners` volume. Native capability reported local APFS
+with ownership disabled; main selected in-place publication and no staged
+publication record/workspace was created. Successful writes preserved encoded
+audio, pathname and inode; file metadata was reread and the current receipt
+updated. Permission loss failed visibly with a matching diagnostic reference.
+These results qualify practical local in-place behavior, not atomicity under a
+physical-write interruption or stronger private-workspace exclusion on noowners.
