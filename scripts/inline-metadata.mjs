@@ -12,7 +12,10 @@ import {
   mkdir,
   stat,
   chmod,
+  link,
+  unlink,
 } from "node:fs/promises";
+import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createHash } from "node:crypto";
@@ -116,11 +119,12 @@ async function installControls() {
     const original = ipcMain._invokeHandlers.get("metadata:edit");
     ipcMain.removeHandler("metadata:edit");
     ipcMain.handle("metadata:edit", async (...args) => {
-      globalThis.inlineCalls.push({
+      const call = {
         id: args[1],
         session: args[2],
         patch: structuredClone(args[3]),
-      });
+      };
+      globalThis.inlineCalls.push(call);
       let last = performance.now(),
         maxGap = 0;
       const loop = { maxGapMs: 0 };
@@ -142,6 +146,7 @@ async function installControls() {
           );
         }
       });
+      if (!result.ok) call.diagnosticId = result.diagnosticId;
       if (globalThis.inlineHold)
         await new Promise((resolve) => {
           globalThis.inlineRelease = resolve;
@@ -381,6 +386,76 @@ async function run() {
   const input = () => page.locator(".inline-metadata-input");
   const snap = () => page.evaluate(() => window.rio.snapshot());
   const count = () => app.evaluate(() => globalThis.inlineCalls.length);
+  function managedReceipt() {
+    const db = new DatabaseSync(path.join(directory, "rio.sqlite"), {
+      readOnly: true,
+    });
+    try {
+      return db
+        .prepare("SELECT * FROM managed_file_receipts WHERE trackId=?")
+        .get(a.id);
+    } finally {
+      db.close();
+    }
+  }
+  async function refusedSave(submit) {
+    const before = await proof(a.path);
+    const info = await stat(a.path, { bigint: true });
+    const receipt = managedReceipt();
+    assert.equal(receipt.digest, before.sha);
+    assert.equal(receipt.device, String(info.dev));
+    assert.equal(receipt.inode, String(info.ino));
+    assert.equal(info.nlink, 1n);
+    const calls = await count();
+    const linux = process.platform === "linux";
+    const alias = path.join(
+      path.dirname(a.path),
+      ".rio-inline-staging-refusal",
+    );
+    // Linux exchanges directory entries even when the target is mode 0444.
+    // An extra link to this disposable file triggers the native staging guard.
+    if (linux) await link(a.path, alias);
+    else await chmod(a.path, 0o444);
+    try {
+      if (linux) assert.equal((await stat(a.path)).nlink, 2);
+      await submit();
+      assert.equal(await count(), calls + 1);
+      const reference = await app.evaluate(
+        () => globalThis.inlineCalls.at(-1).diagnosticId,
+      );
+      assert.match(reference, /^[a-f0-9]{8}$/);
+      const diagnostic = (
+        await readFile(path.join(profile, "metadata-edit-errors.log"), "utf8")
+      )
+        .trim()
+        .split("\n")
+        .map(JSON.parse)
+        .find((entry) => entry.reference === reference);
+      assert.equal(diagnostic?.trackId, a.id);
+      assert.match(
+        diagnostic.error,
+        linux
+          ? /^Publication staging failed: Metadata target has unexpected hard links/
+          : /Opening writable metadata target|Metadata target is read only/i,
+      );
+      assert.deepEqual(managedReceipt(), receipt);
+      assert.deepEqual(await proof(a.path), before);
+      const current = await stat(a.path, { bigint: true });
+      assert.equal(current.dev, info.dev);
+      assert.equal(current.ino, info.ino);
+      assert.deepEqual(await proof(sources[0]), originals[0]);
+      console.log("RIO_INLINE_SAVE_REFUSED", diagnostic.error);
+      return reference;
+    } finally {
+      if (linux) await unlink(alias);
+      else await chmod(a.path, Number(info.mode & 0o7777n));
+    }
+  }
+  const releaseSaveReply = () =>
+    app.evaluate(() => {
+      globalThis.inlineHold = false;
+      globalThis.inlineRelease?.();
+    });
   async function begin(id, column) {
     await cell(id, column).dblclick();
     await expect(input()).toBeVisible();
@@ -774,18 +849,17 @@ async function run() {
   await expect(
     row(b.id).getByRole("button", { name: /^Favourite / }),
   ).toBeVisible();
-  // A genuine Save-time permission rejection retains the exact proposal for retry.
+  // A genuine Save-time refusal retains the exact proposal for retry.
   await begin(a.id, "genre");
   await input().fill("Retry preserved");
-  const mode = (await stat(a.path)).mode;
-  await chmod(a.path, 0o444);
-  try {
+  const firstRefusal = await refusedSave(async () => {
     await input().press("Enter");
     await expect(page.getByRole("alert")).toContainText("Reference:");
     await expect(input()).toHaveCount(0);
-  } finally {
-    await chmod(a.path, mode & 0o777);
-  }
+  });
+  await expect(page.getByRole("alert")).toContainText(
+    `Reference: ${firstRefusal}`,
+  );
   await page.getByRole("button", { name: "Review edit", exact: true }).click();
   await expect(input()).toHaveValue("Retry preserved");
   await expect(input()).not.toHaveAttribute("readonly", "");
@@ -793,27 +867,27 @@ async function run() {
   assert.equal((await parseFile(a.path)).common.genre[0], "Retry preserved");
   await begin(a.id, "genre");
   await input().fill("Tab failure retained");
-  await chmod(a.path, 0o444);
   await app.evaluate(() => {
     globalThis.inlineHold = true;
     globalThis.inlineRelease = undefined;
   });
+  let tabRefusal;
   try {
-    await input().press("Shift+Tab");
-    await expect(input()).toHaveAttribute("aria-label", "Edit Album");
-    await expect(input()).toBeFocused();
-    await expect(input()).toHaveAttribute("readonly", "");
-    await expect
-      .poll(() => app.evaluate(() => typeof globalThis.inlineRelease))
-      .toBe("function");
-  } finally {
-    await chmod(a.path, mode & 0o777);
-    await app.evaluate(() => {
-      globalThis.inlineHold = false;
-      globalThis.inlineRelease?.();
+    tabRefusal = await refusedSave(async () => {
+      await input().press("Shift+Tab");
+      await expect(input()).toHaveAttribute("aria-label", "Edit Album");
+      await expect(input()).toBeFocused();
+      await expect(input()).toHaveAttribute("readonly", "");
+      await expect
+        .poll(() => app.evaluate(() => typeof globalThis.inlineRelease))
+        .toBe("function");
     });
+  } finally {
+    await releaseSaveReply();
   }
-  await expect(page.getByRole("alert")).toContainText("Reference:");
+  await expect(page.getByRole("alert")).toContainText(
+    `Reference: ${tabRefusal}`,
+  );
   await expect(input()).toHaveAttribute("aria-label", "Edit Album");
   await expect(input()).toBeFocused();
   assert((await quietStatus.boundingBox()).height > 0);
@@ -834,24 +908,21 @@ async function run() {
     // A failure arriving after leaving Songs still keeps the proposal.
     await begin(a.id, "genre");
     await input().fill("Detached proposal");
-    await chmod(a.path, 0o444);
     await app.evaluate(() => {
       globalThis.inlineHold = true;
       globalThis.inlineRelease = undefined;
     });
     try {
-      await input().press("Enter");
-      await expect
-        .poll(() => app.evaluate(() => typeof globalThis.inlineRelease))
-        .toBe("function");
-      await page.getByRole("button", { name: "Albums", exact: true }).click();
-      await expect(input()).toHaveCount(0);
-    } finally {
-      await chmod(a.path, mode & 0o777);
-      await app.evaluate(() => {
-        globalThis.inlineHold = false;
-        globalThis.inlineRelease?.();
+      await refusedSave(async () => {
+        await input().press("Enter");
+        await expect
+          .poll(() => app.evaluate(() => typeof globalThis.inlineRelease))
+          .toBe("function");
+        await page.getByRole("button", { name: "Albums", exact: true }).click();
+        await expect(input()).toHaveCount(0);
       });
+    } finally {
+      await releaseSaveReply();
     }
     await expect(
       page.getByText(/reopen the edited cell in Songs/i),
@@ -1083,7 +1154,7 @@ async function run() {
           "ID-bound sort/tab/focus/selection and hidden/noneditable column traversal",
           "Tab and Shift+Tab focus while publication is held; one save and deferred eligibility",
           "failed Tab proposal stays discoverable without stealing focus; explicit review and retry",
-          "permission failure proposal/reference and explicit retry",
+          "native Save refusal preserves managed bytes, receipt and external source; draft/reference and explicit retry",
           historicalTimingBaseline
             ? "historical one-second playback observation during a held save"
             : "detached failure draft recovery and unrelated playback/selection during a held save",

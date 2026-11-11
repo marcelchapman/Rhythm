@@ -701,16 +701,62 @@ try {
     await play(ids.wav);
     assert.equal((await state()).active, 0);
     if (cloning) {
+      const duration = await page.evaluate(async (id) => {
+        const { tracks } = await window.rio.snapshot();
+        return tracks.find((track) => track.id === id)?.duration;
+      }, ids.A);
+      assert(duration >= 11, "Track A must have an 11-second seek position.");
+      const seekRange = () =>
+        page
+          .getByRole("slider", { name: "Seek", exact: true })
+          .evaluate((el) => {
+            const audio = document.querySelector("audio");
+            return {
+              currentId: document.querySelector(".song-row.is-playing")?.dataset
+                .trackId,
+              min: Number(el.min),
+              max: Number(el.max),
+              enabled: !el.disabled,
+              sourceAttached: audio.hasAttribute("src"),
+              decoderDuration: Number.isFinite(audio.duration)
+                ? audio.duration
+                : null,
+            };
+          });
       await hold();
       await row(ids.A)
         .getByRole("button", { name: /^Play / })
         .click();
       await expect.poll(async () => (await state()).held).toBe(true);
+      const started = performance.now();
+      const initial = await seekRange();
+      // Main reaching the capture hold does not mean React has rendered the
+      // selected track's duration. Observe the catalog range before attaching.
+      await expect
+        .poll(seekRange, {
+          message: "Track A must expose its seek range while capture is held",
+        })
+        .toMatchObject({
+          currentId: ids.A,
+          min: 0,
+          max: duration,
+          enabled: true,
+          sourceAttached: false,
+        });
+      assert.equal((await state()).held, true);
+      emit({
+        event: "pending-seek-range",
+        catalogDuration: duration,
+        initial,
+        ready: await seekRange(),
+        elapsedMs: performance.now() - started,
+      });
       await seek(11);
       await page.getByRole("button", { name: "Pause", exact: true }).click();
       await expect(
         page.getByRole("button", { name: "Play", exact: true }),
       ).toBeVisible();
+      assert.equal((await state()).held, true);
       await releaseHold();
       await expect
         .poll(() =>
