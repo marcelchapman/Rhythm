@@ -17,9 +17,11 @@ import path from "node:path";
 import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
+import { Worker } from "node:worker_threads";
 import { Library } from "../src/domain/library";
 import { PlaybackUse } from "../src/main/playback-use";
 import {
+  PlaybackCleanupError,
   StableSourceManager,
   type SnapshotBackend,
 } from "../src/main/stable-source-manager";
@@ -35,6 +37,7 @@ async function fixture(
     enabled?: boolean;
     backend?: () => SnapshotBackend;
     concurrentEditing?: boolean;
+    drainTimeoutMs?: number;
   } = {
     enabled: true,
   },
@@ -46,7 +49,11 @@ async function fixture(
     setupMediaRoot: true,
   });
   const manager = new StableSourceManager(options),
-    use = new PlaybackUse(manager, options.concurrentEditing ?? false);
+    use = new PlaybackUse(
+      manager,
+      options.concurrentEditing ?? false,
+      options.drainTimeoutMs,
+    );
   try {
     l.saveMediaSettings({ copyOnAdd: true, keepOrganized: false });
     const source = path.join(root, "source.flac");
@@ -110,6 +117,14 @@ test("disabled by default even when the internal acquisition method is called", 
         /disabled/,
       );
       expect(manager.activeSources).toBe(0);
+      idle(use, l, t.id);
+      const original = use.acquireForPlayback(1, t.id, l.directory);
+      expect(() => idle(use, l, t.id)).toThrow(/in use/);
+      await Promise.all([
+        use.release(1, original.token),
+        use.release(1, original.token),
+      ]);
+      await use.release(1, original.token);
       idle(use, l, t.id);
     },
     { enabled: false },
@@ -656,28 +671,261 @@ test("unconsumed transport keeps read-ahead bounded instead of loading a whole s
     { enabled: true, backend: () => b },
   );
 });
-test("background I/O cleanup preserves a close failure for explicit release", () => {
+test("background I/O cleanup retains an unconfirmed entry for a later close attempt", () => {
+  let canClose = false;
   const b = {
     ...backend(),
     check: async () => {
       throw Error("Read failed");
     },
     close: async () => {
-      throw Error("Close acknowledgement failed");
+      if (!canClose) throw Error("Close acknowledgement failed");
     },
   };
   return fixture(
     async ({ l, t, manager }) => {
       const lease = await manager.acquire(l, t.id, () => {});
       await expect(lease.size()).rejects.toThrow("Read failed");
-      await expect(lease.release()).rejects.toThrow(
-        "Close acknowledgement failed",
-      );
+      await expect(lease.release()).rejects.toMatchObject({
+        cause: expect.objectContaining({
+          message: "Close acknowledgement failed",
+        }),
+      });
+      expect(manager.activeSources).toBe(1);
+      canClose = true;
+      await lease.release();
       expect(manager.activeSources).toBe(0);
     },
     { enabled: true, backend: () => b },
   );
 });
+
+test("concurrent and repeated release recover after confirmed close with a cleanup error", () => {
+  const held = deferred(),
+    entered = deferred();
+  const b = backend({
+    read: async () => {
+      entered.resolve();
+      return held.promise;
+    },
+  });
+  const close = vi.fn(async () => {
+    await b.close();
+    throw new PlaybackCleanupError(Error("post-close cleanup failed"));
+  });
+  return fixture(
+    async ({ l, t, use, manager }) => {
+      const s = await use.acquireIsolated(1, t.id, l.directory);
+      const response = await use.respond(s.token, t.id, new Request(s.url));
+      const consuming = response.arrayBuffer().catch(() => {});
+      await entered.promise;
+      const first = use.release(1, s.token);
+      const second = use.release(1, s.token);
+      try {
+        expect(close).not.toHaveBeenCalled();
+        expect(
+          (await use.respond(s.token, t.id, new Request(s.url))).status,
+        ).toBe(403);
+        expect(() => idle(use, l, t.id)).toThrow(/could not be confirmed/);
+      } finally {
+        held.resolve(new Uint8Array(100));
+        await Promise.all([first, second, consuming]);
+      }
+      expect(close).toHaveBeenCalledTimes(1);
+      expect(b.closed).toBe(true);
+      expect(manager.activeSources).toBe(0);
+      await use.release(1, s.token);
+      expect(close).toHaveBeenCalledTimes(1);
+      idle(use, l, t.id);
+      await use.releaseLibrary();
+      use.bindLibrary(l);
+      const next = await use.acquireIsolated(1, t.id, l.directory);
+      expect(next.token).not.toBe(s.token);
+      await use.release(1, next.token);
+    },
+    {
+      enabled: true,
+      backend: () => ({ ...b, close }),
+      concurrentEditing: true,
+    },
+  );
+});
+
+test("unconfirmed closure blocks admission and an issued edit lease until release is retried", () => {
+  let canClose = false;
+  const b = backend();
+  const close = vi.fn(async () => {
+    if (!canClose) throw Error("Backend closure is unknown");
+    await b.close();
+  });
+  return fixture(
+    async ({ l, t, use, manager }) => {
+      const s = await use.acquireIsolated(1, t.id, l.directory);
+      try {
+        const edit = use.usageFor(l).acquireIdle(t.id);
+        try {
+          await expect(use.revokeOwner(1)).rejects.toThrow(
+            /confirm playback source closure/,
+          );
+          expect(() => edit.assertIdle()).toThrow(/could not be confirmed/);
+        } finally {
+          edit.release();
+        }
+        expect(manager.activeSources).toBe(1);
+        expect(b.closed).toBe(false);
+        expect(
+          (await use.respond(s.token, t.id, new Request(s.url))).status,
+        ).toBe(403);
+        expect(() => idle(use, l, t.id)).toThrow(/could not be confirmed/);
+        await expect(
+          editManagedFlac(
+            l,
+            t.id,
+            { title: { action: "set", value: "Blocked" } },
+            {
+              usage: use.usageFor(l),
+            },
+          ),
+        ).rejects.toThrow(/could not be confirmed/);
+        expect(l.db.prepare("SELECT id FROM metadata_edits").all()).toEqual([]);
+        use.allowOwner(2);
+        expect(() => use.acquire(2, t.id, l.directory)).toThrow(
+          /could not be confirmed/,
+        );
+        await expect(use.releaseLibrary()).rejects.toThrow(
+          /confirm playback source closure/,
+        );
+        expect(() => use.bindLibrary(null)).toThrow(/must be released/);
+      } finally {
+        canClose = true;
+      }
+      await use.releaseLibrary();
+      expect(b.closed).toBe(true);
+      expect(close).toHaveBeenCalledTimes(3);
+      expect(manager.activeSources).toBe(0);
+      idle(use, l, t.id);
+    },
+    {
+      enabled: true,
+      backend: () => ({ ...b, close }),
+      concurrentEditing: true,
+    },
+  );
+});
+
+test("shutdown reports a stalled reader and keeps the library bound until the same drain completes", () => {
+  const held = deferred(),
+    entered = deferred();
+  const b = backend({
+    read: async () => {
+      entered.resolve();
+      return held.promise;
+    },
+  });
+  return fixture(
+    async ({ l, t, use, manager }) => {
+      const s = await use.acquireIsolated(1, t.id, l.directory);
+      const response = await use.respond(s.token, t.id, new Request(s.url));
+      const consuming = response.arrayBuffer().catch(() => {});
+      await entered.promise;
+      try {
+        await expect(use.shutdown()).rejects.toThrow(
+          /confirm playback drainage/,
+        );
+        expect(use.currentLibrary).toBe(l);
+        expect(manager.activeSources).toBe(1);
+        expect(b.closed).toBe(false);
+        expect(() => idle(use, l, t.id)).toThrow(/unknown/);
+      } finally {
+        held.resolve(new Uint8Array(100));
+        await consuming;
+      }
+      await use.shutdown();
+      expect(use.currentLibrary).toBeNull();
+      expect(manager.activeSources).toBe(0);
+      expect(b.closed).toBe(true);
+    },
+    {
+      enabled: true,
+      backend: () => b,
+      concurrentEditing: true,
+      drainTimeoutMs: 50,
+    },
+  );
+});
+
+test("failed capture retains its original reservation when backend closure is unknown", () => {
+  let canClose = false;
+  const b = backend({ failure: "Capture failed" });
+  return fixture(
+    async ({ l, t, use, manager }) => {
+      try {
+        await expect(use.acquireIsolated(1, t.id, l.directory)).rejects.toThrow(
+          /confirm playback source closure/,
+        );
+        expect(manager.activeSources).toBe(1);
+        expect(() => idle(use, l, t.id)).toThrow(/could not be confirmed/);
+        expect(() => use.acquire(1, t.id, l.directory)).toThrow(
+          /could not be confirmed/,
+        );
+      } finally {
+        canClose = true;
+      }
+      await use.releaseLibrary();
+      expect(manager.activeSources).toBe(0);
+      idle(use, l, t.id);
+    },
+    {
+      enabled: true,
+      backend: () => ({
+        ...b,
+        async close() {
+          if (!canClose) throw Error("Capture cleanup not confirmed");
+          await b.close();
+        },
+      }),
+      concurrentEditing: true,
+    },
+  );
+});
+
+native(
+  "an actual playback worker exit drains its native source and permits reacquisition after release",
+  () =>
+    fixture(
+      async ({ l, t, use, manager }) => {
+        let worker: Worker | undefined;
+        const postMessage = Worker.prototype.postMessage;
+        const spy = vi
+          .spyOn(Worker.prototype, "postMessage")
+          .mockImplementation(function (this: Worker, message, transferList) {
+            if (message.method === "capture") worker = this;
+            return postMessage.call(this, message, transferList);
+          });
+        try {
+          const s = await use.acquireIsolated(1, t.id, l.directory);
+          expect(worker).toBeDefined();
+          await worker!.terminate();
+          expect(() => idle(use, l, t.id)).toThrow(/worker exited/);
+          await use.release(1, s.token);
+          expect(manager.activeSources).toBe(0);
+          idle(use, l, t.id);
+          const next = await use.acquireIsolated(1, t.id, l.directory);
+          const response = await use.respond(
+            next.token,
+            t.id,
+            new Request(next.url),
+          );
+          expect(response.status).toBe(200);
+          await response.arrayBuffer();
+          await use.release(1, next.token);
+        } finally {
+          spy.mockRestore();
+        }
+      },
+      { enabled: true, concurrentEditing: true },
+    ),
+);
 native("a stale indexed size cannot permit an oversized physical target", () =>
   fixture(async ({ l, t, use, manager }) => {
     await truncate(t.path, MAX_FLAC_FILE_BYTES + 1);

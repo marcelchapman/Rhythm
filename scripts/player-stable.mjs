@@ -139,6 +139,30 @@ async function releaseHold() {
     globalThis.stableMetaRelease?.();
   });
 }
+async function failCloseOnce(afterClosure) {
+  await main(
+    (_, { modules, afterClosure }) => {
+      const require = process
+        .getBuiltinModule("module")
+        .createRequire(modules.manager);
+      const { stableSources, PlaybackCleanupError } = require(modules.manager);
+      if (stableSources.entries.size !== 1)
+        throw Error("Expected one disposable playback source");
+      const [{ backend }] = stableSources.entries;
+      const close = backend.close;
+      backend.close = async () => {
+        backend.close = close;
+        const error = Error("Disposable playback close fault");
+        if (afterClosure) {
+          await close.call(backend);
+          throw new PlaybackCleanupError(error);
+        }
+        throw error;
+      };
+    },
+    { afterClosure },
+  );
+}
 const row = (id) => page.locator(`.song-row[data-track-id="${id}"]`);
 async function play(id) {
   await row(id)
@@ -869,7 +893,7 @@ try {
     // A real library switch revokes the old library, including its attached decoder.
     const otherLibrary = path.join(root, "Other Library");
     await main(
-      async ({ Menu, dialog }, { modules, otherLibrary, files }) => {
+      async ({ dialog }, { modules, otherLibrary, files }) => {
         const req = process
           .getBuiltinModule("module")
           .createRequire(modules.library);
@@ -885,12 +909,36 @@ try {
           canceled: false,
           filePaths: [otherLibrary],
         });
-        Menu.getApplicationMenu()
-          .items.find((x) => x.label === "File")
-          .submenu.items.find((x) => x.label === "Choose Library…")
-          .click();
       },
       { otherLibrary, files },
+    );
+    if (cloning) {
+      const pointer = path.join(root, "Profile", "library.json");
+      const before = await readFile(pointer);
+      await failCloseOnce(false);
+      await assert.rejects(
+        page.evaluate(() => window.rio.chooseLibrary()),
+        /confirm playback source closure/,
+      );
+      assert.deepEqual(await readFile(pointer), before);
+      assert.equal(
+        await page.evaluate(
+          async () => (await window.rio.snapshot()).libraryPath,
+        ),
+        libraryPath,
+      );
+      assert.equal(await idle(ids.A), false);
+      await failCloseOnce(true);
+      emit({
+        event: "library-switch-refused-with-unconfirmed-close",
+        pointerUnchanged: true,
+      });
+    }
+    await app.evaluate(({ Menu }) =>
+      Menu.getApplicationMenu()
+        .items.find((x) => x.label === "File")
+        .submenu.items.find((x) => x.label === "Choose Library…")
+        .click(),
     );
     await expect(row(ids.A)).toHaveCount(0);
     await expect.poll(async () => (await state()).active).toBe(0);
@@ -997,6 +1045,23 @@ try {
       },
       { quitProof },
     );
+    if (cloning && !process.argv.includes("--disconnect")) {
+      await failCloseOnce(false);
+      await app.evaluate(({ app, dialog }) => {
+        const showErrorBox = dialog.showErrorBox;
+        dialog.showErrorBox = (title) => {
+          globalThis.playerLabQuitError = title;
+          dialog.showErrorBox = showErrorBox;
+        };
+        app.quit();
+      });
+      await expect
+        .poll(() => app.evaluate(() => globalThis.playerLabQuitError))
+        .toBe("Rio could not finish quitting");
+      expect((await state()).sources.length).toBe(1);
+      assert.equal(await idle(ids.A), false);
+      emit({ event: "quit-reports-unconfirmed-close", retryable: true });
+    }
     await app.close();
     app = undefined;
     assert.deepEqual(JSON.parse(await readFile(quitProof, "utf8")), {

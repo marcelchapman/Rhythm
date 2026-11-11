@@ -293,6 +293,34 @@ test("synchronous release-channel failure is retained as unknown ownership", asy
   );
   expect(acquire).toHaveBeenCalledTimes(1);
 });
+test("the same revoked lease must acknowledge closure before the renderer can retry Play", async () => {
+  const audio = new Decoder();
+  const release = vi
+    .fn<() => Promise<void>>()
+    .mockRejectedValue(Error("release unconfirmed"));
+  const acquire = vi.fn(async (url: string) => ({ url, release }));
+  const loader = new MediaSource(
+    audio as unknown as HTMLAudioElement,
+    acquire,
+    true,
+  );
+  const one = loader.ensure("one", "one", 0);
+  await vi.waitFor(() => expect(audio.src).toBe("one"));
+  audio.ready();
+  await one;
+  await expect(loader.ensure("two", "two", 0)).rejects.toThrow(
+    "release unconfirmed",
+  );
+  expect(acquire).toHaveBeenCalledTimes(1);
+  expect(audio.src).toBe("");
+  release.mockResolvedValue(undefined);
+  const retry = loader.ensure("two", "two", 0);
+  await vi.waitFor(() => expect(audio.src).toBe("two"));
+  audio.ready();
+  await retry;
+  expect(acquire).toHaveBeenCalledTimes(2);
+  expect(release).toHaveBeenCalledTimes(3);
+});
 test("isolated acquisition drains a superseded pending grant before the latest acquisition starts", async () => {
   const audio = new Decoder();
   let grant!: (value: any) => void, closed!: () => void;

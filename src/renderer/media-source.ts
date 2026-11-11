@@ -6,7 +6,7 @@ export interface DecoderSource {
 export class MediaSource {
   generation = 0;
   private releasing: Promise<void> = Promise.resolve();
-  private releaseError?: unknown;
+  private unresolvedReleases = new Map<DecoderSource, unknown>();
   private acquiring?: Promise<void>;
   private active?: {
     key: string;
@@ -24,9 +24,14 @@ export class MediaSource {
   private retire(lease: DecoderSource) {
     const released = Promise.resolve()
       .then(() => lease.release())
-      .catch((error) => {
-        this.releaseError = error;
-      });
+      .then(
+        () => {
+          this.unresolvedReleases.delete(lease);
+        },
+        (error) => {
+          this.unresolvedReleases.set(lease, error);
+        },
+      );
     this.releasing = Promise.all([this.releasing, released]).then(() => {});
     return released;
   }
@@ -139,9 +144,21 @@ export class MediaSource {
     const barrier = this.releasing;
     this.acquiring = (async () => {
       await barrier;
-      if (this.releaseError) throw this.releaseError;
       if (generation !== this.generation || this.active?.promise !== promise)
         return;
+      if (this.unresolvedReleases.size) {
+        // Retry only the same revoked tokens. Main must confirm their closure
+        // before a new decoder source can be acquired.
+        await Promise.all(
+          [...this.unresolvedReleases.keys()].map((lease) =>
+            this.retire(lease),
+          ),
+        );
+        if (this.unresolvedReleases.size)
+          throw this.unresolvedReleases.values().next().value;
+        if (generation !== this.generation || this.active?.promise !== promise)
+          return;
+      }
       const acquired = await this.acquire(url);
       if (generation !== this.generation || this.active?.promise !== promise) {
         await this.retire(acquired);

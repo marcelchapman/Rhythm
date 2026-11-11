@@ -78,7 +78,7 @@ let startupError: string | null = null;
 let playlistIO = false;
 let choosingLibrary = false;
 let movingLibrary = false;
-let quitAfterMove = false;
+let quitAfterLibraryChange = false;
 let movingSnapshot: ReturnType<typeof snapshot> | null = null;
 let preferences: ViewPreferenceStore;
 let rendererReady = false;
@@ -184,6 +184,14 @@ async function openSettings() {
   }
 }
 
+function finishLibraryChange() {
+  choosingLibrary = false;
+  if (quitAfterLibraryChange) {
+    quitAfterLibraryChange = false;
+    setImmediate(() => app.quit());
+  }
+}
+
 async function chooseLibrary() {
   if (library?.scanning || playlistIO || choosingLibrary)
     throw new Error("Wait for the current import before switching libraries.");
@@ -202,6 +210,9 @@ async function chooseLibrary() {
       throw new Error(
         "Wait for the current import/export before switching libraries.",
       );
+    // Drain before opening or recording the next library. Opening the same
+    // directory can itself run startup metadata recovery.
+    await playbackUse.releaseLibrary();
     const next = await Library.open(result.filePaths[0], {
       setupMediaRoot: true,
     });
@@ -218,7 +229,6 @@ async function chooseLibrary() {
       next.close();
       throw error;
     }
-    await playbackUse.releaseLibrary();
     library?.close();
     library = next;
     playbackUse.bindLibrary(next);
@@ -226,8 +236,8 @@ async function chooseLibrary() {
     send("library-changed");
     return snapshot();
   } finally {
-    choosingLibrary = false;
     restorePlayback();
+    finishLibraryChange();
   }
 }
 async function importMusic() {
@@ -932,12 +942,8 @@ function handlers() {
     } finally {
       movingSnapshot = null;
       movingLibrary = false;
-      choosingLibrary = false;
       restorePlayback();
-      if (quitAfterMove) {
-        quitAfterMove = false;
-        setImmediate(() => app.quit());
-      }
+      finishLibraryChange();
     }
   });
   handle("library:import", importMusic);
@@ -1056,26 +1062,29 @@ async function createWindow() {
     });
   const owner = contents.id;
   let navigation = 0;
+  const reportRelease = (error: unknown) =>
+    console.error("Could not confirm renderer playback release", error);
   contents.on("did-start-navigation", (_event, _url, _inPlace, isMainFrame) => {
     if (!isMainFrame) return;
     const expected = ++navigation;
-    playbackOwnerReady = playbackUse.revokeOwner(owner).then(() => {
-      if (
-        !contents.isDestroyed() &&
-        navigation === expected &&
-        _url === "rio://app/index.html"
-      )
-        playbackUse.allowOwner(owner);
-    });
+    playbackOwnerReady = playbackUse
+      .revokeOwner(owner)
+      .then(() => {
+        if (
+          !contents.isDestroyed() &&
+          navigation === expected &&
+          _url === "rio://app/index.html"
+        )
+          playbackUse.allowOwner(owner);
+      })
+      .catch(reportRelease);
   });
-  contents.on("render-process-gone", () => {
+  const revokeRenderer = () => {
     navigation++;
-    void playbackUse.revokeOwner(owner);
-  });
-  contents.on("destroyed", () => {
-    navigation++;
-    void playbackUse.revokeOwner(owner);
-  });
+    void playbackUse.revokeOwner(owner).catch(reportRelease);
+  };
+  contents.on("render-process-gone", revokeRenderer);
+  contents.on("destroyed", revokeRenderer);
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.on("close", () => {
     rendererReady = false;
@@ -1327,18 +1336,33 @@ if (!app.requestSingleInstanceLock()) {
     library?.close();
     library = null;
   });
-  let preferencesFlushed = false;
+  let quitting = false;
+  let shutdownComplete = false;
   app.on("before-quit", (event) => {
-    if (movingLibrary) {
-      quitAfterMove = true;
+    if (choosingLibrary) {
+      quitAfterLibraryChange = true;
       event.preventDefault();
       return;
     }
-    if (preferencesFlushed || !preferences) return;
+    if (shutdownComplete || !preferences) return;
     event.preventDefault();
-    void Promise.all([preferences.flush(), playbackUse.shutdown()]).then(() => {
-      preferencesFlushed = true;
-      app.quit();
-    });
+    if (quitting) return;
+    quitting = true;
+    void Promise.allSettled([preferences.flush(), playbackUse.shutdown()]).then(
+      (results) => {
+        const failure = results.find((result) => result.status === "rejected");
+        if (failure) {
+          quitting = false;
+          console.error("Rio could not complete shutdown", failure.reason);
+          dialog.showErrorBox(
+            "Rio could not finish quitting",
+            "Rio is keeping the library open because it could not finish releasing playback or saving preferences. Try Quit again.",
+          );
+          return;
+        }
+        shutdownComplete = true;
+        app.quit();
+      },
+    );
   });
 }

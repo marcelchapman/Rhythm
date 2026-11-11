@@ -14,6 +14,23 @@ import type { MediaReader } from "./media.js";
 import type { MetadataFileRevision } from "../domain/metadata-edit.js";
 
 const MAX_FILE = MAX_FLAC_FILE_BYTES;
+/** Backend cleanup failed after the source and all of its handles were closed. */
+export class PlaybackCleanupError extends Error {
+  constructor(cause: unknown) {
+    super("Playback source closed with a cleanup error.", { cause });
+  }
+}
+/** Keeps the cleanup capability even when capture failed before issuing a lease. */
+export class UnconfirmedPlaybackRelease extends Error {
+  constructor(
+    cause: unknown,
+    readonly retry: () => Promise<void>,
+  ) {
+    super("Rio could not confirm playback source closure. Try again.", {
+      cause,
+    });
+  }
+}
 /** Internal worker seam for deterministic I/O/failure lifecycle qualification. */
 export interface SnapshotBackend {
   assertAvailable?(): void;
@@ -111,14 +128,23 @@ class SourceWorker implements SnapshotBackend {
     return this.request("read", { offset, length });
   }
   close() {
-    return (this.closing ??= this.finish());
+    return (this.closing ??= this.finish().finally(() => {
+      this.closing = undefined;
+    }));
   }
   private async finish() {
+    let failure: unknown = this.failed;
     try {
-      if (!this.failed) await this.request("close");
-    } finally {
-      await this.exit;
+      if (!failure) await this.request("close");
+    } catch (error) {
+      failure = error;
+      // If posting or acknowledging close failed, request termination. Only
+      // the exit event establishes that the worker actually stopped.
+      void this.worker.terminate().catch(() => {});
     }
+    // The native handle's environment finalizer destroys its RAII descriptors.
+    await this.exit;
+    if (failure) throw new PlaybackCleanupError(failure);
   }
 }
 export interface StableSourceLease extends MediaReader {
@@ -132,6 +158,7 @@ type Entry = {
   streams: Set<Readable>;
   drains: Set<Promise<void>>;
   retired: boolean;
+  closed?: boolean;
   release?: Promise<void>;
   ready: Promise<void>;
 };
@@ -389,6 +416,7 @@ export class StableSourceManager {
     }
   }
   private retire(entry: Entry) {
+    if (entry.closed) return Promise.resolve();
     if (entry.release) return entry.release;
     entry.retired = true;
     for (const stream of entry.streams) stream.destroy();
@@ -397,12 +425,18 @@ export class StableSourceManager {
       await Promise.all([...entry.drains]);
       try {
         await entry.backend.close();
-      } finally {
-        this.entries.delete(entry);
+      } catch (error) {
+        if (!(error instanceof PlaybackCleanupError))
+          throw new UnconfirmedPlaybackRelease(error, () => this.retire(entry));
+        console.warn("Playback source cleanup failed after closure", error);
       }
-    })();
-    // Background error cleanup must not create an unhandled rejection. Explicit
-    // release still receives the original failure and cannot clear the use gate.
+      entry.closed = true;
+      this.entries.delete(entry);
+    })().finally(() => {
+      entry.release = undefined;
+    });
+    // A background read error can initiate release. Explicit callers still
+    // observe unconfirmed closure and can retry against the retained entry.
     void entry.release.catch(() => {});
     return entry.release;
   }

@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import type { Readable } from "node:stream";
 import {
   stableSources,
+  UnconfirmedPlaybackRelease,
   type StableSourceManager,
   type StableSourceLease,
 } from "./stable-source-manager.js";
@@ -25,9 +26,10 @@ type Source = {
   format: string;
   retired: boolean;
   readers: Set<Reader>;
-  released?: Promise<void>;
+  releasing?: Promise<void>;
   preparing?: Promise<void>;
   isolated?: StableSourceLease;
+  releaseFailedCapture?: () => Promise<void>;
   originalUse: boolean;
   managedRevision?: Readonly<MetadataFileRevision>;
 };
@@ -37,6 +39,7 @@ export class PlaybackUse {
     private readonly stableManager: StableSourceManager = stableSources,
     private readonly concurrentEditing = process.env
       .RIO_STABLE_PLAYBACK_SOURCES === "1" && stableManager.enabledForPlayback,
+    private readonly drainTimeoutMs = 10_000,
   ) {}
   private current: Library | null = null;
   private gate = new MetadataUseGate();
@@ -127,6 +130,12 @@ export class PlaybackUse {
       this.known.add(id);
     }
   }
+  private assertReleaseKnown(id: string) {
+    if ([...this.sources.values()].some((s) => s.id === id && s.retired))
+      throw new Error(
+        "Playback source is still in use or its release could not be confirmed.",
+      );
+  }
   usageFor(library: Library): MetadataUsage {
     const epoch = this.epoch;
     return {
@@ -134,6 +143,7 @@ export class PlaybackUse {
         this.checkLibrary(library);
         if (epoch !== this.epoch)
           throw new Error("Playback ownership scope changed.");
+        this.assertReleaseKnown(id);
         this.initialize(id);
         const previous = this.revision(library, id);
         let expectedRevision = previous;
@@ -158,6 +168,7 @@ export class PlaybackUse {
             this.checkLibrary(library);
             if (epoch !== this.epoch)
               throw new Error("Playback ownership scope changed.");
+            this.assertReleaseKnown(id);
             lease.assertIdle();
             if (
               this.concurrentEditing &&
@@ -212,6 +223,7 @@ export class PlaybackUse {
     const library = this.checkLibrary(this.current);
     if (!this.owners.has(owner) || directory !== library.directory)
       throw new Error("Playback renderer/library is not active.");
+    this.assertReleaseKnown(id);
     this.initialize(id);
     const track = library.media(id);
     if (!track)
@@ -280,21 +292,32 @@ export class PlaybackUse {
       : this.stableManager.acquire(s.library, id, () => {
           this.source(grant.token, id, false);
         });
-    const capture = pending.then((lease) => {
-      if (lease) {
-        s.isolated = lease;
-        if (this.concurrentEditing && !s.retired) {
-          lease.assertActive();
-          if (!this.sameRevision(lease.revision, this.revision(s.library, id)))
-            throw Error(
-              "Managed playback revision changed before isolation handoff.",
-            );
-          s.managedRevision = lease.revision;
-          this.releaseOriginal(s);
-        }
-      } else s.preparing = undefined;
-      return lease;
-    });
+    const capture = pending.then(
+      (lease) => {
+        if (lease) {
+          s.isolated = lease;
+          if (this.concurrentEditing && !s.retired) {
+            lease.assertActive();
+            if (
+              !this.sameRevision(lease.revision, this.revision(s.library, id))
+            )
+              throw Error(
+                "Managed playback revision changed before isolation handoff.",
+              );
+            s.managedRevision = lease.revision;
+            this.releaseOriginal(s);
+          }
+        } else s.preparing = undefined;
+        return lease;
+      },
+      (error: unknown) => {
+        // A capture can own resources before a stable lease is issued. Bind
+        // its cleanup to the original reservation before preparation settles.
+        if (error instanceof UnconfirmedPlaybackRelease)
+          s.releaseFailedCapture = error.retry;
+        throw error;
+      },
+    );
     s.preparing = capture.then(
       () => {},
       () => {},
@@ -304,7 +327,7 @@ export class PlaybackUse {
       this.source(grant.token, id);
       return grant;
     } catch (error) {
-      await this.retire(s);
+      await this.waitForDrain(this.retire(s));
       throw error;
     }
   }
@@ -387,33 +410,57 @@ export class PlaybackUse {
     }
   }
   private retire(s: Source) {
-    if (s.released) return s.released;
+    if (s.releasing) return s.releasing;
     // Revoke authorization before any await, including requests still awaiting stat().
     s.retired = true;
     const readers = [...s.readers];
     for (const reader of readers) reader.cancel?.();
-    s.released = Promise.all([...readers.map((r) => r.done), s.preparing]).then(
-      async () => {
-        await s.isolated?.release();
+    s.releasing = Promise.all([...readers.map((r) => r.done), s.preparing])
+      .then(async () => {
+        if (s.isolated) await s.isolated.release();
+        else await s.releaseFailedCapture?.();
         this.releaseOriginal(s);
         this.sources.delete(s.token);
-      },
-    );
-    return s.released;
+      })
+      .finally(() => {
+        s.releasing = undefined;
+      });
+    return s.releasing;
+  }
+  private async waitForDrain(work: Promise<unknown>) {
+    let timer: NodeJS.Timeout | undefined;
+    try {
+      await Promise.race([
+        work,
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => {
+            reject(
+              new Error(
+                "Rio could not confirm playback drainage in time. Try again.",
+              ),
+            );
+          }, this.drainTimeoutMs);
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
   }
   async release(owner: number, token: string) {
     const s = this.sources.get(token);
     if (!s) return; // Duplicate/stale acknowledgments cannot change another source.
     if (s.owner !== owner)
       throw new Error("Playback source belongs to another renderer.");
-    await this.retire(s);
+    await this.waitForDrain(this.retire(s));
   }
   async revokeOwner(owner: number) {
     this.owners.delete(owner);
-    await Promise.all(
-      [...this.sources.values()]
-        .filter((s) => s.owner === owner)
-        .map((s) => this.retire(s)),
+    await this.waitForDrain(
+      Promise.all(
+        [...this.sources.values()]
+          .filter((s) => s.owner === owner)
+          .map((s) => this.retire(s)),
+      ),
     );
   }
   async shutdown() {
@@ -422,11 +469,13 @@ export class PlaybackUse {
     await this.releaseLibrary();
     // Invalidate idle assertions immediately; let an in-flight coordinator finish
     // its safe failure/reconciliation before the application closes the database.
-    await Promise.all([...this.edits]);
+    await this.waitForDrain(Promise.all([...this.edits]));
     this.bindLibrary(null);
   }
   async releaseLibrary() {
-    await Promise.all([...this.sources.values()].map((s) => this.retire(s)));
+    await this.waitForDrain(
+      Promise.all([...this.sources.values()].map((s) => this.retire(s))),
+    );
   }
 }
 export const playbackUse = new PlaybackUse();
