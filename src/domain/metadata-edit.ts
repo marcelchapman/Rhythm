@@ -6,7 +6,13 @@ import {
 /** Phase 2A domain coordinator. No UI, IPC, path relocation or external-file writes. */
 import { Worker } from "node:worker_threads";
 import { createHash, randomUUID } from "node:crypto";
-import { constants } from "node:fs";
+import {
+  constants,
+  fstatSync,
+  lstatSync,
+  realpathSync,
+  type BigIntStats,
+} from "node:fs";
 import { open, lstat, realpath, readdir } from "node:fs/promises";
 import path from "node:path";
 import type { Library } from "./library.js";
@@ -173,10 +179,30 @@ async function fingerprint(filename: string): Promise<PublicationFingerprint> {
     ctimeNs: String(s.ctimeNs),
   };
 }
-async function bytesAt(
+interface FileObservation {
+  fd: number;
+  info: BigIntStats;
+  digest: string;
+  bytes: Buffer;
+}
+function sameFileVersion(a: BigIntStats, b: BigIntStats) {
+  return (
+    a.dev === b.dev &&
+    a.ino === b.ino &&
+    a.size === b.size &&
+    a.nlink === b.nlink &&
+    a.mode === b.mode &&
+    a.uid === b.uid &&
+    a.gid === b.gid &&
+    a.mtimeNs === b.mtimeNs &&
+    a.ctimeNs === b.ctimeNs
+  );
+}
+async function withObservedFile<T>(
   filename: string,
   expected: { device: string; inode: string },
-  digest?: string,
+  expectedDigest: string | undefined,
+  observe: (file: FileObservation) => T | Promise<T>,
   timing?: MetadataTiming,
   stage = "read",
 ) {
@@ -214,11 +240,10 @@ async function bytesAt(
     const readWaitMs = timing ? performance.now() - readStart : 0;
     const after = await handle.stat({ bigint: true });
     const hashStart = timing ? performance.now() : 0;
+    const digest = sha(bytes);
     if (
-      before.size !== after.size ||
-      before.mtimeNs !== after.mtimeNs ||
-      before.ctimeNs !== after.ctimeNs ||
-      (digest && sha(bytes) !== digest)
+      !sameFileVersion(before, after) ||
+      (expectedDigest !== undefined && digest !== expectedDigest)
     )
       throw new Error("Metadata file changed while reading.");
     timing?.(stage, {
@@ -227,10 +252,26 @@ async function bytesAt(
       hashMs: performance.now() - hashStart,
       wallMs: performance.now() - started,
     });
-    return bytes;
+    return await observe({ bytes, digest, info: after, fd: handle.fd });
   } finally {
     await handle.close();
   }
+}
+function bytesAt(
+  filename: string,
+  expected: { device: string; inode: string },
+  digest: string,
+  timing?: MetadataTiming,
+  stage?: string,
+) {
+  return withObservedFile(
+    filename,
+    expected,
+    digest,
+    (file) => file.bytes,
+    timing,
+    stage,
+  );
 }
 let workers = 0;
 function worker<T>(data: object, timing?: MetadataTiming): Promise<T> {
@@ -389,9 +430,14 @@ function commit(
   l: Library,
   id: string,
   j: Journal,
-  info: PublicationFingerprint,
+  observed: FileObservation,
   metadata: TrackMetadata,
 ) {
+  const { info, digest, fd } = observed;
+  if (digest !== j.candidateSha256)
+    throw new Error("Verified metadata digest does not match the journal.");
+  const device = String(info.dev),
+    inode = String(info.ino);
   checkTrack(l, j);
   l.db.exec("BEGIN IMMEDIATE");
   try {
@@ -406,9 +452,9 @@ function commit(
         (receipt.digest === j.originalSha256 &&
           receipt.device === j.original.device &&
           receipt.inode === j.original.inode) ||
-        (receipt.digest === j.candidateSha256 &&
-          receipt.device === info.device &&
-          receipt.inode === info.inode)
+        (receipt.digest === digest &&
+          receipt.device === device &&
+          receipt.inode === inode)
       )
     )
       throw new Error("Current receipt changed during commit.");
@@ -442,18 +488,19 @@ function commit(
       .prepare(
         "UPDATE managed_file_receipts SET digest=?,device=?,inode=? WHERE trackId=? AND rootId=? AND relative=?",
       )
-      .run(
-        j.candidateSha256!,
-        info.device,
-        info.inode,
-        j.trackId,
-        j.root.id,
-        j.relative,
-      );
+      .run(digest, device, inode, j.trackId, j.root.id, j.relative);
     if (l.db.prepare("SELECT changes() AS n").get()!.n !== 1)
       throw new Error("Current receipt changed during commit.");
     j.metadata = metadata;
     put(l, id, "committed", j);
+    // The descriptor pins the observed object through COMMIT. The pathname
+    // check only authorizes committing that evidence; it never supplies it.
+    if (
+      realpathSync.native(j.filename) !== j.filename ||
+      !sameFileVersion(info, fstatSync(fd, { bigint: true })) ||
+      !sameFileVersion(info, lstatSync(j.filename, { bigint: true }))
+    )
+      throw new Error("Verified metadata file identity changed before commit.");
     l.db.exec("COMMIT");
   } catch (error) {
     l.db.exec("ROLLBACK");
@@ -544,6 +591,33 @@ export async function editManagedFlac(
       throw Error("Committed metadata revision is not verified.");
     use.committedRevision(journal.receipt, next);
   };
+  const commitPublished = (
+    id: string,
+    j: Journal,
+    expected: PublicationFingerprint,
+    original: Uint8Array,
+  ) =>
+    withObservedFile(
+      j.filename,
+      expected,
+      j.candidateSha256,
+      async (observed) => {
+        const metadata = await verifyCandidate(
+          j,
+          original,
+          observed.bytes,
+          timing,
+        );
+        timing?.("verify-published");
+        use.assertIdle();
+        timing?.("sqlite-commit-start");
+        commit(l, id, j, observed, metadata);
+        committedRevision();
+        timing?.("db-commit");
+      },
+      timing,
+      j.strategy === "in-place" ? "published-read" : "publication-read",
+    );
   try {
     timing?.("sqlite-lock-start");
     await lock(l);
@@ -718,21 +792,7 @@ export async function editManagedFlac(
       options.timing?.("publish");
       put(l, id, "published", journal);
       await options.hooks?.at?.("published", id);
-      const actual = await bytesAt(
-        track.path,
-        originalFingerprint,
-        journal.candidateSha256,
-        timing,
-        "published-read",
-      );
-      const metadata = await verifyCandidate(journal, original, actual, timing);
-      options.timing?.("verify-published");
-      use.assertIdle();
-      const publishedFingerprint = await fingerprint(track.path);
-      timing?.("sqlite-commit-start");
-      commit(l, id, journal, publishedFingerprint, metadata);
-      committedRevision();
-      options.timing?.("db-commit");
+      await commitPublished(id, journal, originalFingerprint, original);
       await options.hooks?.at?.("committed", id);
       const reconciled = await reconcile(l, journal, timing);
       options.timing?.("reconcile");
@@ -813,26 +873,12 @@ export async function editManagedFlac(
     if (leased.syncPublication().status !== "synced")
       throw new Error("Publication durability is unresolved.");
     options.timing?.("publish");
-    const authoritative = await bytesAt(
-      track.path,
-      journal.record.candidateIdentity,
-      journal.candidateSha256,
-      timing,
-      "publication-read",
-    );
-    const metadata = await verifyCandidate(
+    await commitPublished(
+      id,
       journal,
+      journal.record.candidateIdentity,
       original,
-      authoritative,
-      timing,
     );
-    options.timing?.("verify-published");
-    use.assertIdle();
-    const publishedFingerprint = await fingerprint(track.path);
-    timing?.("sqlite-commit-start");
-    commit(l, id, journal, publishedFingerprint, metadata);
-    committedRevision();
-    options.timing?.("db-commit");
     await options.hooks?.at?.("committed", id);
     const reconciled = await reconcile(l, journal, timing);
     options.timing?.("reconcile");
@@ -885,8 +931,13 @@ function originalReceipt(l: Library, j: Journal) {
 async function recoverInPlace(l: Library, id: string, j: Journal) {
   try {
     await validateMediaRoot(j.root);
-    const bytes = await bytesAt(j.filename, j.original);
-    if (sha(bytes) === j.originalSha256) {
+    const { bytes, digest } = await withObservedFile(
+      j.filename,
+      j.original,
+      undefined,
+      (observed) => ({ bytes: observed.bytes, digest: observed.digest }),
+    );
+    if (digest === j.originalSha256) {
       originalReceipt(l, j);
       put(l, id, "aborted", j);
       return;
@@ -895,7 +946,7 @@ async function recoverInPlace(l: Library, id: string, j: Journal) {
       !j.writeStarted ||
       !j.candidateSha256 ||
       !j.audioSha256 ||
-      sha(bytes) !== j.candidateSha256
+      digest !== j.candidateSha256
     )
       throw new Error(
         "Interrupted in-place rewrite does not match the verified candidate.",
@@ -923,12 +974,16 @@ async function recoverInPlace(l: Library, id: string, j: Journal) {
     } finally {
       await handle.close();
     }
-    await bytesAt(j.filename, j.original, j.candidateSha256);
-    commit(l, id, j, await fingerprint(j.filename), metadata);
+    await withObservedFile(
+      j.filename,
+      j.original,
+      j.candidateSha256,
+      (observed) => commit(l, id, j, observed, metadata),
+    );
     await reconcile(l, j);
     put(l, id, "done", j);
   } catch (error) {
-    // A partial rewrite cannot be rolled back. Preserve the old receipt and file;
+    // An interrupted rewrite cannot be rolled back. Preserve the receipt and file;
     // release the global operation lock so the existing Locate flow can repair it.
     l.db.exec("BEGIN IMMEDIATE");
     try {
@@ -1046,14 +1101,16 @@ async function recoverOne(l: Library, id: string, j: Journal) {
         record.rollbackIdentity,
         record.originalSha256,
       );
-      const candidate = await bytesAt(
+      await withObservedFile(
         j.filename,
         record.candidateIdentity,
         record.candidateSha256,
+        async (observed) => {
+          const metadata = await verifyCandidate(j, original, observed.bytes);
+          // Replay the same candidate without rolling back authoritative bytes.
+          commit(l, id, j, observed, metadata);
+        },
       );
-      const metadata = await verifyCandidate(j, original, candidate);
-      // Replaying the same exact candidate is idempotent; no rollback of authoritative bytes.
-      commit(l, id, j, await fingerprint(j.filename), metadata);
       await reconcile(l, j);
       await cleanup(l, id, j, resumed.lease, "committed");
     } else if (before && phase !== "committed") {

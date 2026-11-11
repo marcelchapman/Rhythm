@@ -13,13 +13,15 @@ import {
   chmod,
 } from "node:fs/promises";
 import path from "node:path";
-import { writeFileSync } from "node:fs";
+import { copyFileSync, lstatSync, renameSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { Library } from "../src/domain/library";
 import {
   editManagedFlac,
   MetadataUseGate,
   MetadataEditInterruption,
+  recoverMetadataEdits,
 } from "../src/domain/metadata-edit";
 import { flacFixture, inspectFlac } from "./metadata-fixtures";
 import {
@@ -27,9 +29,21 @@ import {
   type MediaRoot,
 } from "../src/domain/managed-copy";
 import * as metadataPublication from "../src/domain/metadata-publication";
-import { defaultState } from "../src/shared/types";
+import { defaultState, type Track } from "../src/shared/types";
 
-async function fixture(run: (f: any) => Promise<void>, bytes = flacFixture()) {
+async function fixture(
+  run: (f: {
+    root: string;
+    l: Library;
+    t: Track;
+    use: MetadataUseGate;
+    before: Buffer;
+    external: string;
+    open: () => Promise<Library>;
+    libraries: Library[];
+  }) => Promise<void>,
+  bytes = flacFixture(),
+) {
   const root = await realpath(
     await mkdtemp(path.join(tmpdir(), "rio-metadata-edit-")),
   );
@@ -511,6 +525,177 @@ test("DB commit failure retains published candidate and rollback; restart comple
     const reopened = await open();
     expect(reopened.tracks(t.id)[0].title).toBe("New title");
     expect(journal(reopened).phase).toBe("done");
+  });
+});
+
+for (const strategy of ["staged", "in-place"] as const) {
+  test
+    .skipIf(strategy === "in-place" && process.platform !== "darwin")
+    .each([
+      "after verification",
+      "during recovery",
+      "after final check",
+    ] as const)(
+    "%s replacement during " + strategy + " never grants a receipt to the copy",
+    async (boundary) => {
+      const selection = vi
+        .spyOn(metadataPublication, "selectMetadataPublication")
+        .mockReturnValue(strategy);
+      try {
+        await fixture(async ({ l, t, use, before, open }) => {
+          const oldReceipt = receipt(l, t.id);
+          const retained = t.path + ".verified";
+          let verifiedInode: string | undefined;
+          const replaceWithCopy = () => {
+            if (verifiedInode) return;
+            renameSync(t.path, retained);
+            verifiedInode = String(lstatSync(retained, { bigint: true }).ino);
+            copyFileSync(retained, t.path);
+          };
+          const exec = l.db.exec.bind(l.db);
+          if (boundary === "during recovery") {
+            await expect(
+              editManagedFlac(l, t.id, titlePatch, {
+                usage: use,
+                hooks: {
+                  at: async (phase) => {
+                    if (phase === "published")
+                      throw new MetadataEditInterruption("after publication");
+                  },
+                },
+              }),
+            ).rejects.toThrow("after publication");
+            expect(journal(l).phase).toBe("published");
+          }
+          // Inject inside the SQLite transaction boundary without a production
+          // hook between the final pathname check and SQLite COMMIT.
+          const fault = vi.spyOn(l.db, "exec").mockImplementation((sql) => {
+            if (
+              (boundary === "during recovery" && sql === "BEGIN IMMEDIATE") ||
+              (boundary === "after final check" &&
+                sql === "COMMIT" &&
+                journal(l).phase === "committed")
+            )
+              replaceWithCopy();
+            exec(sql);
+          });
+          try {
+            if (boundary === "during recovery") await recoverMetadataEdits(l);
+            else
+              await expect(
+                editManagedFlac(l, t.id, titlePatch, {
+                  usage: use,
+                  timing: (phase) => {
+                    if (
+                      boundary === "after verification" &&
+                      phase === "verify-published"
+                    )
+                      replaceWithCopy();
+                  },
+                }),
+              ).rejects.toThrow(
+                boundary === "after verification"
+                  ? /Verified metadata file identity changed before commit/
+                  : /receipt/i,
+              );
+          } finally {
+            fault.mockRestore();
+          }
+          expect(verifiedInode).toBeDefined();
+          const copyInode = String((await lstat(t.path, { bigint: true })).ino);
+          expect(copyInode).not.toBe(verifiedInode);
+          const verifiedBytes = await readFile(retained);
+          expect(await readFile(t.path)).toEqual(verifiedBytes);
+          expect(inspectFlac(verifiedBytes).audio).toEqual(
+            inspectFlac(before).audio,
+          );
+          const committed = boundary === "after final check";
+          expect(receipt(l, t.id)).toEqual(
+            committed
+              ? {
+                  ...oldReceipt,
+                  inode: verifiedInode,
+                  digest: createHash("sha256")
+                    .update(verifiedBytes)
+                    .digest("hex"),
+                }
+              : oldReceipt,
+          );
+          expect(l.tracks(t.id)[0].title).toBe(
+            committed ? "New title" : t.title,
+          );
+          if (boundary === "during recovery")
+            expect(journal(l).error).toContain(
+              "Verified metadata file identity changed before commit",
+            );
+          if (strategy === "in-place") {
+            expect(journal(l).phase).toBe("aborted");
+            expect(journal(l).error).toContain("Locate File");
+            expect(l.tracks(t.id)[0].missing).toBe(true);
+          } else {
+            expect(journal(l).phase).toBe("recovery-required");
+            expect(await readFile(path.join(workspace(l), "rollback"))).toEqual(
+              before,
+            );
+            if (boundary === "during recovery") {
+              // Restore the actual published object, then exercise startup replay
+              // and a subsequent edit through the normal coordinator.
+              await rename(retained, t.path);
+              l.close();
+              const reopened = await open();
+              expect(journal(reopened).phase).toBe("done");
+              expect(receipt(reopened, t.id)?.inode).toBe(verifiedInode);
+              expect(reopened.tracks(t.id)[0].title).toBe("New title");
+              await expect(
+                editManagedFlac(
+                  reopened,
+                  t.id,
+                  { title: { action: "set", value: "Retry" } },
+                  { usage: use },
+                ),
+              ).resolves.toMatchObject({ status: "committed" });
+            }
+          }
+        });
+      } finally {
+        selection.mockRestore();
+      }
+    },
+  );
+}
+
+test("SQLite COMMIT failure rolls back the verified receipt and leaves staged recovery retryable", async () => {
+  await fixture(async ({ l, t, use, before, open }) => {
+    const oldReceipt = receipt(l, t.id);
+    // Let the receipt UPDATE run successfully. SQLite checks this constraint
+    // only when COMMIT executes, including on the immediate recovery attempt.
+    l.db.exec(`
+      CREATE TABLE commit_parent (id INTEGER PRIMARY KEY);
+      CREATE TABLE commit_child (
+        parent INTEGER REFERENCES commit_parent(id) DEFERRABLE INITIALLY DEFERRED
+      );
+      CREATE TRIGGER fail_receipt_commit AFTER UPDATE ON managed_file_receipts
+        BEGIN INSERT INTO commit_child VALUES (1); END;
+    `);
+    try {
+      await expect(
+        editManagedFlac(l, t.id, titlePatch, { usage: use }),
+      ).rejects.toThrow(/FOREIGN KEY constraint failed/);
+    } finally {
+      l.db.exec(
+        "DROP TRIGGER fail_receipt_commit; DROP TABLE commit_child; DROP TABLE commit_parent;",
+      );
+    }
+    expect(receipt(l, t.id)).toEqual(oldReceipt);
+    expect(l.tracks(t.id)[0].title).toBe(t.title);
+    expect(journal(l).phase).toBe("recovery-required");
+    expect(await readFile(path.join(workspace(l), "rollback"))).toEqual(before);
+    const published = await lstat(t.path, { bigint: true });
+    l.close();
+    const reopened = await open();
+    expect(journal(reopened).phase).toBe("done");
+    expect(receipt(reopened, t.id)?.inode).toBe(String(published.ino));
+    expect(reopened.tracks(t.id)[0].title).toBe("New title");
   });
 });
 
