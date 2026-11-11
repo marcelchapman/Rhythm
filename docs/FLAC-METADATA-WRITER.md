@@ -1,3 +1,8 @@
+> Phase 2E.6 raises the former 64 MiB input/candidate ceiling to 128 MiB with
+> aggregate admission control. See [Large FLAC support](LARGE-FLAC.md) for the
+> current range, resource costs and qualification. Earlier phase results below
+> describe their original qualification bounds.
+
 # FLAC metadata writer: production phase 1
 
 `src/domain/metadata-writer.ts` provides a bytes-only preparation primitive. It

@@ -1,0 +1,604 @@
+{
+  "phase": "2E.4B",
+  "qualifiedOn": "2026-11-08",
+  "platform": "darwin",
+  "arch": "x64",
+  "macOS": "15.8.1",
+  "electron": "44.9.2",
+  "featureDefault": "disabled",
+  "concurrentMetadataEditing": "not enabled; active, paused and attached ended sources retain logical-track exclusion",
+  "audioEvidence": "Real production HTMLAudioElement loadeddata/canplay, advancing playback time and seeked. No PCM or acoustic continuity claim.",
+  "sampling": "Monotonic 5 ms interval; mainLoopMaxGapMs spans initial Play through observed playback. firstPreparation.maxGapMs spans worker capture only. constructorMs is main-thread worker construction. null means that added diagnostic was absent in that earlier run. seekedMs includes Playwright command and polling overhead.",
+  "productionResourcesMatchSourceAndPackage": true,
+  "validation": {
+    "focused": {
+      "files": 2,
+      "passed": 57,
+      "skipped": 1
+    },
+    "unit": {
+      "files": 26,
+      "passed": 542,
+      "skipped": 1
+    },
+    "typecheck": "passed",
+    "build": "passed",
+    "sourceDesktop": {
+      "passed": true,
+      "scripts": 19
+    },
+    "packagedDesktop": {
+      "passed": true,
+      "scripts": 18,
+      "executableOverride": true
+    },
+    "packagedExplicitFlagAndOverride": "passed",
+    "nativeVolumeMatrix": "passed",
+    "formatting": "passed",
+    "whitespace": "passed"
+  },
+  "package": {
+    "path": "<historical-package-dir>/mac/Rio.app",
+    "name": "Rio",
+    "bundleId": "io.github.marcelchapman.rio",
+    "arch": "x86_64",
+    "signed": false,
+    "publish": "never",
+    "type": "temporary app-directory qualification build"
+  },
+  "cases": [
+    {
+      "case": "large",
+      "packaged": false,
+      "flagEnabled": true,
+      "storage": "external APFS noowners",
+      "bytes": 44487499,
+      "isolated": true,
+      "playToFirstDecodedDataMs": 412.69999998807907,
+      "mainLoopMaxGapMs": 13.693567999999686,
+      "leaseMetrics": {
+        "size": 44487499,
+        "cloneMs": 0.286636,
+        "acquisitionMs": 395.4188069999998
+      },
+      "firstPreparation": {
+        "ms": 394.8240700000001,
+        "constructorMs": 2.476406999999881,
+        "maxGapMs": 6.511868999999933
+      },
+      "seek": {
+        "event": "seek",
+        "seekedMs": 118.63424499999928
+      },
+      "decodedTransitionsMs": [
+        412.69999998807907, 68.2999999821186, 401.19999998807907
+      ],
+      "passedEvents": [
+        {
+          "event": "pending-seek-pause-resume",
+          "passed": true
+        },
+        {
+          "event": "next-during-acquisition",
+          "passed": true
+        },
+        {
+          "event": "failed-acquisition",
+          "code": "ENOSPC",
+          "noFallback": true
+        },
+        {
+          "event": "failed-acquisition",
+          "code": "EIO",
+          "noFallback": true
+        },
+        {
+          "event": "real-decoder-error",
+          "drained": true
+        },
+        {
+          "event": "current-source-removal",
+          "drained": true
+        },
+        {
+          "event": "library-switch",
+          "drained": true
+        },
+        {
+          "event": "restored-preload-reused",
+          "passed": true
+        },
+        {
+          "event": "window-destruction-and-reopen",
+          "drained": true
+        },
+        {
+          "event": "application-quit",
+          "drained": true
+        },
+        {
+          "event": "renderer-crash",
+          "drained": true
+        }
+      ],
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "de0143293fca83830d7779d2d4946c2c78334338eaf94d908a23e5e4087fa1bc"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "1c9f161686c9565eaa0f7715dd6836b3ca5036d7ecad326226e0541c85a1998d"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "77b59104a7765c2d49bfa929b41714d6f769f5ed4cfb94ec65908d8d09572731"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "1b64185595c70711d704b017da4780ff41181d60add835186f8cbbae6482bf5f"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "b16541e40ec2eb15b692ff41f40e3ee0257355044fac255ee0b4ce152bd20961"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ]
+    },
+    {
+      "case": "packaged-owned",
+      "packaged": true,
+      "flagEnabled": true,
+      "storage": "local APFS",
+      "bytes": 189243,
+      "isolated": true,
+      "playToFirstDecodedDataMs": 69.59999999403954,
+      "mainLoopMaxGapMs": 12.648719000000028,
+      "leaseMetrics": {
+        "size": 189243,
+        "cloneMs": 0.296691,
+        "acquisitionMs": 50.174357999999984
+      },
+      "firstPreparation": {
+        "ms": 49.658770000000004,
+        "constructorMs": 2.1662249999999403,
+        "maxGapMs": 6.503538000000162
+      },
+      "seek": {
+        "event": "seek",
+        "seekedMs": 119.69636500000024
+      },
+      "decodedTransitionsMs": [
+        69.59999999403954, 63.29999998211861, 60.20000001788139
+      ],
+      "passedEvents": [
+        {
+          "event": "pending-seek-pause-resume",
+          "passed": true
+        },
+        {
+          "event": "next-during-acquisition",
+          "passed": true
+        },
+        {
+          "event": "failed-acquisition",
+          "code": "ENOSPC",
+          "noFallback": true
+        },
+        {
+          "event": "failed-acquisition",
+          "code": "EIO",
+          "noFallback": true
+        },
+        {
+          "event": "real-decoder-error",
+          "drained": true
+        },
+        {
+          "event": "current-source-removal",
+          "drained": true
+        },
+        {
+          "event": "library-switch",
+          "drained": true
+        },
+        {
+          "event": "restored-preload-reused",
+          "passed": true
+        },
+        {
+          "event": "window-destruction-and-reopen",
+          "drained": true
+        },
+        {
+          "event": "application-quit",
+          "drained": true
+        },
+        {
+          "event": "renderer-crash",
+          "drained": true
+        }
+      ],
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "de0143293fca83830d7779d2d4946c2c78334338eaf94d908a23e5e4087fa1bc"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "1c9f161686c9565eaa0f7715dd6836b3ca5036d7ecad326226e0541c85a1998d"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "77b59104a7765c2d49bfa929b41714d6f769f5ed4cfb94ec65908d8d09572731"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "1b64185595c70711d704b017da4780ff41181d60add835186f8cbbae6482bf5f"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "b16541e40ec2eb15b692ff41f40e3ee0257355044fac255ee0b4ce152bd20961"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ]
+    },
+    {
+      "case": "packaged",
+      "packaged": true,
+      "flagEnabled": true,
+      "storage": "noowners",
+      "bytes": 189243,
+      "isolated": true,
+      "playToFirstDecodedDataMs": 71,
+      "mainLoopMaxGapMs": null,
+      "leaseMetrics": {
+        "size": 189243,
+        "cloneMs": 0.297898,
+        "acquisitionMs": 48.88976200000002
+      },
+      "firstPreparation": {
+        "ms": 48.316704999999956,
+        "maxGapMs": 5.83241699999985
+      },
+      "seek": {
+        "event": "seek",
+        "seekedMs": 120.68224999999984
+      },
+      "decodedTransitionsMs": [71, 65.90000000596046, 67.59999999403954],
+      "passedEvents": [
+        {
+          "event": "pending-seek-pause-resume",
+          "passed": true
+        },
+        {
+          "event": "switch-during-acquisition",
+          "passed": true
+        },
+        {
+          "event": "failed-acquisition",
+          "code": "ENOSPC",
+          "noFallback": true
+        },
+        {
+          "event": "failed-acquisition",
+          "code": "EIO",
+          "noFallback": true
+        },
+        {
+          "event": "real-decoder-error",
+          "drained": true
+        },
+        {
+          "event": "current-source-removal",
+          "drained": true
+        },
+        {
+          "event": "library-switch",
+          "drained": true
+        },
+        {
+          "event": "restored-preload-reused",
+          "passed": true
+        },
+        {
+          "event": "disposable-volume-removal",
+          "newUseRejected": true,
+          "drained": true
+        },
+        {
+          "event": "application-quit",
+          "drained": true
+        }
+      ],
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "de0143293fca83830d7779d2d4946c2c78334338eaf94d908a23e5e4087fa1bc"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "1c9f161686c9565eaa0f7715dd6836b3ca5036d7ecad326226e0541c85a1998d"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "77b59104a7765c2d49bfa929b41714d6f769f5ed4cfb94ec65908d8d09572731"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "1b64185595c70711d704b017da4780ff41181d60add835186f8cbbae6482bf5f"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "b16541e40ec2eb15b692ff41f40e3ee0257355044fac255ee0b4ce152bd20961"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ]
+    },
+    {
+      "case": "unsupported",
+      "packaged": true,
+      "flagEnabled": true,
+      "storage": "unsupported",
+      "bytes": 189243,
+      "isolated": false,
+      "playToFirstDecodedDataMs": 62.80000001192093,
+      "mainLoopMaxGapMs": null,
+      "leaseMetrics": null,
+      "firstPreparation": {
+        "ms": 39.472222999999985,
+        "maxGapMs": 6.537552000000005
+      },
+      "seek": {
+        "event": "seek",
+        "seekedMs": 118.65656899999976
+      },
+      "decodedTransitionsMs": [
+        62.80000001192093, 53.400000005960464, 49.19999998807907
+      ],
+      "passedEvents": [
+        {
+          "event": "real-decoder-error",
+          "drained": true
+        },
+        {
+          "event": "current-source-removal",
+          "drained": true
+        },
+        {
+          "event": "library-switch",
+          "drained": true
+        },
+        {
+          "event": "restored-preload-reused",
+          "passed": true
+        },
+        {
+          "event": "application-quit",
+          "drained": true
+        },
+        {
+          "event": "renderer-crash",
+          "drained": true
+        }
+      ],
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "de0143293fca83830d7779d2d4946c2c78334338eaf94d908a23e5e4087fa1bc"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "1c9f161686c9565eaa0f7715dd6836b3ca5036d7ecad326226e0541c85a1998d"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "77b59104a7765c2d49bfa929b41714d6f769f5ed4cfb94ec65908d8d09572731"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "1b64185595c70711d704b017da4780ff41181d60add835186f8cbbae6482bf5f"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "b16541e40ec2eb15b692ff41f40e3ee0257355044fac255ee0b4ce152bd20961"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ]
+    },
+    {
+      "case": "disabled",
+      "packaged": true,
+      "flagEnabled": false,
+      "storage": "local APFS",
+      "bytes": 189243,
+      "isolated": false,
+      "playToFirstDecodedDataMs": 21.69999998807907,
+      "mainLoopMaxGapMs": null,
+      "leaseMetrics": null,
+      "firstPreparation": null,
+      "seek": {
+        "event": "seek",
+        "seekedMs": 116.07988299999988
+      },
+      "decodedTransitionsMs": [21.799999982118607, 24.400000005960464],
+      "passedEvents": [
+        {
+          "event": "real-decoder-error",
+          "drained": true
+        },
+        {
+          "event": "current-source-removal",
+          "drained": true
+        },
+        {
+          "event": "library-switch",
+          "drained": true
+        },
+        {
+          "event": "restored-preload-reused",
+          "passed": true
+        },
+        {
+          "event": "application-quit",
+          "drained": true
+        },
+        {
+          "event": "renderer-crash",
+          "drained": true
+        }
+      ],
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "de0143293fca83830d7779d2d4946c2c78334338eaf94d908a23e5e4087fa1bc"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "1c9f161686c9565eaa0f7715dd6836b3ca5036d7ecad326226e0541c85a1998d"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "77b59104a7765c2d49bfa929b41714d6f769f5ed4cfb94ec65908d8d09572731"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "1b64185595c70711d704b017da4780ff41181d60add835186f8cbbae6482bf5f"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "b16541e40ec2eb15b692ff41f40e3ee0257355044fac255ee0b4ce152bd20961"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ]
+    }
+  ],
+  "nativeVolumeMatrix": [
+    {
+      "event": "publication-independence",
+      "owners": "on",
+      "strategy": "staged",
+      "cloneUnchanged": true
+    },
+    {
+      "event": "disconnected",
+      "owners": "on",
+      "status": 503,
+      "code": "EIO",
+      "resourcesDrained": true
+    },
+    {
+      "event": "readonly",
+      "owners": "on",
+      "code": "EROFS",
+      "message": "Playback volume is read only"
+    },
+    {
+      "event": "insufficient-space",
+      "owners": "on",
+      "code": "ENOSPC",
+      "noScratch": true
+    },
+    {
+      "event": "cross-volume-boundary",
+      "owners": "on",
+      "code": "EXDEV"
+    },
+    {
+      "event": "publication-independence",
+      "owners": "off",
+      "strategy": "in-place",
+      "cloneUnchanged": true
+    },
+    {
+      "event": "disconnected",
+      "owners": "off",
+      "status": 503,
+      "code": "EIO",
+      "resourcesDrained": true
+    },
+    {
+      "event": "readonly",
+      "owners": "off",
+      "code": "EROFS",
+      "message": "Playback volume is read only"
+    },
+    {
+      "event": "insufficient-space",
+      "owners": "off",
+      "code": "ENOSPC",
+      "noScratch": true
+    },
+    {
+      "event": "cross-volume-boundary",
+      "owners": "off",
+      "code": "EXDEV"
+    },
+    {
+      "event": "unsupported-HFS",
+      "code": "ENOTSUP"
+    }
+  ],
+  "limits": [
+    "Intel macOS qualified; Linux/Windows/arm64 clone integration not qualified",
+    "Existing conservative size/space/scratch-state limits retained",
+    "Superseded capture may finish before next acquisition",
+    "No sample-level/acoustic continuity or underrun qualification",
+    "No concurrent metadata editing; original metadata-use gate retained"
+  ]
+}

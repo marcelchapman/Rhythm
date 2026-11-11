@@ -1,0 +1,890 @@
+{
+  "date": "2026-11-09T00:59:01.326Z",
+  "desktop": {
+    "runtime": {
+      "platform": "darwin",
+      "arch": "x64",
+      "node": "24.22.0",
+      "electron": "44.9.2",
+      "unconsumedChunks": 2
+    },
+    "rows": [
+      {
+        "storage": "owned",
+        "size": "small",
+        "repeat": 0,
+        "bytes": 189632,
+        "wallMs": 55.51536599999986,
+        "workerConstructorMs": 1.611758000000009,
+        "mainThreadCpuMs": 14.678,
+        "maxMainTickGapMs": 5.913739999999962,
+        "metrics": {
+          "size": 189632,
+          "cloneMs": 0.284514,
+          "acquisitionMs": 52.43469900000014
+        },
+        "active": 1,
+        "playMs": 271.09999999403954,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "owned",
+        "size": "small",
+        "repeat": 1,
+        "bytes": 189632,
+        "wallMs": 36.79608099999996,
+        "workerConstructorMs": 0.5450660000001335,
+        "mainThreadCpuMs": 3.095,
+        "maxMainTickGapMs": 5.765112999999928,
+        "metrics": {
+          "size": 189632,
+          "cloneMs": 0.30534,
+          "acquisitionMs": 35.405385000000024
+        },
+        "active": 1,
+        "playMs": 14.200000017881393,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "owned",
+        "size": "small",
+        "repeat": 2,
+        "bytes": 189632,
+        "wallMs": 36.38098200000013,
+        "workerConstructorMs": 0.3468649999999798,
+        "mainThreadCpuMs": 2.758,
+        "maxMainTickGapMs": 5.8993860000000495,
+        "metrics": {
+          "size": 189632,
+          "cloneMs": 0.256292,
+          "acquisitionMs": 35.22739500000034
+        },
+        "active": 1,
+        "playMs": 6.699999988079071,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "owned",
+        "size": "large",
+        "repeat": 0,
+        "bytes": 44487499,
+        "wallMs": 770.917391,
+        "workerConstructorMs": 0.42984500000011394,
+        "mainThreadCpuMs": 24.045,
+        "maxMainTickGapMs": 19.86619200000041,
+        "metrics": {
+          "size": 44487499,
+          "cloneMs": 0.617704,
+          "acquisitionMs": 769.422528
+        },
+        "active": 1,
+        "playMs": 8,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "owned",
+        "size": "large",
+        "repeat": 1,
+        "bytes": 44487499,
+        "wallMs": 844.8329359999998,
+        "workerConstructorMs": 0.3795300000001589,
+        "mainThreadCpuMs": 27.065,
+        "maxMainTickGapMs": 64.09505799999988,
+        "metrics": {
+          "size": 44487499,
+          "cloneMs": 0.302325,
+          "acquisitionMs": 843.3828509999994
+        },
+        "active": 1,
+        "playMs": 11,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "owned",
+        "size": "large",
+        "repeat": 2,
+        "bytes": 44487499,
+        "wallMs": 392.5826369999995,
+        "workerConstructorMs": 0.35753900000054273,
+        "mainThreadCpuMs": 10.821,
+        "maxMainTickGapMs": 6.584571000000324,
+        "metrics": {
+          "size": 44487499,
+          "cloneMs": 0.26225,
+          "acquisitionMs": 390.81967899999927
+        },
+        "active": 1,
+        "playMs": 9.600000023841858,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "noowners",
+        "size": "small",
+        "repeat": 0,
+        "bytes": 189632,
+        "wallMs": 41.434981000000334,
+        "workerConstructorMs": 0.40429799999947136,
+        "mainThreadCpuMs": 3.398,
+        "maxMainTickGapMs": 5.7929910000002565,
+        "metrics": {
+          "size": 189632,
+          "cloneMs": 0.290403,
+          "acquisitionMs": 40.02822500000002
+        },
+        "active": 1,
+        "playMs": 8.200000017881393,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "noowners",
+        "size": "small",
+        "repeat": 1,
+        "bytes": 189632,
+        "wallMs": 37.710040000000845,
+        "workerConstructorMs": 0.3819759999996677,
+        "mainThreadCpuMs": 2.452,
+        "maxMainTickGapMs": 6.09277800000018,
+        "metrics": {
+          "size": 189632,
+          "cloneMs": 0.327063,
+          "acquisitionMs": 36.56445300000087
+        },
+        "active": 1,
+        "playMs": 6.200000017881393,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "noowners",
+        "size": "small",
+        "repeat": 2,
+        "bytes": 189632,
+        "wallMs": 39.54135799999858,
+        "workerConstructorMs": 0.29399199999897974,
+        "mainThreadCpuMs": 2.602,
+        "maxMainTickGapMs": 5.729064999999537,
+        "metrics": {
+          "size": 189632,
+          "cloneMs": 0.291802,
+          "acquisitionMs": 38.480224999999336
+        },
+        "active": 1,
+        "playMs": 8.699999988079071,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "noowners",
+        "size": "large",
+        "repeat": 0,
+        "bytes": 44487499,
+        "wallMs": 597.8947989999997,
+        "workerConstructorMs": 0.5173130000002857,
+        "mainThreadCpuMs": 17.803,
+        "maxMainTickGapMs": 11.442165999998906,
+        "metrics": {
+          "size": 44487499,
+          "cloneMs": 0.349175,
+          "acquisitionMs": 595.4817579999999
+        },
+        "active": 1,
+        "playMs": 10.400000005960464,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "noowners",
+        "size": "large",
+        "repeat": 1,
+        "bytes": 44487499,
+        "wallMs": 457.1385300000002,
+        "workerConstructorMs": 0.34959800000069663,
+        "mainThreadCpuMs": 14.08,
+        "maxMainTickGapMs": 6.415967999999339,
+        "metrics": {
+          "size": 44487499,
+          "cloneMs": 0.673834,
+          "acquisitionMs": 455.9595310000004
+        },
+        "active": 1,
+        "playMs": 9.200000017881393,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "storage": "noowners",
+        "size": "large",
+        "repeat": 2,
+        "bytes": 44487499,
+        "wallMs": 410.00310999999965,
+        "workerConstructorMs": 0.28535200000078476,
+        "mainThreadCpuMs": 16.536,
+        "maxMainTickGapMs": 7.252044000000751,
+        "metrics": {
+          "size": 44487499,
+          "cloneMs": 0.284774,
+          "acquisitionMs": 408.94672900000114
+        },
+        "active": 1,
+        "playMs": 6.800000011920929,
+        "revoked": {
+          "status": 403,
+          "active": 0
+        }
+      },
+      {
+        "event": "renderer-crash",
+        "sourcesDrained": true
+      }
+    ],
+    "quitDrained": true
+  },
+  "earlierDesktopPasses": [
+    {
+      "runtime": {
+        "platform": "darwin",
+        "arch": "x64",
+        "node": "24.22.0",
+        "electron": "44.9.2",
+        "unconsumedChunks": 2
+      },
+      "rows": [
+        {
+          "storage": "owned",
+          "size": "small",
+          "repeat": 0,
+          "bytes": 189632,
+          "wallMs": 45.64968900000008,
+          "maxMainTickGapMs": 5.568798000000015,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.254071,
+            "acquisitionMs": 42.53496100000007
+          },
+          "active": 1,
+          "playMs": 237.69999998807907,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "small",
+          "repeat": 1,
+          "bytes": 189632,
+          "wallMs": 36.94353699999988,
+          "maxMainTickGapMs": 5.807279999999992,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.249772,
+            "acquisitionMs": 35.707419999999956
+          },
+          "active": 1,
+          "playMs": 6.5999999940395355,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "small",
+          "repeat": 2,
+          "bytes": 189632,
+          "wallMs": 34.77269500000011,
+          "maxMainTickGapMs": 5.716335999999956,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.25638,
+            "acquisitionMs": 33.620870000000195
+          },
+          "active": 1,
+          "playMs": 6.699999988079071,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "large",
+          "repeat": 0,
+          "bytes": 44487499,
+          "wallMs": 886.3680500000005,
+          "maxMainTickGapMs": 42.51774299999943,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.385088,
+            "acquisitionMs": 885.1548010000001
+          },
+          "active": 1,
+          "playMs": 14.5,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "large",
+          "repeat": 1,
+          "bytes": 44487499,
+          "wallMs": 695.8110380000007,
+          "maxMainTickGapMs": 17.13786600000003,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.278752,
+            "acquisitionMs": 694.3642839999993
+          },
+          "active": 1,
+          "playMs": 10.699999988079071,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "large",
+          "repeat": 2,
+          "bytes": 44487499,
+          "wallMs": 749.435125,
+          "maxMainTickGapMs": 146.1722120000004,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.497631,
+            "acquisitionMs": 748.128444
+          },
+          "active": 1,
+          "playMs": 11.200000017881393,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "small",
+          "repeat": 0,
+          "bytes": 189632,
+          "wallMs": 51.78518299999996,
+          "maxMainTickGapMs": 5.849388999999974,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.307698,
+            "acquisitionMs": 50.249009000000115
+          },
+          "active": 1,
+          "playMs": 9.300000011920929,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "small",
+          "repeat": 1,
+          "bytes": 189632,
+          "wallMs": 47.49476800000048,
+          "maxMainTickGapMs": 5.892463000000134,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.294361,
+            "acquisitionMs": 46.17168999999922
+          },
+          "active": 1,
+          "playMs": 8.899999976158142,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "small",
+          "repeat": 2,
+          "bytes": 189632,
+          "wallMs": 175.45511500000066,
+          "maxMainTickGapMs": 91.42437900000004,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 3.852275,
+            "acquisitionMs": 173.92231100000026
+          },
+          "active": 1,
+          "playMs": 9.199999988079071,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "large",
+          "repeat": 0,
+          "bytes": 44487499,
+          "wallMs": 522.0537530000001,
+          "maxMainTickGapMs": 14.218778999998904,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.37934,
+            "acquisitionMs": 520.993133
+          },
+          "active": 1,
+          "playMs": 11.100000023841858,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "large",
+          "repeat": 1,
+          "bytes": 44487499,
+          "wallMs": 403.68236100000104,
+          "maxMainTickGapMs": 6.076187999999092,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.278497,
+            "acquisitionMs": 402.66559400000006
+          },
+          "active": 1,
+          "playMs": 8,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "large",
+          "repeat": 2,
+          "bytes": 44487499,
+          "wallMs": 479.7803709999989,
+          "maxMainTickGapMs": 6.773357000000033,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.322222,
+            "acquisitionMs": 478.78033200000027
+          },
+          "active": 1,
+          "playMs": 8.400000005960464,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "event": "renderer-crash",
+          "sourcesDrained": true
+        }
+      ],
+      "quitDrained": true
+    },
+    {
+      "runtime": {
+        "platform": "darwin",
+        "arch": "x64",
+        "node": "24.22.0",
+        "electron": "44.9.2",
+        "unconsumedChunks": 2
+      },
+      "rows": [
+        {
+          "storage": "owned",
+          "size": "small",
+          "repeat": 0,
+          "bytes": 189632,
+          "wallMs": 53.51143400000001,
+          "workerConstructorMs": 1.7470740000001115,
+          "mainThreadCpuMs": 13.842,
+          "maxMainTickGapMs": 5.978420000000142,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.272158,
+            "acquisitionMs": 50.37861799999996
+          },
+          "active": 1,
+          "playMs": 253.80000001192093,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "small",
+          "repeat": 1,
+          "bytes": 189632,
+          "wallMs": 56.46066199999996,
+          "workerConstructorMs": 0.4418160000000171,
+          "mainThreadCpuMs": 6.334,
+          "maxMainTickGapMs": 6.9366110000000845,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.277377,
+            "acquisitionMs": 55.20452900000009
+          },
+          "active": 1,
+          "playMs": 9.799999982118607,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "small",
+          "repeat": 2,
+          "bytes": 189632,
+          "wallMs": 43.458308000000216,
+          "workerConstructorMs": 0.4538969999998699,
+          "mainThreadCpuMs": 3.598,
+          "maxMainTickGapMs": 5.889497000000119,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.269119,
+            "acquisitionMs": 41.72265400000015
+          },
+          "active": 1,
+          "playMs": 10.199999988079071,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "large",
+          "repeat": 0,
+          "bytes": 44487499,
+          "wallMs": 391.21152699999993,
+          "workerConstructorMs": 0.37432799999987765,
+          "mainThreadCpuMs": 9.285,
+          "maxMainTickGapMs": 5.878767000000153,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.257799,
+            "acquisitionMs": 389.9440870000003
+          },
+          "active": 1,
+          "playMs": 8.099999994039536,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "large",
+          "repeat": 1,
+          "bytes": 44487499,
+          "wallMs": 469.3091349999995,
+          "workerConstructorMs": 0.32995299999947747,
+          "mainThreadCpuMs": 19.685,
+          "maxMainTickGapMs": 6.639159000000291,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.278392,
+            "acquisitionMs": 468.0958920000003
+          },
+          "active": 1,
+          "playMs": 16.599999994039536,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "owned",
+          "size": "large",
+          "repeat": 2,
+          "bytes": 44487499,
+          "wallMs": 798.5809650000001,
+          "workerConstructorMs": 0.28395799999998417,
+          "mainThreadCpuMs": 19.401,
+          "maxMainTickGapMs": 98.92528299999958,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.407877,
+            "acquisitionMs": 797.4788159999998
+          },
+          "active": 1,
+          "playMs": 15.699999988079071,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "small",
+          "repeat": 0,
+          "bytes": 189632,
+          "wallMs": 36.68845499999952,
+          "workerConstructorMs": 0.34700100000009115,
+          "mainThreadCpuMs": 2.302,
+          "maxMainTickGapMs": 5.762829000000238,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.285807,
+            "acquisitionMs": 35.57253899999978
+          },
+          "active": 1,
+          "playMs": 6.5,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "small",
+          "repeat": 1,
+          "bytes": 189632,
+          "wallMs": 37.24409000000014,
+          "workerConstructorMs": 0.3281219999998939,
+          "mainThreadCpuMs": 2.468,
+          "maxMainTickGapMs": 5.717367999999624,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.324525,
+            "acquisitionMs": 36.15393200000017
+          },
+          "active": 1,
+          "playMs": 6.199999988079071,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "small",
+          "repeat": 2,
+          "bytes": 189632,
+          "wallMs": 36.74034599999959,
+          "workerConstructorMs": 0.29331100000035804,
+          "mainThreadCpuMs": 2.296,
+          "maxMainTickGapMs": 5.710135999999693,
+          "metrics": {
+            "size": 189632,
+            "cloneMs": 0.32998,
+            "acquisitionMs": 35.63812300000063
+          },
+          "active": 1,
+          "playMs": 6.5,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "large",
+          "repeat": 0,
+          "bytes": 44487499,
+          "wallMs": 445.7880409999998,
+          "workerConstructorMs": 0.31044700000165903,
+          "mainThreadCpuMs": 15.18,
+          "maxMainTickGapMs": 6.504641999999876,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.32371,
+            "acquisitionMs": 443.7067989999996
+          },
+          "active": 1,
+          "playMs": 9.599999994039536,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "large",
+          "repeat": 1,
+          "bytes": 44487499,
+          "wallMs": 392.4704529999999,
+          "workerConstructorMs": 0.26953599999978906,
+          "mainThreadCpuMs": 9.18,
+          "maxMainTickGapMs": 5.884735999999975,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.286508,
+            "acquisitionMs": 391.45046899999943
+          },
+          "active": 1,
+          "playMs": 6.0999999940395355,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "storage": "noowners",
+          "size": "large",
+          "repeat": 2,
+          "bytes": 44487499,
+          "wallMs": 388.1224519999996,
+          "workerConstructorMs": 0.37964800000008836,
+          "mainThreadCpuMs": 8.871,
+          "maxMainTickGapMs": 5.873712000000523,
+          "metrics": {
+            "size": 44487499,
+            "cloneMs": 0.490895,
+            "acquisitionMs": 386.9844350000003
+          },
+          "active": 1,
+          "playMs": 6.200000017881393,
+          "revoked": {
+            "status": 403,
+            "active": 0
+          }
+        },
+        {
+          "event": "renderer-crash",
+          "sourcesDrained": true
+        }
+      ],
+      "quitDrained": true
+    }
+  ],
+  "volumes": {
+    "rows": [
+      {
+        "event": "publication-independence",
+        "owners": "on",
+        "strategy": "staged",
+        "cloneUnchanged": true
+      },
+      {
+        "event": "disconnected",
+        "owners": "on",
+        "status": 503,
+        "code": "EIO",
+        "resourcesDrained": true
+      },
+      {
+        "event": "readonly",
+        "owners": "on",
+        "code": "EROFS",
+        "message": "Playback volume is read only"
+      },
+      {
+        "event": "insufficient-space",
+        "owners": "on",
+        "code": "ENOSPC",
+        "noScratch": true
+      },
+      {
+        "event": "cross-volume-boundary",
+        "owners": "on",
+        "code": "EXDEV"
+      },
+      {
+        "event": "publication-independence",
+        "owners": "off",
+        "strategy": "in-place",
+        "cloneUnchanged": true
+      },
+      {
+        "event": "disconnected",
+        "owners": "off",
+        "status": 503,
+        "code": "EIO",
+        "resourcesDrained": true
+      },
+      {
+        "event": "readonly",
+        "owners": "off",
+        "code": "EROFS",
+        "message": "Playback volume is read only"
+      },
+      {
+        "event": "insufficient-space",
+        "owners": "off",
+        "code": "ENOSPC",
+        "noScratch": true
+      },
+      {
+        "event": "cross-volume-boundary",
+        "owners": "off",
+        "code": "EXDEV"
+      },
+      {
+        "event": "unsupported-HFS",
+        "code": "ENOTSUP"
+      }
+    ]
+  },
+  "nativeBuild": {
+    "fingerprint": "e0c167a2adbf3ffa9f3ca9c52d9eed459d2fb8c229d758bbbf4802f9435b913b",
+    "sha256": "3a13dfbfe740a43f4bbf5d406072426c1ceb6780d07ac842b5ce4199f8ead32c",
+    "platform": "darwin",
+    "arch": "x64",
+    "napi": 8
+  },
+  "validation": {
+    "unit": {
+      "passed": 533,
+      "skipped": 1,
+      "files": 26
+    },
+    "sourceDesktop": "passed",
+    "typecheck": "passed",
+    "preexistingFilesChecked": 167,
+    "unchangedExistingFiles": 164,
+    "intentionallyModifiedExistingFiles": [
+      "src/main/playback-use.ts",
+      "src/main/media.ts",
+      "scripts/build-publication-native.mjs"
+    ],
+    "earlierTrackedDiffUnchanged": true,
+    "indexEmpty": true
+  },
+  "files": {
+    "native/playback-source.cc": "a4fafb54ac068c236cb6fc8f0304142ca6b2c9787964a14b4e6c2de4c9dfe4e8",
+    "src/main/stable-source-manager.ts": "564566192f774f3f6f7626d94dcc8f4a983488fd2140b28344409314a73780ce",
+    "src/main/stable-source-worker.ts": "097ce7bd10b69436bf98e95f0a4b19f85971fd6634eadc9469f6c6731a4dc023",
+    "src/main/playback-use.ts": "c683695d488dbdae460d45b091b4926b1f31791c137141a22e37397674f9d89b",
+    "src/main/media.ts": "6710c863bfcd6d77f48a9533b663278c6f8f907181bf67cad581628952050a0e",
+    "scripts/build-playback-source-native.mjs": "2108891f55bdc55772249017bc7814372f8f8778c06ab8d2b674b7f2479e9925",
+    "scripts/build-publication-native.mjs": "975babbed7ec3169904b4d0c03d204cf4fa6fa68c74dde26b6bcd47c03bfd5b0",
+    "scripts/stable-playback-source.mjs": "482976128556109a615dfd977c8f534ab8c23d9712d61b2d7b03d9020d8a4555",
+    "scripts/stable-playback-volume.mjs": "f26106db2be04840979f710915ecfa524829d3138842151f9abb5b13ded9d3d7",
+    "tests/stable-source.test.ts": "c787847d5904cc19da54198aba2352369c75dd77e0c5afcf9111e570fe231a2c"
+  }
+}

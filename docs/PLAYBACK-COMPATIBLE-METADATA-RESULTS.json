@@ -1,0 +1,1651 @@
+{
+  "phase": "2E.4C",
+  "date": "2026-11-09",
+  "platform": "darwin",
+  "arch": "x64",
+  "electron": "44.9.2",
+  "feature": "RIO_STABLE_PLAYBACK_SOURCES=1; disabled by default",
+  "audioEvidence": "Real HTMLAudioElement decoded-data readiness, transport timing, retained source tokens, old-revision protocol bytes and no unexpected emptied/error events. No PCM/acoustic continuity claim.",
+  "timingNotes": [
+    "Natural saves are separate from controlled worker-reply holds.",
+    "wallMs measures main IPC handler; rendererSaveMs measures submission through reply/frame.",
+    "Publication brackets use monotonic clocks/time origins and 25 ms sampling; intentional transport transitions are excluded from advancement interpretation.",
+    "maxGapMs includes the nominal 5 ms main-loop interval."
+  ],
+  "validation": {
+    "unit": {
+      "passed": 552,
+      "skipped": 1,
+      "files": 26
+    },
+    "typecheck": "passed",
+    "build": "passed",
+    "sourceDesktop": {
+      "passed": true,
+      "harnesses": 20
+    },
+    "packagedDesktop": {
+      "passed": true,
+      "harnesses": 19
+    },
+    "packagedNoowners": "passed",
+    "packagedExternalLarge": "passed",
+    "unavailableBeforeSubmissionSource": "passed",
+    "laterUnavailableDuringPreparationRepeat": "passed on follow-up: disposable volume detached while preparation was held; original receipt unchanged, no write-start intent, failed draft retained",
+    "laterExplicitDisabledRepeat": "passed on follow-up: original-file playback, ownership exclusion, source/window/library/quit/crash lifecycle completed with zero isolated sources",
+    "format": "passed",
+    "whitespace": "passed"
+  },
+  "lateAudioClockObservation": {
+    "position": 0.032,
+    "paused": false,
+    "readyState": 4,
+    "errors": null,
+    "isolatedModeAndOriginalModeAffected": true,
+    "rootCause": "unresolved; not attributed to metadata editing",
+    "assertions": "retained; no force, fake clock, arbitrary sleep or relaxed readiness",
+    "resolution": "Both outstanding packaged checks passed on subsequent retry after user confirmed other-app audio was working. No audio settings, production code, fixture, timing threshold or readiness assertion changed for the retry.",
+    "qualificationBlocker": false
+  },
+  "cases": [
+    {
+      "case": "source-owned",
+      "packaged": false,
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "d9e44e0ab171482ef93b65140ba67040d92332a396232c9c7e736dca136f42c9"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "fdc359acc6878cccd9ae0d7194354e0ad7ba6b6d7ac8cbbab4284f07ef6549f2"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "d96faf79bef9df1c48525ead34e0db5298d1696a96a0f8f9988ca492df9b4581"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "f0db6291d7ca68ca08646bcb18e1170c152865cc630a5f0d8c202527d656fe83"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "929dfa6b1223a857baa01e079aad1debbc0bb9cbd773481380ed3d42972ce241"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ],
+      "metadata": [
+        {
+          "event": "metadata-concurrency",
+          "label": "Enter-active",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 75.300048828125,
+            "positionAdvance": 0.08021800000000034,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 1496.8736499999998,
+          "maxGapMs": 158.53636199999983,
+          "ok": true,
+          "editorExitMs": 4.199999988079071,
+          "rendererSaveMs": 1501.2000000178814,
+          "ipcMs": 1497.5999999940395,
+          "replyToFrameMs": 3.2000000178813934,
+          "publication": "staged",
+          "publicationWindowMs": 70.19412800000009,
+          "timingStages": {
+            "validate-target": 0.18269499999996697,
+            "playlist-lock-start": 0.1862029999999777,
+            "playlist-lock-acquired": 0.24777100000005703,
+            "validate-patch": 0.5989769999998771,
+            "playback-gate-start": 1.088121000000001,
+            "playback-gate-acquired": 1.5734749999999167,
+            "sqlite-lock-start": 1.5758240000000114,
+            "sqlite-lock-acquired": 1.6485270000000583,
+            "receipt-preflight-done": 6.14400599999999,
+            "capability-start": 6.437439999999924,
+            "capability": 137.56873999999993,
+            "journal-insert-start": 140.27504499999986,
+            "preflight": 140.78082199999994,
+            "prepare": 996.5728609999999,
+            "candidate-validated": 997.035678,
+            "stage-native": 1153.080631,
+            "verify-candidate": 1247.857768,
+            "revalidate-start": 1248.475659,
+            "revalidate": 1252.112524,
+            "publish": 1322.306652,
+            "verify-published": 1414.928224,
+            "sqlite-commit-start": 1415.772204,
+            "db-commit": 1417.105382,
+            "reconcile": 1420.194675,
+            "cleanup": 1494.7987449999998,
+            "release-start": 1494.8391949999998,
+            "release-done": 1495.264078,
+            "save": 1495.2697369999999,
+            "snapshot": 1496.347309
+          },
+          "transportSamples": 64,
+          "decoderEvents": ["pause", "playing", "waiting", "seeked", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "commands-during-preparation",
+          "pauseMs": 22.836561000000074,
+          "resumeMs": 29.40494099999887,
+          "seekMs": 15.23743100000138
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "Tab-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 99.300048828125,
+            "positionAdvance": 0.10240700000000125,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 798.1559229999993,
+          "maxGapMs": 159.31362900000022,
+          "ok": true,
+          "editorExitMs": 3.0999999940395355,
+          "rendererSaveMs": 801.4000000059605,
+          "ipcMs": 798.7000000178814,
+          "replyToFrameMs": 2.5999999940395355,
+          "publication": "staged",
+          "publicationWindowMs": 88.19761700000026,
+          "timingStages": {
+            "validate-target": 0.19273900000007416,
+            "playlist-lock-start": 0.19477400000005218,
+            "playlist-lock-acquired": 0.19684400000005553,
+            "validate-patch": 0.3565830000002279,
+            "playback-gate-start": 0.41087000000015905,
+            "playback-gate-acquired": 0.9131400000001122,
+            "sqlite-lock-start": 0.9142860000001747,
+            "sqlite-lock-acquired": 0.9479150000001937,
+            "receipt-preflight-done": 4.610213999999814,
+            "capability-start": 4.8340760000000955,
+            "capability": 132.6289139999999,
+            "journal-insert-start": 136.83511700000008,
+            "preflight": 137.23753799999986,
+            "prepare": 278.73281700000007,
+            "candidate-validated": 279.1887160000001,
+            "stage-native": 437.0124529999998,
+            "verify-candidate": 530.9858859999999,
+            "revalidate-start": 531.5961360000001,
+            "revalidate": 535.3262840000002,
+            "publish": 623.5239010000005,
+            "verify-published": 722.0084219999999,
+            "sqlite-commit-start": 722.5692099999997,
+            "db-commit": 723.680249,
+            "reconcile": 726.3926499999998,
+            "cleanup": 796.1834820000004,
+            "release-start": 796.1960490000001,
+            "release-done": 796.59087,
+            "save": 796.5982299999996,
+            "snapshot": 797.7130569999999
+          },
+          "transportSamples": 41,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "cancel-and-noop",
+          "noRewrite": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "TrackInfo-paused-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 75.89990234375,
+            "positionAdvance": 0,
+            "transportTransition": false,
+            "pausedBefore": true,
+            "pausedAfter": true,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 822.2211820000002,
+          "maxGapMs": 201.2347520000003,
+          "ok": true,
+          "editorExitMs": null,
+          "rendererSaveMs": 835.5999999940395,
+          "ipcMs": 832.3999999761581,
+          "replyToFrameMs": 3.2000000178813934,
+          "publication": "staged",
+          "publicationWindowMs": 68.51559100000031,
+          "timingStages": {
+            "validate-target": 0.2400180000004184,
+            "playlist-lock-start": 0.24283000000014,
+            "playlist-lock-acquired": 0.24596400000064023,
+            "validate-patch": 0.4214240000001155,
+            "playback-gate-start": 0.4841150000002017,
+            "playback-gate-acquired": 0.9440430000004199,
+            "sqlite-lock-start": 0.9448069999998552,
+            "sqlite-lock-acquired": 0.9769329999999172,
+            "receipt-preflight-done": 14.408856000000014,
+            "capability-start": 14.569637000000512,
+            "capability": 144.0953930000005,
+            "journal-insert-start": 148.52713200000017,
+            "preflight": 148.8670170000005,
+            "prepare": 287.3779140000006,
+            "candidate-validated": 287.82454300000063,
+            "stage-native": 486.59664000000066,
+            "verify-candidate": 580.2681060000004,
+            "revalidate-start": 580.8825430000006,
+            "revalidate": 584.321594,
+            "publish": 652.8371850000003,
+            "verify-published": 747.1843319999998,
+            "sqlite-commit-start": 747.6660010000005,
+            "db-commit": 748.6943970000002,
+            "reconcile": 751.6323849999999,
+            "cleanup": 820.2722560000002,
+            "release-start": 820.2759500000002,
+            "release-done": 820.5645330000007,
+            "save": 820.5690599999998,
+            "snapshot": 821.6102259999998
+          },
+          "transportSamples": 48,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "switch-after-publication",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 75.39990234375,
+            "positionAdvance": 0.06978099999999898,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 1601.8262540000005,
+          "maxGapMs": 206.37460900000042,
+          "ok": true,
+          "editorExitMs": 2.4000000059604645,
+          "rendererSaveMs": 1604.699999988079,
+          "ipcMs": 1602.3999999761581,
+          "replyToFrameMs": 2.300000011920929,
+          "publication": "staged",
+          "publicationWindowMs": 68.72461000000021,
+          "timingStages": {
+            "validate-target": 0.1895090000007258,
+            "playlist-lock-start": 0.19080699999994977,
+            "playlist-lock-acquired": 0.19283100000029663,
+            "validate-patch": 0.3461409999999887,
+            "playback-gate-start": 0.39938900000015565,
+            "playback-gate-acquired": 0.8482910000002448,
+            "sqlite-lock-start": 0.8492810000007012,
+            "sqlite-lock-acquired": 0.8778420000007827,
+            "receipt-preflight-done": 4.453812000000653,
+            "capability-start": 4.594245000000228,
+            "capability": 133.27658500000052,
+            "journal-insert-start": 136.103341,
+            "preflight": 136.5272300000006,
+            "prepare": 275.8736150000004,
+            "candidate-validated": 276.32792599999993,
+            "stage-native": 476.23812799999996,
+            "verify-candidate": 570.8969870000001,
+            "revalidate-start": 571.5227250000007,
+            "revalidate": 574.8476120000005,
+            "publish": 643.5722220000007,
+            "verify-published": 1528.6801910000013,
+            "sqlite-commit-start": 1528.8600960000003,
+            "db-commit": 1529.9486580000012,
+            "reconcile": 1532.9547149999999,
+            "cleanup": 1600.3426049999998,
+            "release-start": 1600.3454920000004,
+            "release-done": 1600.6219130000009,
+            "save": 1600.626972,
+            "snapshot": 1601.4138190000012
+          },
+          "transportSamples": 66,
+          "decoderEvents": ["emptied", "emptied", "loadeddata", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "subsequent-acquisition",
+          "ms": 121.18430399999852,
+          "verifiedPreparationMs": 47.15538200000083
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "failed-draft-retry",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 99.5,
+            "positionAdvance": 0.091804,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 768.0359619999999,
+          "maxGapMs": 162.88735199999974,
+          "ok": true,
+          "editorExitMs": 3.9000000059604645,
+          "rendererSaveMs": 776.0999999940395,
+          "ipcMs": 768.5999999940395,
+          "replyToFrameMs": 7.5,
+          "publication": "staged",
+          "publicationWindowMs": 67.55531900000096,
+          "timingStages": {
+            "validate-target": 0.19814899999983027,
+            "playlist-lock-start": 0.19971199999963574,
+            "playlist-lock-acquired": 0.20513500000015483,
+            "validate-patch": 0.3680980000008276,
+            "playback-gate-start": 0.42147300000033283,
+            "playback-gate-acquired": 0.8830259999995178,
+            "sqlite-lock-start": 0.8836640000008629,
+            "sqlite-lock-acquired": 0.9622259999996459,
+            "receipt-preflight-done": 5.710197000000335,
+            "capability-start": 5.863306999999622,
+            "capability": 132.28911999999946,
+            "journal-insert-start": 135.04941300000064,
+            "preflight": 135.49934700000085,
+            "prepare": 275.29348800000116,
+            "candidate-validated": 275.79287000000113,
+            "stage-native": 432.59867699999995,
+            "verify-candidate": 529.5016660000001,
+            "revalidate-start": 530.103411,
+            "revalidate": 533.3907760000002,
+            "publish": 600.9460950000012,
+            "verify-published": 693.8147150000004,
+            "sqlite-commit-start": 694.3205740000012,
+            "db-commit": 695.3261270000003,
+            "reconcile": 698.3415990000012,
+            "cleanup": 766.703171000001,
+            "release-start": 766.7060629999996,
+            "release-done": 766.907940000001,
+            "save": 766.9108909999995,
+            "snapshot": 767.6316960000004
+          },
+          "transportSamples": 40,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "recovery-required-retains-clone",
+          "strategy": "staged",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "startup-forward-recovery",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "quit-during-save",
+          "abortedSafely": true,
+          "trackIdPathAndAudioPreserved": true
+        }
+      ],
+      "firstPlay": {
+        "bytes": 189243,
+        "storage": "local APFS",
+        "playToFirstDecodedDataMs": 74.5,
+        "mainLoopMaxGapMs": 11.180123999999978
+      }
+    },
+    {
+      "case": "packaged-owned",
+      "packaged": true,
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "d9e44e0ab171482ef93b65140ba67040d92332a396232c9c7e736dca136f42c9"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "fdc359acc6878cccd9ae0d7194354e0ad7ba6b6d7ac8cbbab4284f07ef6549f2"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "d96faf79bef9df1c48525ead34e0db5298d1696a96a0f8f9988ca492df9b4581"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "f0db6291d7ca68ca08646bcb18e1170c152865cc630a5f0d8c202527d656fe83"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "929dfa6b1223a857baa01e079aad1debbc0bb9cbd773481380ed3d42972ce241"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ],
+      "metadata": [
+        {
+          "event": "metadata-concurrency",
+          "label": "Enter-active",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 75.300048828125,
+            "positionAdvance": 0.08030399999999993,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 1543.7192770000001,
+          "maxGapMs": 168.76002500000004,
+          "ok": true,
+          "editorExitMs": 7.200000017881393,
+          "rendererSaveMs": 1549.300000011921,
+          "ipcMs": 1545.199999988079,
+          "replyToFrameMs": 2.800000011920929,
+          "publication": "staged",
+          "publicationWindowMs": 70.09751899999992,
+          "timingStages": {
+            "validate-target": 0.4430249999998068,
+            "playlist-lock-start": 0.4536399999999503,
+            "playlist-lock-acquired": 0.6682559999999285,
+            "validate-patch": 1.385473999999931,
+            "playback-gate-start": 1.9558199999999033,
+            "playback-gate-acquired": 2.489223999999922,
+            "sqlite-lock-start": 2.4916339999999764,
+            "sqlite-lock-acquired": 2.574278999999933,
+            "receipt-preflight-done": 6.138230000000021,
+            "capability-start": 6.393546999999899,
+            "capability": 135.04783799999996,
+            "journal-insert-start": 139.14915799999972,
+            "preflight": 140.35528799999975,
+            "prepare": 1027.12619,
+            "candidate-validated": 1027.649406,
+            "stage-native": 1185.671726,
+            "verify-candidate": 1290.855991,
+            "revalidate-start": 1291.5311859999997,
+            "revalidate": 1295.444985,
+            "publish": 1365.542504,
+            "verify-published": 1465.9698599999997,
+            "sqlite-commit-start": 1466.4791919999998,
+            "db-commit": 1468.534724,
+            "reconcile": 1472.0545819999998,
+            "cleanup": 1541.2185989999998,
+            "release-start": 1541.2916449999998,
+            "release-done": 1542.03411,
+            "save": 1542.0400959999997,
+            "snapshot": 1543.066409
+          },
+          "transportSamples": 83,
+          "decoderEvents": ["pause", "playing", "waiting", "seeked", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "commands-during-preparation",
+          "pauseMs": 35.12412499999846,
+          "resumeMs": 30.49907499999972,
+          "seekMs": 14.178235999999742
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "Tab-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 77.099853515625,
+            "positionAdvance": 0.0714459999999999,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 790.9007300000003,
+          "maxGapMs": 163.74012399999992,
+          "ok": true,
+          "editorExitMs": 4.199999988079071,
+          "rendererSaveMs": 797.9000000059605,
+          "ipcMs": 791.5999999940395,
+          "replyToFrameMs": 6.300000011920929,
+          "publication": "staged",
+          "publicationWindowMs": 68.52115299999969,
+          "timingStages": {
+            "validate-target": 0.29586600000038743,
+            "playlist-lock-start": 0.29900999999972555,
+            "playlist-lock-acquired": 0.3022549999996045,
+            "validate-patch": 0.48499600000013743,
+            "playback-gate-start": 0.5522680000003675,
+            "playback-gate-acquired": 1.062264000000141,
+            "sqlite-lock-start": 1.0641310000000885,
+            "sqlite-lock-acquired": 1.1066110000001572,
+            "receipt-preflight-done": 4.697180000000117,
+            "capability-start": 4.915089999999509,
+            "capability": 134.77006999999958,
+            "journal-insert-start": 138.97038799999973,
+            "preflight": 139.35698200000024,
+            "prepare": 287.202217,
+            "candidate-validated": 287.6578049999998,
+            "stage-native": 444.89404000000013,
+            "verify-candidate": 546.6355979999998,
+            "revalidate-start": 547.3176320000002,
+            "revalidate": 550.9093819999998,
+            "publish": 619.4305349999995,
+            "verify-published": 718.4179720000002,
+            "sqlite-commit-start": 718.9261409999999,
+            "db-commit": 719.7637800000002,
+            "reconcile": 722.9945440000001,
+            "cleanup": 789.0415569999996,
+            "release-start": 789.0513229999997,
+            "release-done": 789.2854779999998,
+            "save": 789.2891829999999,
+            "snapshot": 790.0794820000001
+          },
+          "transportSamples": 41,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "cancel-and-noop",
+          "noRewrite": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "TrackInfo-paused-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 98.199951171875,
+            "positionAdvance": 0,
+            "transportTransition": false,
+            "pausedBefore": true,
+            "pausedAfter": true,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 773.8865560000004,
+          "maxGapMs": 166.06163300000026,
+          "ok": true,
+          "editorExitMs": null,
+          "rendererSaveMs": 778,
+          "ipcMs": 774.6000000238419,
+          "replyToFrameMs": 3.399999976158142,
+          "publication": "staged",
+          "publicationWindowMs": 68.14964899999995,
+          "timingStages": {
+            "validate-target": 0.21235499999966123,
+            "playlist-lock-start": 0.2141009999995731,
+            "playlist-lock-acquired": 0.21589199999925768,
+            "validate-patch": 0.36202199999934237,
+            "playback-gate-start": 0.41780199999993783,
+            "playback-gate-acquired": 0.8709939999998824,
+            "sqlite-lock-start": 0.8714860000000044,
+            "sqlite-lock-acquired": 0.8998309999997218,
+            "receipt-preflight-done": 3.4591849999997066,
+            "capability-start": 3.590351999999257,
+            "capability": 133.09377799999947,
+            "journal-insert-start": 136.86093999999957,
+            "preflight": 137.2316609999998,
+            "prepare": 275.40429699999913,
+            "candidate-validated": 275.9021619999994,
+            "stage-native": 434.41028299999925,
+            "verify-candidate": 529.5038949999998,
+            "revalidate-start": 530.1235809999998,
+            "revalidate": 536.122093,
+            "publish": 604.2717419999999,
+            "verify-published": 700.234125,
+            "sqlite-commit-start": 700.7261409999992,
+            "db-commit": 701.7316989999999,
+            "reconcile": 704.7647109999998,
+            "cleanup": 772.2872559999996,
+            "release-start": 772.2903459999998,
+            "release-done": 772.512702,
+            "save": 772.5169349999996,
+            "snapshot": 773.3461629999993
+          },
+          "transportSamples": 45,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "switch-after-publication",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 99.89990234375,
+            "positionAdvance": 0.09231699999999954,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 1629.3889299999992,
+          "maxGapMs": 159.99023699999998,
+          "ok": true,
+          "editorExitMs": 3.800000011920929,
+          "rendererSaveMs": 1636.4000000059605,
+          "ipcMs": 1630.1000000238419,
+          "replyToFrameMs": 6.199999988079071,
+          "publication": "staged",
+          "publicationWindowMs": 68.74358699999993,
+          "timingStages": {
+            "validate-target": 0.19009000000005472,
+            "playlist-lock-start": 0.1914939999996932,
+            "playlist-lock-acquired": 0.19314000000031228,
+            "validate-patch": 0.35039899999992485,
+            "playback-gate-start": 0.4031430000004548,
+            "playback-gate-acquired": 0.8731799999995928,
+            "sqlite-lock-start": 0.8738320000002204,
+            "sqlite-lock-acquired": 0.9006579999995665,
+            "receipt-preflight-done": 5.4683930000001055,
+            "capability-start": 6.043493000000126,
+            "capability": 134.9488680000004,
+            "journal-insert-start": 138.1514100000004,
+            "preflight": 138.58696299999974,
+            "prepare": 280.6777869999996,
+            "candidate-validated": 281.128248,
+            "stage-native": 439.3258729999998,
+            "verify-candidate": 539.8561760000002,
+            "revalidate-start": 540.202953,
+            "revalidate": 543.8050800000001,
+            "publish": 612.548667,
+            "verify-published": 1553.6192950000004,
+            "sqlite-commit-start": 1553.8122239999993,
+            "db-commit": 1554.717326,
+            "reconcile": 1557.5762099999993,
+            "cleanup": 1627.8651370000007,
+            "release-start": 1627.8678240000008,
+            "release-done": 1628.1418130000002,
+            "save": 1628.1460939999997,
+            "snapshot": 1628.941546
+          },
+          "transportSamples": 67,
+          "decoderEvents": ["emptied", "emptied", "loadeddata", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "subsequent-acquisition",
+          "ms": 127.69799399999829,
+          "verifiedPreparationMs": 59.62010000000009
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "failed-draft-retry",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 98.89990234375,
+            "positionAdvance": 0.10028900000000007,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 792.2884819999999,
+          "maxGapMs": 164.86681899999894,
+          "ok": true,
+          "editorExitMs": 3.2999999821186066,
+          "rendererSaveMs": 796.9000000059605,
+          "ipcMs": 793.7000000178814,
+          "replyToFrameMs": 3.0999999940395355,
+          "publication": "staged",
+          "publicationWindowMs": 70.91468899999927,
+          "timingStages": {
+            "validate-target": 0.2365430000008928,
+            "playlist-lock-start": 0.2376170000006823,
+            "playlist-lock-acquired": 0.2397130000008474,
+            "validate-patch": 0.40203500000097847,
+            "playback-gate-start": 0.45796100000006845,
+            "playback-gate-acquired": 0.9325349999999162,
+            "sqlite-lock-start": 0.9331689999999071,
+            "sqlite-lock-acquired": 0.9602480000012292,
+            "receipt-preflight-done": 4.198252000000139,
+            "capability-start": 4.328664000000572,
+            "capability": 133.35126200000013,
+            "journal-insert-start": 135.81585000000086,
+            "preflight": 136.46923900000002,
+            "prepare": 279.94871799999964,
+            "candidate-validated": 280.4351970000007,
+            "stage-native": 439.6427110000004,
+            "verify-candidate": 539.6407410000011,
+            "revalidate-start": 540.4385140000013,
+            "revalidate": 544.886034000001,
+            "publish": 615.8007230000003,
+            "verify-published": 713.0500360000005,
+            "sqlite-commit-start": 713.6134440000005,
+            "db-commit": 714.735372000001,
+            "reconcile": 717.5661149999996,
+            "cleanup": 789.1859359999999,
+            "release-start": 789.1897700000009,
+            "release-done": 789.5945000000011,
+            "save": 789.6021710000005,
+            "snapshot": 791.2481270000007
+          },
+          "transportSamples": 41,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "recovery-required-retains-clone",
+          "strategy": "staged",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "startup-forward-recovery",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "quit-during-save",
+          "abortedSafely": true,
+          "trackIdPathAndAudioPreserved": true
+        }
+      ],
+      "firstPlay": {
+        "bytes": 189243,
+        "storage": "local APFS",
+        "playToFirstDecodedDataMs": 81.60000002384186,
+        "mainLoopMaxGapMs": 12.64121799999998
+      }
+    },
+    {
+      "case": "packaged-noowners",
+      "packaged": true,
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "d9e44e0ab171482ef93b65140ba67040d92332a396232c9c7e736dca136f42c9"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "fdc359acc6878cccd9ae0d7194354e0ad7ba6b6d7ac8cbbab4284f07ef6549f2"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "d96faf79bef9df1c48525ead34e0db5298d1696a96a0f8f9988ca492df9b4581"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "f0db6291d7ca68ca08646bcb18e1170c152865cc630a5f0d8c202527d656fe83"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "929dfa6b1223a857baa01e079aad1debbc0bb9cbd773481380ed3d42972ce241"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ],
+      "metadata": [
+        {
+          "event": "metadata-concurrency",
+          "label": "Enter-active",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 24.900146484375,
+            "positionAdvance": null,
+            "transportTransition": true,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 1,
+            "readinessAfter": 4
+          },
+          "wallMs": 1024.28338,
+          "maxGapMs": 6.87132900000006,
+          "ok": true,
+          "editorExitMs": 8,
+          "rendererSaveMs": 1026.5,
+          "ipcMs": 1025.5,
+          "replyToFrameMs": 0.30000001192092896,
+          "publication": "in-place",
+          "publicationWindowMs": 1.039574000000357,
+          "timingStages": {
+            "validate-target": 0.27584200000001147,
+            "playlist-lock-start": 0.27985100000000784,
+            "playlist-lock-acquired": 0.39281899999991765,
+            "validate-patch": 0.8754429999999047,
+            "playback-gate-start": 1.4862450000000536,
+            "playback-gate-acquired": 2.2733780000000934,
+            "sqlite-lock-start": 2.28101300000003,
+            "sqlite-lock-acquired": 2.4884819999999763,
+            "receipt-preflight-done": 9.281199000000015,
+            "capability-start": 10.15288200000009,
+            "capability": 10.771081000000095,
+            "journal-insert-start": 17.26680299999998,
+            "preflight": 18.50937900000008,
+            "prepare": 902.3712879999998,
+            "candidate-validated": 902.836777,
+            "revalidate-start": 904.067352,
+            "revalidate": 912.2751819999999,
+            "publish": 913.3147560000002,
+            "verify-published": 1016.3695210000001,
+            "sqlite-commit-start": 1017.0550880000001,
+            "db-commit": 1018.510945,
+            "reconcile": 1021.7987149999999,
+            "cleanup": 1022.3453140000001,
+            "release-start": 1022.3670379999999,
+            "release-done": 1022.556943,
+            "save": 1022.5592350000002,
+            "snapshot": 1023.3571769999999
+          },
+          "transportSamples": 51,
+          "decoderEvents": ["pause", "playing", "waiting", "seeked", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "commands-during-preparation",
+          "pauseMs": 24.786353999999847,
+          "resumeMs": 34.9405399999996,
+          "seekMs": 20.266585999999734
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "Tab-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 24.89990234375,
+            "positionAdvance": 0.02286099999999891,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 272.6581430000001,
+          "maxGapMs": 7.929787999999917,
+          "ok": true,
+          "editorExitMs": 3.300000011920929,
+          "rendererSaveMs": 276.59999999403954,
+          "ipcMs": 273.30000001192093,
+          "replyToFrameMs": 3.199999988079071,
+          "publication": "in-place",
+          "publicationWindowMs": 0.6731639999998151,
+          "timingStages": {
+            "validate-target": 0.213025000000016,
+            "playlist-lock-start": 0.21463100000028135,
+            "playlist-lock-acquired": 0.21685900000011316,
+            "validate-patch": 0.40175500000032116,
+            "playback-gate-start": 0.47166199999992386,
+            "playback-gate-acquired": 1.0448590000000877,
+            "sqlite-lock-start": 1.047421000000213,
+            "sqlite-lock-acquired": 1.0861829999998918,
+            "receipt-preflight-done": 5.915370000000166,
+            "capability-start": 6.332781999999952,
+            "capability": 6.929431000000022,
+            "journal-insert-start": 9.482332999999926,
+            "preflight": 10.201638999999886,
+            "prepare": 162.76893100000007,
+            "candidate-validated": 163.24143700000013,
+            "revalidate-start": 164.9137880000003,
+            "revalidate": 169.48845900000015,
+            "publish": 170.16162299999996,
+            "verify-published": 266.59909100000004,
+            "sqlite-commit-start": 267.1367580000001,
+            "db-commit": 268.248517,
+            "reconcile": 271.31600800000024,
+            "cleanup": 271.6298529999999,
+            "release-start": 271.636121,
+            "release-done": 271.72058700000025,
+            "save": 271.7230669999999,
+            "snapshot": 272.28538000000026
+          },
+          "transportSamples": 16,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "cancel-and-noop",
+          "noRewrite": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "TrackInfo-paused-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 24,
+            "positionAdvance": 0,
+            "transportTransition": false,
+            "pausedBefore": true,
+            "pausedAfter": true,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 268.67549800000006,
+          "maxGapMs": 11.609197000000222,
+          "ok": true,
+          "editorExitMs": null,
+          "rendererSaveMs": 271.90000000596046,
+          "ipcMs": 269.19999998807907,
+          "replyToFrameMs": 2.600000023841858,
+          "publication": "in-place",
+          "publicationWindowMs": 0.7201350000000275,
+          "timingStages": {
+            "validate-target": 0.18332799999961935,
+            "playlist-lock-start": 0.18482099999982893,
+            "playlist-lock-acquired": 0.18675599999960468,
+            "validate-patch": 0.3487289999998211,
+            "playback-gate-start": 0.4120299999999588,
+            "playback-gate-acquired": 0.8995099999997365,
+            "sqlite-lock-start": 0.900101999999606,
+            "sqlite-lock-acquired": 0.9249039999999695,
+            "receipt-preflight-done": 3.9638279999999213,
+            "capability-start": 4.073797000000013,
+            "capability": 4.3130489999998645,
+            "journal-insert-start": 5.818687999999838,
+            "preflight": 6.2169199999998455,
+            "prepare": 151.09439699999984,
+            "candidate-validated": 151.54709999999977,
+            "revalidate-start": 152.54299899999978,
+            "revalidate": 163.0814019999998,
+            "publish": 163.80153699999983,
+            "verify-published": 262.28258400000004,
+            "sqlite-commit-start": 262.76815599999964,
+            "db-commit": 263.69592699999976,
+            "reconcile": 266.81391299999996,
+            "cleanup": 267.2042999999999,
+            "release-start": 267.2082439999999,
+            "release-done": 267.34499800000003,
+            "save": 267.3502819999999,
+            "snapshot": 268.15197999999964
+          },
+          "transportSamples": 14,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "switch-after-publication",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 25.10009765625,
+            "positionAdvance": 0.02336700000000036,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 901.356718,
+          "maxGapMs": 12.856542000000445,
+          "ok": true,
+          "editorExitMs": 2.9000000059604645,
+          "rendererSaveMs": 909.8000000119209,
+          "ipcMs": 901.9000000059605,
+          "replyToFrameMs": 8,
+          "publication": "in-place",
+          "publicationWindowMs": 1.4284830000005968,
+          "timingStages": {
+            "validate-target": 0.20896099999936268,
+            "playlist-lock-start": 0.21057199999995646,
+            "playlist-lock-acquired": 0.21270000000004075,
+            "validate-patch": 0.36748399999942194,
+            "playback-gate-start": 0.4195789999994304,
+            "playback-gate-acquired": 0.8623649999999543,
+            "sqlite-lock-start": 0.8629359999995359,
+            "sqlite-lock-acquired": 0.8894619999991846,
+            "receipt-preflight-done": 3.8188279999994847,
+            "capability-start": 3.91707199999928,
+            "capability": 4.167888999999377,
+            "journal-insert-start": 5.657338999999411,
+            "preflight": 6.006169999999656,
+            "prepare": 152.20615399999951,
+            "candidate-validated": 152.68605200000002,
+            "revalidate-start": 153.55738999999994,
+            "revalidate": 158.67952999999943,
+            "publish": 160.10801300000003,
+            "verify-published": 894.7928199999997,
+            "sqlite-commit-start": 895.0826929999994,
+            "db-commit": 896.3817399999998,
+            "reconcile": 899.5367749999996,
+            "cleanup": 899.9307669999998,
+            "release-start": 899.9342389999993,
+            "release-done": 900.0886899999996,
+            "save": 900.0929999999998,
+            "snapshot": 900.9271939999999
+          },
+          "transportSamples": 40,
+          "decoderEvents": ["emptied", "emptied", "loadeddata", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "subsequent-acquisition",
+          "ms": 123.91742899999736,
+          "verifiedPreparationMs": 55.61233700000048
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "failed-draft-retry",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 25.5,
+            "positionAdvance": 0.023195999999999994,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 268.6694290000005,
+          "maxGapMs": 6.822897000000012,
+          "ok": true,
+          "editorExitMs": 3.0999999940395355,
+          "rendererSaveMs": 271.40000000596046,
+          "ipcMs": 269.10000002384186,
+          "replyToFrameMs": 2.199999988079071,
+          "publication": "in-place",
+          "publicationWindowMs": 0.9533620000001974,
+          "timingStages": {
+            "validate-target": 0.23451600000043982,
+            "playlist-lock-start": 0.2364610000004177,
+            "playlist-lock-acquired": 0.23927000000003318,
+            "validate-patch": 0.4171470000001136,
+            "playback-gate-start": 0.4841040000001158,
+            "playback-gate-acquired": 1.0530060000000958,
+            "sqlite-lock-start": 1.0540660000006028,
+            "sqlite-lock-acquired": 1.0922440000003917,
+            "receipt-preflight-done": 3.617025999999896,
+            "capability-start": 3.799453999999969,
+            "capability": 4.045993000000635,
+            "journal-insert-start": 5.792511000000559,
+            "preflight": 7.3374149999999645,
+            "prepare": 159.56953900000008,
+            "candidate-validated": 160.03176600000006,
+            "revalidate-start": 160.7174730000006,
+            "revalidate": 164.29578700000002,
+            "publish": 165.24914900000022,
+            "verify-published": 262.2660820000001,
+            "sqlite-commit-start": 262.76391200000035,
+            "db-commit": 263.7509120000004,
+            "reconcile": 267.3179390000005,
+            "cleanup": 267.64000100000067,
+            "release-start": 267.6432930000001,
+            "release-done": 267.7343070000006,
+            "save": 267.7363400000004,
+            "snapshot": 268.3352410000007
+          },
+          "transportSamples": 15,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "in-place-verified-forward-recovery",
+          "strategy": "in-place",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "startup-forward-recovery",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "quit-during-save",
+          "abortedSafely": true,
+          "trackIdPathAndAudioPreserved": true
+        }
+      ],
+      "firstPlay": {
+        "bytes": 189243,
+        "storage": "noowners",
+        "playToFirstDecodedDataMs": 112.7999999821186,
+        "mainLoopMaxGapMs": 17.026869000000033
+      }
+    },
+    {
+      "case": "packaged-external-large",
+      "packaged": true,
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "d9e44e0ab171482ef93b65140ba67040d92332a396232c9c7e736dca136f42c9"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "fdc359acc6878cccd9ae0d7194354e0ad7ba6b6d7ac8cbbab4284f07ef6549f2"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "d96faf79bef9df1c48525ead34e0db5298d1696a96a0f8f9988ca492df9b4581"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "f0db6291d7ca68ca08646bcb18e1170c152865cc630a5f0d8c202527d656fe83"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "929dfa6b1223a857baa01e079aad1debbc0bb9cbd773481380ed3d42972ce241"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ],
+      "metadata": [
+        {
+          "event": "metadata-concurrency",
+          "label": "Enter-active",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 348.199951171875,
+            "positionAdvance": 0.35195500000000024,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 4569.812572000001,
+          "maxGapMs": 335.2118639999999,
+          "ok": true,
+          "editorExitMs": 6.800000011920929,
+          "rendererSaveMs": 4575.9000000059605,
+          "ipcMs": 4571.5999999940395,
+          "replyToFrameMs": 3.4000000059604645,
+          "publication": "in-place",
+          "publicationWindowMs": 330.6084580000006,
+          "timingStages": {
+            "validate-target": 0.654500999999982,
+            "playlist-lock-start": 0.6700289999998859,
+            "playlist-lock-acquired": 0.9562599999999293,
+            "validate-patch": 1.6349139999997533,
+            "playback-gate-start": 2.472700999999688,
+            "playback-gate-acquired": 3.1128399999997782,
+            "sqlite-lock-start": 3.1158689999997478,
+            "sqlite-lock-acquired": 3.200538999999935,
+            "receipt-preflight-done": 243.9513320000001,
+            "capability-start": 244.2156769999997,
+            "capability": 244.50581199999988,
+            "journal-insert-start": 477.33674599999995,
+            "preflight": 478.7709569999997,
+            "prepare": 2502.849639,
+            "candidate-validated": 2605.439786,
+            "revalidate-start": 2607.690566,
+            "revalidate": 2851.7772939999995,
+            "publish": 3182.385752,
+            "verify-published": 4322.560036,
+            "sqlite-commit-start": 4323.1517269999995,
+            "db-commit": 4326.106497,
+            "reconcile": 4566.191572,
+            "cleanup": 4567.333515,
+            "release-start": 4567.347864,
+            "release-done": 4567.493517,
+            "save": 4567.497438,
+            "snapshot": 4568.562696
+          },
+          "transportSamples": 188,
+          "decoderEvents": ["pause", "playing", "waiting", "seeked", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "commands-during-preparation",
+          "pauseMs": 27.33253699999841,
+          "resumeMs": 31.787937999997666,
+          "seekMs": 15.642818000000261
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "Tab-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 273.599853515625,
+            "positionAdvance": 0.27229499999999973,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 3849.9982739999996,
+          "maxGapMs": 255.12118800000098,
+          "ok": true,
+          "editorExitMs": 2.899999976158142,
+          "rendererSaveMs": 3852.9000000059605,
+          "ipcMs": 3850.5,
+          "replyToFrameMs": 2.300000011920929,
+          "publication": "in-place",
+          "publicationWindowMs": 250.36486200000036,
+          "timingStages": {
+            "validate-target": 0.22848599999997532,
+            "playlist-lock-start": 0.23005499999999302,
+            "playlist-lock-acquired": 0.2321990000000369,
+            "validate-patch": 0.41979299999911746,
+            "playback-gate-start": 0.4840119999989838,
+            "playback-gate-acquired": 0.9726109999992332,
+            "sqlite-lock-start": 0.9740529999999126,
+            "sqlite-lock-acquired": 1.0008229999984906,
+            "receipt-preflight-done": 241.18197899999905,
+            "capability-start": 241.35525099999904,
+            "capability": 241.6341309999989,
+            "journal-insert-start": 472.50176199999987,
+            "preflight": 473.73430599999847,
+            "prepare": 1854.1973579999994,
+            "candidate-validated": 1957.5714169999992,
+            "revalidate-start": 1959.3999699999986,
+            "revalidate": 2199.588394999999,
+            "publish": 2449.953256999999,
+            "verify-published": 3603.395036,
+            "sqlite-commit-start": 3603.8597279999994,
+            "db-commit": 3606.533028,
+            "reconcile": 3846.776615999999,
+            "cleanup": 3848.4446259999986,
+            "release-start": 3848.4904229999993,
+            "release-done": 3848.662811,
+            "save": 3848.6665239999984,
+            "snapshot": 3849.514061
+          },
+          "transportSamples": 160,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "cancel-and-noop",
+          "noRewrite": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "TrackInfo-paused-natural",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 274.2001953125,
+            "positionAdvance": 0,
+            "transportTransition": false,
+            "pausedBefore": true,
+            "pausedAfter": true,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 3834.5043600000026,
+          "maxGapMs": 249.26113900000018,
+          "ok": true,
+          "editorExitMs": null,
+          "rendererSaveMs": 3837.699999988079,
+          "ipcMs": 3835.0999999940395,
+          "replyToFrameMs": 2.5999999940395355,
+          "publication": "in-place",
+          "publicationWindowMs": 245.28540599999906,
+          "timingStages": {
+            "validate-target": 0.21601299999929324,
+            "playlist-lock-start": 0.21794100000079197,
+            "playlist-lock-acquired": 0.22024400000009337,
+            "validate-patch": 0.3813430000009248,
+            "playback-gate-start": 0.444007000000056,
+            "playback-gate-acquired": 1.0025040000000445,
+            "sqlite-lock-start": 1.0032530000007682,
+            "sqlite-lock-acquired": 1.0350689999995666,
+            "receipt-preflight-done": 238.47295200000008,
+            "capability-start": 238.63065599999936,
+            "capability": 238.90285700000095,
+            "journal-insert-start": 472.24892700000055,
+            "preflight": 473.55314499999986,
+            "prepare": 1856.3090140000004,
+            "candidate-validated": 1961.0113849999998,
+            "revalidate-start": 1962.9792419999994,
+            "revalidate": 2203.8329780000004,
+            "publish": 2449.1183839999994,
+            "verify-published": 3588.7786290000004,
+            "sqlite-commit-start": 3590.191945999999,
+            "db-commit": 3591.819284000001,
+            "reconcile": 3831.938539999999,
+            "cleanup": 3833.2184500000003,
+            "release-start": 3833.2246339999983,
+            "release-done": 3833.3498150000014,
+            "save": 3833.3547849999995,
+            "snapshot": 3834.0672090000007
+          },
+          "transportSamples": 169,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "switch-after-publication",
+          "controlled": true,
+          "publicationBracket": {
+            "elapsedMs": 275.300048828125,
+            "positionAdvance": 0.2759059999999991,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 4733.908429000003,
+          "maxGapMs": 256.24708600000304,
+          "ok": true,
+          "editorExitMs": 5.4000000059604645,
+          "rendererSaveMs": 4737,
+          "ipcMs": 4734.5,
+          "replyToFrameMs": 2.2999999821186066,
+          "publication": "in-place",
+          "publicationWindowMs": 251.72627700000157,
+          "timingStages": {
+            "validate-target": 0.5443649999979243,
+            "playlist-lock-start": 0.5474629999989702,
+            "playlist-lock-acquired": 0.5537760000006529,
+            "validate-patch": 0.9788410000001022,
+            "playback-gate-start": 1.1517559999992955,
+            "playback-gate-acquired": 1.8495499999989988,
+            "sqlite-lock-start": 1.8513139999995474,
+            "sqlite-lock-acquired": 1.9280829999988782,
+            "receipt-preflight-done": 241.13321200000064,
+            "capability-start": 241.28388199999972,
+            "capability": 241.56106699999873,
+            "journal-insert-start": 478.59990299999845,
+            "preflight": 480.32864999999947,
+            "prepare": 1847.4340469999988,
+            "candidate-validated": 1951.769393999999,
+            "revalidate-start": 1953.732122999998,
+            "revalidate": 2191.922150999999,
+            "publish": 2443.6484280000004,
+            "verify-published": 4488.204718000001,
+            "sqlite-commit-start": 4488.618984000001,
+            "db-commit": 4490.89042,
+            "reconcile": 4731.335632999999,
+            "cleanup": 4732.802099,
+            "release-start": 4732.804260000001,
+            "release-done": 4732.886374999998,
+            "save": 4732.889016000001,
+            "snapshot": 4733.429210999999
+          },
+          "transportSamples": 195,
+          "decoderEvents": ["emptied", "emptied", "loadeddata", "playing"],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "subsequent-acquisition",
+          "ms": 887.7012259999974,
+          "verifiedPreparationMs": 417.1151919999975
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "failed-draft-retry",
+          "controlled": false,
+          "publicationBracket": {
+            "elapsedMs": 349.10009765625,
+            "positionAdvance": 0.3529339999999994,
+            "transportTransition": false,
+            "pausedBefore": false,
+            "pausedAfter": false,
+            "readinessBefore": 4,
+            "readinessAfter": 4
+          },
+          "wallMs": 3896.4618310000005,
+          "maxGapMs": 312.65369199999986,
+          "ok": true,
+          "editorExitMs": 2.7000000178813934,
+          "rendererSaveMs": 3910.7000000178814,
+          "ipcMs": 3897.399999976158,
+          "replyToFrameMs": 13.200000017881393,
+          "publication": "in-place",
+          "publicationWindowMs": 308.139825000002,
+          "timingStages": {
+            "validate-target": 0.1790629999995872,
+            "playlist-lock-start": 0.1805129999993369,
+            "playlist-lock-acquired": 0.18331100000068545,
+            "validate-patch": 0.33748800000103074,
+            "playback-gate-start": 0.39669900000080816,
+            "playback-gate-acquired": 0.8314959999988787,
+            "sqlite-lock-start": 0.8321629999991274,
+            "sqlite-lock-acquired": 0.8573010000000068,
+            "receipt-preflight-done": 242.55509600000005,
+            "capability-start": 242.7166270000016,
+            "capability": 242.9781589999984,
+            "journal-insert-start": 470.8443960000004,
+            "preflight": 472.1567509999986,
+            "prepare": 1851.7874679999986,
+            "candidate-validated": 1955.9883640000007,
+            "revalidate-start": 1958.2444450000003,
+            "revalidate": 2197.066867999998,
+            "publish": 2505.206693,
+            "verify-published": 3652.1387719999984,
+            "sqlite-commit-start": 3652.5615709999984,
+            "db-commit": 3654.8377120000005,
+            "reconcile": 3893.650905999999,
+            "cleanup": 3894.7996349999994,
+            "release-start": 3894.8041940000003,
+            "release-done": 3894.9338129999996,
+            "save": 3894.937855,
+            "snapshot": 3895.782106999999
+          },
+          "transportSamples": 160,
+          "decoderEvents": [],
+          "note": "HTMLMediaElement decoder/transport evidence; no PCM or acoustic claim"
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "in-place-verified-forward-recovery",
+          "strategy": "in-place",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "startup-forward-recovery",
+          "safe": true
+        },
+        {
+          "event": "metadata-concurrency",
+          "label": "quit-during-save",
+          "abortedSafely": true,
+          "trackIdPathAndAudioPreserved": true
+        }
+      ],
+      "firstPlay": {
+        "bytes": 44487552,
+        "storage": "external APFS noowners",
+        "playToFirstDecodedDataMs": 454.59999999403954,
+        "mainLoopMaxGapMs": 11.038000000000011
+      }
+    },
+    {
+      "case": "packaged-volume-loss-during-preparation",
+      "packaged": true,
+      "flagEnabled": true,
+      "passed": true,
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "d9e44e0ab171482ef93b65140ba67040d92332a396232c9c7e736dca136f42c9"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "fdc359acc6878cccd9ae0d7194354e0ad7ba6b6d7ac8cbbab4284f07ef6549f2"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "d96faf79bef9df1c48525ead34e0db5298d1696a96a0f8f9988ca492df9b4581"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "f0db6291d7ca68ca08646bcb18e1170c152865cc630a5f0d8c202527d656fe83"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "929dfa6b1223a857baa01e079aad1debbc0bb9cbd773481380ed3d42972ce241"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ],
+      "firstPlay": {
+        "bytes": 189243,
+        "storage": "noowners",
+        "playToFirstDecodedDataMs": 94.19999998807907,
+        "mainLoopMaxGapMs": 11.50669599999992
+      },
+      "metadata": [
+        {
+          "event": "metadata-concurrency",
+          "label": "unavailable-volume-during-preparation",
+          "beforePublication": true,
+          "draftRetained": true
+        }
+      ],
+      "lifecycle": [
+        {
+          "event": "disposable-volume-removal",
+          "newUseRejected": true,
+          "drained": true
+        },
+        {
+          "event": "application-quit",
+          "drained": true
+        }
+      ]
+    },
+    {
+      "case": "packaged-disabled-followup",
+      "packaged": true,
+      "flagEnabled": false,
+      "passed": true,
+      "resources": [
+        {
+          "relative": "dist/main/main.js",
+          "sha256": "d9e44e0ab171482ef93b65140ba67040d92332a396232c9c7e736dca136f42c9"
+        },
+        {
+          "relative": "dist/main/preload.cjs",
+          "sha256": "3ac8f9e1905c1c56334234e9bdf4999067298fb1e256df8fee0abdb280b73800"
+        },
+        {
+          "relative": "dist/main/playback-use.js",
+          "sha256": "fdc359acc6878cccd9ae0d7194354e0ad7ba6b6d7ac8cbbab4284f07ef6549f2"
+        },
+        {
+          "relative": "dist/main/stable-source-manager.js",
+          "sha256": "d96faf79bef9df1c48525ead34e0db5298d1696a96a0f8f9988ca492df9b4581"
+        },
+        {
+          "relative": "dist/main/stable-source-worker.js",
+          "sha256": "2f22454df75a96b69b01e477e88ec8087b68ef56cc325adac8352862021f28bb"
+        },
+        {
+          "relative": "dist/domain/metadata-edit.js",
+          "sha256": "f0db6291d7ca68ca08646bcb18e1170c152865cc630a5f0d8c202527d656fe83"
+        },
+        {
+          "relative": "dist/renderer/index.html",
+          "sha256": "929dfa6b1223a857baa01e079aad1debbc0bb9cbd773481380ed3d42972ce241"
+        },
+        {
+          "relative": "dist/native/playback-source.node",
+          "sha256": "4f8283d514b70f0b137a99920a25ac6c2686e3ebbd8d731a895b5d25b212e6d6"
+        }
+      ],
+      "firstPlay": {
+        "bytes": 189243,
+        "storage": "local APFS",
+        "playToFirstDecodedDataMs": 41,
+        "mainLoopMaxGapMs": 9.750370999999632
+      },
+      "metadata": [],
+      "lifecycle": [
+        {
+          "event": "application-quit",
+          "drained": true
+        },
+        {
+          "event": "renderer-crash",
+          "drained": true
+        }
+      ]
+    }
+  ],
+  "knownWriterProfileRejection": {
+    "error": "Unedited Vorbis field ENCODER changed.",
+    "beforePublication": true,
+    "writerChecksRetained": true,
+    "benchmarkFixture": "separate synthetic canonical Vorbis tags around byte-identical 44.5 MB encoded audio; input fixture only read"
+  },
+  "package": {
+    "name": "Rio",
+    "identifier": "io.github.marcelchapman.rio",
+    "architecture": "x86_64",
+    "signed": false,
+    "notarized": false,
+    "publish": "never",
+    "zipConsistency": "plist, executable, app.asar, publication.node and playback-source.node match Rio.app",
+    "dmgChecksum": "valid",
+    "artifacts": [
+      {
+        "path": "release/Rio-0.1.0.dmg",
+        "bytes": 136807940,
+        "sha256": "03240e66dc913e65a1cf7c892845e6f46d68299a88db267c7947a3e7e5baa3c1"
+      },
+      {
+        "path": "release/Rio-0.1.0-mac.zip",
+        "bytes": 136738612,
+        "sha256": "5103c255bfaa151e7d45fef2405fb1813d4d35b50334e8d2a9ae1603a535e85f"
+      },
+      {
+        "path": "release/mac/Rio.app/Contents/Resources/app.asar",
+        "bytes": 38218218,
+        "sha256": "26effdf5cf36e2304fbd7c75db3a075952a889506e5086551ea54f8486c6bd8a"
+      }
+    ]
+  }
+}

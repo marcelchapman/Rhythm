@@ -1,3 +1,8 @@
+> Phase 2E.6 raises the former 64 MiB input/candidate ceiling to 128 MiB with
+> aggregate admission control. See [Large FLAC support](LARGE-FLAC.md) for the
+> current range, resource costs and qualification. Earlier phase results below
+> describe their original qualification bounds.
+
 # Metadata editing: production coordinator and Track Info
 
 Phase 2A adds the domain coordinator in `src/domain/metadata-edit.ts`. Phase 2B
@@ -7,13 +12,33 @@ file/path organization remain outside this editor. `editManagedFlac(library, tra
 existing qualified FLAC writer; it does not redesign that writer or allow an
 external file to become writable.
 
+## Inline Songs editing (Phase 2D.1)
+
+Songs now offers single-cell editing for its existing simple metadata columns.
+It reuses Track Info’s shared validation and the same production eligibility and
+Save IPC/coordinator. No writer, publication or playback ownership semantics
+change. See [INLINE-METADATA.md](INLINE-METADATA.md) for interactions, scope,
+regression coverage and qualification results. Track Info remains the interface
+for comments, totals, Album Artist and Composer.
+
+## Opt-in isolated playback editing (Phase 2E.4C)
+
+With `RIO_STABLE_PLAYBACK_SOURCES=1`, verified isolated APFS playback can continue
+while either editor publishes to the managed original. Keep Organized must remain
+OFF and every existing receipt, format, filesystem and journal check still applies.
+Original-file playback continues blocking edits; the disabled/default behavior is
+unchanged. Existing clone readers retain their verified revision, while new
+acquisitions use the committed original. See
+[PLAYBACK-COMPATIBLE-METADATA.md](PLAYBACK-COMPATIBLE-METADATA.md) for coordination,
+qualification, limitations and manual acceptance instructions.
+
 ## Track Info and production IPC (Phase 2C)
 
 Open Track Info from the normal single-track context menu. Eligible managed FLAC
 metadata becomes editable within the existing dialog; technical properties and
 file location remain read-only. Referenced files, other formats, Keep Organized
 ON, unavailable files, invalid managed receipts, conflicting operations and
-active/paused decoder ownership remain read-only with a concise reason. Initial
+active/paused original-file decoder ownership remain read-only with a concise reason. Initial
 eligibility is advisory, never a grant of write authority. Main/domain capability
 selection runs under the idle lease. Qualified ownership-enabled APFS retains the
 strong staged publisher; local writable APFS, including `noowners`, can use the
@@ -42,7 +67,7 @@ authorize edits in another library. Main resolves the active Library and uses
 The existing library-operation exclusion covers the entire coordinator call;
 Save repeats all receipt, root, path, journal, format, organization and playback
 checks. No manual idle declaration or automatic decoder stop is used. Active and
-paused attached decoders block Save, including acquisition after the dialog's
+paused original-file decoders block Save, including acquisition after the dialog's
 eligibility check. Switching to another track releases the old source through the
 existing descriptor-closure boundary. Saved queue/current references alone do
 not block an edit. Library transitions and quit retain the Phase 2B lease rules.
@@ -181,7 +206,7 @@ Intel macOS x64 finalization qualification:
 | Native strong publication qualification            | Passed production and instrumented boundary/crash cases; strong noowners refusal retained                                          |
 | Real source UI on disposable noowners APFS image   | Passed                                                                                                                             |
 | Real packaged UI on disposable noowners APFS image | Passed; native ownership capability false and strategy in-place                                                                    |
-| Real packaged UI on external APFS noowners         | Passed using only a disposable generated-media folder on `/Volumes/External Disk`; real volume flags unchanged                     |
+| Real packaged UI on external APFS noowners         | Passed using only a disposable generated-media folder on the external APFS test volume; real volume flags unchanged                |
 | Full source desktop suite                          | All 17 harnesses passed, including coordinator, metadata playback, UI and setup/recovery tests                                     |
 | `npm run typecheck`, `npm run build`               | Passed                                                                                                                             |
 | Fresh x64 app/DMG/ZIP                              | Built with `--publish never`, unsigned/unnotarized; Rio identity, x86_64 executable, ZIP/app equality and DMG checksum verified    |

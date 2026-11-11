@@ -1,0 +1,275 @@
+{
+  "date": "2026-11-08T21:16:30.503Z",
+  "rows": [
+    {
+      "event": "cross-volume",
+      "owners": "on",
+      "rejected": true
+    },
+    {
+      "event": "full-rewrite",
+      "owners": "on",
+      "repeat": 0,
+      "bytes": 44487499,
+      "free": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "additionalBytes": 44490752
+    },
+    {
+      "event": "full-rewrite",
+      "owners": "on",
+      "repeat": 1,
+      "bytes": 44487499,
+      "free": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "additionalBytes": 44490752
+    },
+    {
+      "event": "full-rewrite",
+      "owners": "on",
+      "repeat": 2,
+      "bytes": 44487499,
+      "free": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "additionalBytes": 44490752
+    },
+    {
+      "event": "allocation",
+      "owners": "on",
+      "bytes": 44487499,
+      "clones": [
+        {
+          "inode": 19,
+          "dev": 16777235,
+          "ms": 3.759093000000121,
+          "blocks512": 86896
+        },
+        {
+          "inode": 20,
+          "dev": 16777235,
+          "ms": 3.563209999999799,
+          "blocks512": 86896
+        },
+        {
+          "inode": 21,
+          "dev": 16777235,
+          "ms": 3.4056369999998424,
+          "blocks512": 86896
+        },
+        {
+          "inode": 22,
+          "dev": 16777235,
+          "ms": 3.4219570000000203,
+          "blocks512": 86896
+        }
+      ],
+      "initial": {
+        "freeBytes": 757653504,
+        "min": 757653504,
+        "max": 757653504
+      },
+      "afterClone": {
+        "freeBytes": 757653504,
+        "min": 757653504,
+        "max": 757653504
+      },
+      "afterRewrite": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "cloneBatchAdditionalBytes": 0,
+      "fullRewriteAdditionalBytes": 44490752,
+      "logicalCloneBytes": 177949996,
+      "note": "st_blocks includes shared extents; unique allocation is container free-block delta, including filesystem metadata"
+    },
+    {
+      "event": "crash-scavenge",
+      "owners": "on",
+      "orphanRetainedAfterKill": true,
+      "ownedManifestValidated": true,
+      "cleanupMs": 0.12680899999941175
+    },
+    {
+      "event": "anonymous-process-death",
+      "owners": "on",
+      "exitMs": 3.4480810000004567,
+      "retainedSpace": {
+        "freeBytes": 668655616,
+        "min": 668655616,
+        "max": 668655616
+      },
+      "releasedSpace": {
+        "freeBytes": 713146368,
+        "min": 713146368,
+        "max": 713146368
+      },
+      "reclaimedBytes": 44490752,
+      "noPathToScavenge": true
+    },
+    {
+      "event": "space-exhaustion",
+      "owners": "on",
+      "fullWriteError": "ENOSPC",
+      "cloneUnchanged": true,
+      "scope": "physical full-file write; not coordinator fault injection"
+    },
+    {
+      "event": "disposable-detach",
+      "owners": "on",
+      "readResult": {
+        "error": "EIO"
+      }
+    },
+    {
+      "event": "owned-tree-cleanup",
+      "owners": "on",
+      "cleanupMs": 145.08590300000287,
+      "remaining": []
+    },
+    {
+      "event": "cross-volume",
+      "owners": "off",
+      "rejected": true
+    },
+    {
+      "event": "full-rewrite",
+      "owners": "off",
+      "repeat": 0,
+      "bytes": 44487499,
+      "free": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "additionalBytes": 44490752
+    },
+    {
+      "event": "full-rewrite",
+      "owners": "off",
+      "repeat": 1,
+      "bytes": 44487499,
+      "free": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "additionalBytes": 44490752
+    },
+    {
+      "event": "full-rewrite",
+      "owners": "off",
+      "repeat": 2,
+      "bytes": 44487499,
+      "free": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "additionalBytes": 44490752
+    },
+    {
+      "event": "allocation",
+      "owners": "off",
+      "bytes": 44487499,
+      "clones": [
+        {
+          "inode": 35,
+          "dev": 16777235,
+          "ms": 3.2332640000022366,
+          "blocks512": 86896
+        },
+        {
+          "inode": 36,
+          "dev": 16777235,
+          "ms": 2.96522399999958,
+          "blocks512": 86896
+        },
+        {
+          "inode": 37,
+          "dev": 16777235,
+          "ms": 2.8824229999991076,
+          "blocks512": 86896
+        },
+        {
+          "inode": 38,
+          "dev": 16777235,
+          "ms": 2.9474840000002587,
+          "blocks512": 86896
+        }
+      ],
+      "initial": {
+        "freeBytes": 757653504,
+        "min": 757653504,
+        "max": 757653504
+      },
+      "afterClone": {
+        "freeBytes": 757653504,
+        "min": 757653504,
+        "max": 757653504
+      },
+      "afterRewrite": {
+        "freeBytes": 713162752,
+        "min": 713162752,
+        "max": 713162752
+      },
+      "cloneBatchAdditionalBytes": 0,
+      "fullRewriteAdditionalBytes": 44490752,
+      "logicalCloneBytes": 177949996,
+      "note": "st_blocks includes shared extents; unique allocation is container free-block delta, including filesystem metadata"
+    },
+    {
+      "event": "crash-scavenge",
+      "owners": "off",
+      "orphanRetainedAfterKill": true,
+      "ownedManifestValidated": true,
+      "cleanupMs": 0.16143100000044797
+    },
+    {
+      "event": "anonymous-process-death",
+      "owners": "off",
+      "exitMs": 3.2383589999990363,
+      "retainedSpace": {
+        "freeBytes": 668655616,
+        "min": 668655616,
+        "max": 668655616
+      },
+      "releasedSpace": {
+        "freeBytes": 713146368,
+        "min": 713142272,
+        "max": 713146368
+      },
+      "reclaimedBytes": 44490752,
+      "noPathToScavenge": true
+    },
+    {
+      "event": "space-exhaustion",
+      "owners": "off",
+      "fullWriteError": "ENOSPC",
+      "cloneUnchanged": true,
+      "scope": "physical full-file write; not coordinator fault injection"
+    },
+    {
+      "event": "disposable-detach",
+      "owners": "off",
+      "readResult": {
+        "error": "EIO"
+      }
+    },
+    {
+      "event": "owned-tree-cleanup",
+      "owners": "off",
+      "cleanupMs": 136.53832700000203,
+      "remaining": []
+    }
+  ]
+}
