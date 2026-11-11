@@ -9,6 +9,9 @@
 #include <cerrno>
 #include <cstring>
 #include <cstdint>
+#include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <memory>
 #include <algorithm>
 #include <stdexcept>
@@ -30,8 +33,12 @@
 #include <linux/fs.h>
 #endif
 
+// Unconfigured research builds retain the former fail-closed ceiling.
+#ifndef RIO_MAX_FLAC_BYTES
+#define RIO_MAX_FLAC_BYTES (64ULL * 1024 * 1024)
+#endif
 namespace {
-constexpr size_t limit = 64 * 1024 * 1024;
+constexpr size_t limit = RIO_MAX_FLAC_BYTES;
 constexpr char workspacePrefix[] = ".rio-publication-";
 const napi_type_tag leaseTag = {0xc4ab0e8c9de04751ULL, 0x902674a962fdbe40ULL};
 struct Failure : std::runtime_error {
@@ -92,9 +99,14 @@ bool unchanged(const struct stat& a,const struct stat& b,bool checkCtime=true) {
     a.st_mode==b.st_mode && a.st_uid==b.st_uid && a.st_gid==b.st_gid &&
     mtime(a)==mtime(b) && (!checkCtime || ctime(a)==ctime(b));
 }
+[[noreturn]] void fileSizeLimit() {
+  fail("FLAC exceeds supported "+std::to_string(limit/(1024*1024))+" MiB file-size limit", "size-limit");
+}
 void regular(const struct stat& s) {
-  if(!S_ISREG(s.st_mode) || s.st_nlink!=1 || s.st_size<0 || uint64_t(s.st_size)>limit)
-    fail("Require a bounded regular file with exactly one link");
+  if(!S_ISREG(s.st_mode)) fail("Metadata target is not a regular file");
+  if(s.st_nlink!=1) fail("Metadata target has unexpected hard links");
+  if(s.st_size<0) fail("Invalid metadata file size");
+  if(uint64_t(s.st_size)>limit) fileSizeLimit();
   if(s.st_uid!=geteuid())fail("File ownership is not qualified", "unsupported");
 #ifdef __APPLE__
   if(s.st_flags & (UF_IMMUTABLE|SF_IMMUTABLE|SF_DATALESS)) fail("Immutable or dataless files are unsupported", "unsupported");
@@ -153,14 +165,48 @@ int noReplace(int a,const char* x,int b,const char* y) {
   return int(syscall(SYS_renameat2,a,x,b,y,RENAME_NOREPLACE));
 #endif
 }
+using TimingClock = std::chrono::steady_clock;
+struct NativeTiming;
+thread_local NativeTiming* activeTiming = nullptr;
+struct NativeTiming {
+  const char* stage;
+  NativeTiming* previous = activeTiming;
+  TimingClock::time_point started;
+  double fsyncMs = 0, fullfsyncMs = 0, writeMs = 0, checksMs = 0, rereadMs = 0, sourceReadMs = 0, truncateMs = 0;
+  size_t bytes = 0, flushes = 0;
+  explicit NativeTiming(const char* stage) : stage(stage) {
+    static const bool enabled = [] {
+      auto value = std::getenv("RIO_METADATA_TIMING");
+      return value && std::strcmp(value,"1")==0;
+    }();
+    if(enabled) {started=TimingClock::now(); activeTiming=this;}
+  }
+  ~NativeTiming() {
+    if(activeTiming!=this) return;
+    activeTiming=previous;
+    std::fprintf(stdout,"RIO_METADATA_NATIVE {\"stage\":\"%s\",\"wallMs\":%.3f,\"bytes\":%zu,\"flushes\":%zu,\"fsyncMs\":%.3f,\"fullfsyncMs\":%.3f,\"writeMs\":%.3f,\"checksMs\":%.3f,\"sourceReadMs\":%.3f,\"rereadMs\":%.3f,\"truncateMs\":%.3f}\n",
+      stage,elapsed(started),bytes,flushes,fsyncMs,fullfsyncMs,writeMs,checksMs,sourceReadMs,rereadMs,truncateMs);
+    std::fflush(stdout);
+  }
+  static double elapsed(TimingClock::time_point start) {
+    return std::chrono::duration<double,std::milli>(TimingClock::now()-start).count();
+  }
+};
+struct NativeSpan {
+  double* total;
+  TimingClock::time_point started;
+  explicit NativeSpan(double* total):total(total) {if(total)started=TimingClock::now();}
+  ~NativeSpan() {if(total)*total+=NativeTiming::elapsed(started);}
+};
 std::string flush(int fd) {
+  if(activeTiming)++activeTiming->flushes;
+  { NativeSpan timing(activeTiming? &activeTiming->fsyncMs:nullptr); io(fsync(fd)==0,"fsync"); }
 #ifdef __APPLE__
   // Strict capability: report failure, never silently fall back to a weaker barrier.
-  io(fsync(fd)==0,"fsync");
-  io(fcntl(fd,F_FULLFSYNC)==0,"F_FULLFSYNC unavailable");
+  { NativeSpan timing(activeTiming? &activeTiming->fullfsyncMs:nullptr); io(fcntl(fd,F_FULLFSYNC)==0,"F_FULLFSYNC unavailable"); }
   return "fullfsync";
 #else
-  io(fsync(fd)==0,"fsync"); return "fsync";
+  return "fsync";
 #endif
 }
 std::string mountId(int fd) {
@@ -372,12 +418,14 @@ template<class F> napi_value protect(napi_env e,F fn) {
   } catch(const std::exception& f){napi_throw_error(e,"native-failure",f.what()); return nullptr;}
 }
 napi_value openLease(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  NativeTiming timing("staged-read");
   auto a=args(e,info,1); auto l=anchor(e,a[0]);
   l->target=Fd(relativeOpen(l->parent(),l->leaf,O_RDONLY|O_NONBLOCK,true)); io(l->target.n>=0,"Opening target");
   l->expected=stats(l->target.n); regular(l->expected);
   if(mountId(l->target.n)!=l->mount || l->expected.st_dev!=l->chain[l->rootIndex].identity.st_dev) fail("Cross-filesystem target", "unsupported");
   if(!matches(e,get(e,a[0],"expected"),l->expected,true))fail("Target does not match expected fingerprint");
-  l->original=readFile(l->target.n);
+  { NativeSpan span(activeTiming? &activeTiming->sourceReadMs:nullptr); l->original=readFile(l->target.n); }
+  if(activeTiming)activeTiming->bytes=l->original.size();
   auto o=obj(e); put(e,o,"original",bytes(e,l->original)); put(e,o,"handle",handle(e,std::move(l))); return o;
 });}
 void createWorkspace(Lease& l,const std::string& name) {
@@ -404,13 +452,15 @@ void capabilityProbe(Lease& l) {
   workspaceCheck(l); io(unlinkat(l.work.n,"probe-a",0)==0,"Removing owned probe"); io(unlinkat(l.work.n,"probe-b",0)==0,"Removing owned probe"); flush(l.work.n);
 }
 napi_value prepare(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  NativeTiming timing("staged-prepare");
   auto a=args(e,info,3); auto& l=lease(e,a[0]); if(l.work.n>=0)fail("Lease already prepared"); currentExpected(l);
-  void* data; size_t length; js(napi_get_buffer_info(e,a[2],&data,&length)); if(length>limit)fail("Candidate exceeds 64 MiB", "invalid-input");
+  void* data; size_t length; js(napi_get_buffer_info(e,a[2],&data,&length)); if(length>limit)fileSizeLimit();
+  if(activeTiming)activeTiming->bytes=length+l.original.size();
   createWorkspace(l,str(e,a[1])); capabilityProbe(l);
   l.slot=Fd(openat(l.work.n,"slot",O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC,0600)); io(l.slot.n>=0,"Creating candidate");
-  writeAll(l.slot.n,static_cast<uint8_t*>(data),length); flush(l.slot.n); l.slotIdentity=stats(l.slot.n);
+  { NativeSpan span(activeTiming? &activeTiming->writeMs:nullptr); writeAll(l.slot.n,static_cast<uint8_t*>(data),length); } flush(l.slot.n); l.slotIdentity=stats(l.slot.n);
   l.rollback=Fd(openat(l.work.n,"rollback",O_RDWR|O_CREAT|O_EXCL|O_NOFOLLOW|O_CLOEXEC,0600)); io(l.rollback.n>=0,"Creating independent rollback");
-  writeAll(l.rollback.n,l.original.data(),l.original.size()); flush(l.rollback.n); l.rollbackIdentity=stats(l.rollback.n);
+  { NativeSpan span(activeTiming? &activeTiming->writeMs:nullptr); writeAll(l.rollback.n,l.original.data(),l.original.size()); } flush(l.rollback.n); l.rollbackIdentity=stats(l.rollback.n);
   if(l.slotIdentity.st_dev!=l.expected.st_dev || l.rollbackIdentity.st_dev!=l.expected.st_dev || mountId(l.slot.n)!=l.mount || mountId(l.rollback.n)!=l.mount)
     fail("Cross-filesystem artifacts", "unsupported");
   flush(l.work.n); flush(l.parent()); currentExpected(l); l.prepared=true;
@@ -418,6 +468,7 @@ napi_value prepare(napi_env e,napi_callback_info info) {return protect(e,[&]{
   put(e,o,"parentIdentity",fingerprint(e,stats(l.parent()))); return o;
 });}
 napi_value probe(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  NativeTiming timing("capability-probe");
   auto a=args(e,info,2); auto l=anchor(e,a[0]); createWorkspace(*l,str(e,a[1]));
   try {capabilityProbe(*l); workspaceCheck(*l); io(unlinkat(l->parent(),l->workspace.c_str(),AT_REMOVEDIR)==0,"Removing empty probe workspace"); flush(l->parent());}
   catch(...) { // Empty-only removal; unfamiliar contents are never recursively removed.
@@ -495,6 +546,7 @@ napi_value exchangeImpl(napi_env e,napi_callback_info info,Hook hook) {return pr
 });}
 napi_value exchangeCall(napi_env e,napi_callback_info i){return exchangeImpl(e,i,Hook::None);}
 napi_value syncImpl(napi_env e,napi_callback_info info,bool fault) {return protect(e,[&]{
+  NativeTiming timing("staged-sync");
   auto a=args(e,info,1); auto& l=lease(e,a[0]);
   try {
     workspaceCheck(l);
@@ -506,6 +558,7 @@ napi_value syncImpl(napi_env e,napi_callback_info info,bool fault) {return prote
 });}
 napi_value syncCall(napi_env e,napi_callback_info i){return syncImpl(e,i,false);}
 napi_value cleanup(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  NativeTiming timing("staged-cleanup");
   auto a=args(e,info,3); auto& l=lease(e,a[0]);
   if(!l.prepared || l.cleaned)return result(e,"no-change","Lease is not an active prepared operation");
   bool removed=false;
@@ -557,6 +610,7 @@ napi_value metadataSupport(napi_env e,napi_callback_info info) {return protect(e
   return o;
 });}
 napi_value writeMetadataInPlace(napi_env e,napi_callback_info info) {return protect(e,[&]{
+  NativeTiming timing("in-place");
   bool mutated=false;
   try {
     auto a=args(e,info,3); auto l=localMetadataTarget(e,a[0]);
@@ -564,25 +618,29 @@ napi_value writeMetadataInPlace(napi_env e,napi_callback_info info) {return prot
     void *original,*candidate;size_t originalSize,candidateSize;
     js(napi_get_buffer_info(e,a[1],&original,&originalSize));
     js(napi_get_buffer_info(e,a[2],&candidate,&candidateSize));
-    if(originalSize>limit || candidateSize>limit)fail("Metadata file exceeds 64 MiB", "invalid-input");
-    auto observed=readFile(l->target.n);
+    if(originalSize>limit || candidateSize>limit)fileSizeLimit();
+    if(activeTiming)activeTiming->bytes=originalSize;
+    auto observed=[&]{NativeSpan span(activeTiming? &activeTiming->sourceReadMs:nullptr); return readFile(l->target.n);}();
     if(observed.size()!=originalSize || memcmp(observed.data(),original,originalSize))fail("Metadata target bytes changed before writing");
     currentExpected(*l);
     size_t at=0;
     while(at<candidateSize) {
+      { NativeSpan span(activeTiming? &activeTiming->checksMs:nullptr);
       validateChain(*l);
       struct stat named{};io(fstatat(l->parent(),l->leaf.c_str(),&named,AT_SYMLINK_NOFOLLOW)==0,"Metadata path unavailable");
       auto held=stats(l->target.n);regular(held);
-      if(!identity(named,held) || !identity(held,l->expected))fail("Metadata path identity changed during writing");
+      if(!identity(named,held) || !identity(held,l->expected))fail("Metadata path identity changed during writing"); }
       // Always write through the retained descriptor, never a reopened name.
       auto length=std::min(size_t(64*1024),candidateSize-at);
-      mutated=true;auto n=pwrite(l->target.n,static_cast<uint8_t*>(candidate)+at,length,off_t(at));
+      mutated=true;auto n=[&]{NativeSpan span(activeTiming? &activeTiming->writeMs:nullptr); return pwrite(l->target.n,static_cast<uint8_t*>(candidate)+at,length,off_t(at));}();
       if(n<0 && errno==EINTR)continue;
       io(n>0,"Writing metadata in place");at+=size_t(n);
     }
-    mutated=true;io(ftruncate(l->target.n,off_t(candidateSize))==0,"Truncating metadata target");
-    io(fsync(l->target.n)==0,"Flushing in-place metadata");
-    auto actual=readFile(l->target.n);
+    mutated=true;
+    { NativeSpan span(activeTiming? &activeTiming->truncateMs:nullptr); io(ftruncate(l->target.n,off_t(candidateSize))==0,"Truncating metadata target"); }
+    if(activeTiming)++activeTiming->flushes;
+    { NativeSpan span(activeTiming? &activeTiming->fsyncMs:nullptr); io(fsync(l->target.n)==0,"Flushing in-place metadata"); }
+    auto actual=[&]{NativeSpan span(activeTiming? &activeTiming->rereadMs:nullptr); return readFile(l->target.n);}();
     if(actual.size()!=candidateSize || memcmp(actual.data(),candidate,candidateSize))fail("In-place metadata reread did not match candidate");
     validateChain(*l);struct stat named{};
     io(fstatat(l->parent(),l->leaf.c_str(),&named,AT_SYMLINK_NOFOLLOW)==0,"Metadata path unavailable after writing");

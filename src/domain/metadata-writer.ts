@@ -1,3 +1,8 @@
+import { reserveMetadataInput } from "./metadata-budget.js";
+import {
+  MAX_FLAC_FILE_BYTES,
+  FLAC_SIZE_MESSAGE,
+} from "../shared/flac-limits.js";
 import { parseBuffer } from "music-metadata";
 import { renderFlacCandidate, type FrontCover } from "./flac-taglib.js";
 import { validateArtwork } from "./flac-artwork.js";
@@ -53,7 +58,7 @@ export interface FlacMetadataWriteResult {
     preservedBlockTypes: number[];
   };
 }
-const MAX_BYTES = 64 * 1024 * 1024;
+const MAX_BYTES = MAX_FLAC_FILE_BYTES;
 const textKeys = {
   title: "TITLE",
   artist: "ARTIST",
@@ -337,7 +342,7 @@ function preservation(
   artwork: FrontCover | "remove" | undefined,
 ) {
   verify(
-    equal(before.audio, after.audio),
+    Buffer.compare(before.audio, after.audio) === 0,
     "The encoded FLAC audio payload changed.",
   );
   const untouched = (d: FlacDocument) =>
@@ -455,22 +460,23 @@ function verifyCommon(
         `Independent readback changed unedited ${key}.`,
       );
 }
+type WriterTiming = (stage: string) => void;
 /** Re-read staged/published bytes using the same qualified preservation/readback contract. */
 export async function verifyFlacMetadataCandidate(
   original: Uint8Array,
   candidate: Uint8Array,
   patch: FlacMetadataPatch,
+  timing?: WriterTiming,
 ) {
   if (original.length > MAX_BYTES || candidate.length > MAX_BYTES)
-    throw new FlacMetadataWriteError(
-      "resource-limit",
-      "FLAC verification exceeds 64 MiB.",
-    );
+    throw new FlacMetadataWriteError("resource-limit", FLAC_SIZE_MESSAGE);
   const plan = patchPlan(patch),
     before = parseFlac(original),
     after = parseFlac(candidate);
+  timing?.("frame-parse");
   const { operations, pairs } = operationsFor(before, plan.edits);
   preservation(before, after, operations, plan.artwork);
+  timing?.("audio-preservation");
   verifyCommon(
     await read(original, before),
     await read(candidate, after),
@@ -478,32 +484,40 @@ export async function verifyFlacMetadataCandidate(
     pairs,
     plan.artwork,
   );
-  return {
+  timing?.("metadata-readback");
+  const proof = {
     originalSha256: digest(original),
     candidateSha256: digest(candidate),
     audioSha256: digest(after.audio),
     frames: after.frames,
   };
+  timing?.("proof-hashes");
+  return proof;
 }
 let active = 0;
 /** Bytes in, verified candidate bytes out. No file, database, track or root capabilities. */
 export async function prepareFlacMetadataEdit(
   original: Uint8Array,
   patch: FlacMetadataPatch,
+  timing?: WriterTiming,
 ): Promise<FlacMetadataWriteResult> {
   if (!(original instanceof Uint8Array))
     badPatch("Supply audio bytes, not a path or library record.");
-  if (original.length > MAX_BYTES || active >= 4)
+  if (original.length > MAX_BYTES)
+    throw new FlacMetadataWriteError("resource-limit", FLAC_SIZE_MESSAGE);
+  if (active >= 4)
     throw new FlacMetadataWriteError(
       "resource-limit",
-      "The initial writer permits files up to 64 MiB and at most four pending requests.",
+      "Wait for the current metadata operation: four requests are pending.",
     );
+  const releaseBudget = reserveMetadataInput(original.length);
   active++;
   try {
     // Snapshot caller-owned data before the first await, including artwork/draft values.
     const input = new Uint8Array(original),
       plan = patchPlan(patch),
       before = parseFlac(input);
+    timing?.("source-frame-parse");
     const { operations, pairs, changedPairs } = operationsFor(
       before,
       plan.edits,
@@ -520,6 +534,7 @@ export async function prepareFlacMetadataEdit(
     if (artwork === "remove" && before.pictures.length === 0)
       artwork = undefined;
     const originalCommon = await read(input, before);
+    timing?.("source-tag-read");
     let candidate: Uint8Array = new Uint8Array(input),
       engineVersion: string | null = null;
     if (operations.size || artwork !== undefined) {
@@ -539,12 +554,14 @@ export async function prepareFlacMetadataEdit(
         );
       }
     }
+    timing?.("candidate-render");
     let after: FlacDocument, common: typeof originalCommon;
     try {
-      if (candidate.length > MAX_BYTES)
-        throw new Error("Candidate exceeds the initial size limit.");
+      if (candidate.length > MAX_BYTES) throw new Error(FLAC_SIZE_MESSAGE);
       after = parseFlac(candidate);
+      timing?.("candidate-frame-parse");
       preservation(before, after, operations, artwork);
+      timing?.("audio-preservation");
       common = await read(candidate, after);
     } catch (error) {
       if (
@@ -558,6 +575,7 @@ export async function prepareFlacMetadataEdit(
       );
     }
     verifyCommon(originalCommon, common, plan.edits, pairs, artwork);
+    timing?.("metadata-readback");
     const changedFields = [...plan.edits.keys()].filter((field) => {
       if (field.startsWith("track") || field.startsWith("disc"))
         return changedPairs.has(field);
@@ -573,7 +591,7 @@ export async function prepareFlacMetadataEdit(
       return operations.has(key);
     }) as (keyof FlacMetadataPatch)[];
     if (artwork !== undefined) changedFields.push("artwork");
-    return {
+    const result: FlacMetadataWriteResult = {
       candidate: new Uint8Array(candidate),
       changedFields,
       verification: {
@@ -595,7 +613,10 @@ export async function prepareFlacMetadataEdit(
           .map((b) => b.type),
       },
     };
+    timing?.("proof-hashes-and-copy");
+    return result;
   } finally {
     active--;
+    releaseBudget();
   }
 }

@@ -1,3 +1,4 @@
+import { MAX_FLAC_FILE_BYTES } from "../src/shared/flac-limits";
 import { afterEach, expect, test, vi } from "vitest";
 import { parseBuffer } from "music-metadata";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -542,7 +543,7 @@ test("actual non-FLAC audio bytes and non-byte inputs are refused", async () => 
 });
 test("input, artwork and pending-request budgets are enforced", async () => {
   await expect(
-    prepareFlacMetadataEdit(new Uint8Array(64 * 1024 * 1024 + 1), {}),
+    prepareFlacMetadataEdit(new Uint8Array(MAX_FLAC_FILE_BYTES + 1), {}),
   ).rejects.toMatchObject({ code: "resource-limit" });
   await expect(
     prepareFlacMetadataEdit(flacFixture(), {

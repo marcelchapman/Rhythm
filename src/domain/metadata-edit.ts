@@ -1,3 +1,8 @@
+import { reserveMetadataInput } from "./metadata-budget.js";
+import {
+  MAX_FLAC_FILE_BYTES,
+  FLAC_SIZE_MESSAGE,
+} from "../shared/flac-limits.js";
 /** Phase 2A domain coordinator. No UI, IPC, path relocation or external-file writes. */
 import { Worker } from "node:worker_threads";
 import { createHash, randomUUID } from "node:crypto";
@@ -29,15 +34,39 @@ import {
   publishMetadataInPlace,
 } from "./metadata-publication.js";
 
+export type MetadataTiming = (
+  stage: string,
+  detail?: Record<string, number | string>,
+) => void;
+const receiptTiming = (timing: MetadataTiming | undefined, stage: string) =>
+  timing &&
+  ((detail: {
+    bytes: number;
+    wallMs: number;
+    readWaitMs: number;
+    hashMs: number;
+  }) => timing(stage, detail));
 export type MetadataEditPatch = Omit<FlacMetadataPatch, "artwork">;
+/** Identity of a verified managed original revision, never a playback clone. */
+export interface MetadataFileRevision {
+  rootId: string;
+  relative: string;
+  device: string;
+  inode: string;
+  digest: string;
+}
 export interface TargetUseLease {
   assertIdle(): void;
+  committedRevision?(
+    previous: MetadataFileRevision,
+    next: MetadataFileRevision,
+  ): void;
   release(): void;
 }
 export interface MetadataUsage {
   acquireIdle(trackId: string): TargetUseLease;
 }
-/** A host must explicitly declare idle and route every target acquisition through this gate. */
+/** A host must declare original-file use and gate every new original-file acquisition. */
 export class MetadataUseGate implements MetadataUsage {
   private state = new Map<string, boolean>();
   private locked = new Set<string>();
@@ -148,7 +177,10 @@ async function bytesAt(
   filename: string,
   expected: { device: string; inode: string },
   digest?: string,
+  timing?: MetadataTiming,
+  stage = "read",
 ) {
+  const started = timing ? performance.now() : 0;
   if ((await realpath(filename)) !== filename)
     throw new Error("Metadata file path changed or traverses a link.");
   const handle = await open(
@@ -157,15 +189,17 @@ async function bytesAt(
   );
   try {
     const before = await handle.stat({ bigint: true });
+    if (before.size > BigInt(MAX_FLAC_FILE_BYTES))
+      throw new Error(FLAC_SIZE_MESSAGE);
     if (
       !before.isFile() ||
-      before.size > 64n * 1024n * 1024n ||
       String(before.dev) !== expected.device ||
       String(before.ino) !== expected.inode
     )
       throw new Error("Metadata file identity/size is unsafe.");
     const bytes = Buffer.alloc(Number(before.size));
     let offset = 0;
+    const readStart = timing ? performance.now() : 0;
     while (offset < bytes.length) {
       const chunk = await handle.read(
         bytes,
@@ -177,7 +211,9 @@ async function bytesAt(
         throw new Error("Metadata file was truncated while reading.");
       offset += chunk.bytesRead;
     }
+    const readWaitMs = timing ? performance.now() - readStart : 0;
     const after = await handle.stat({ bigint: true });
+    const hashStart = timing ? performance.now() : 0;
     if (
       before.size !== after.size ||
       before.mtimeNs !== after.mtimeNs ||
@@ -185,13 +221,20 @@ async function bytesAt(
       (digest && sha(bytes) !== digest)
     )
       throw new Error("Metadata file changed while reading.");
+    timing?.(stage, {
+      bytes: bytes.length,
+      readWaitMs,
+      hashMs: performance.now() - hashStart,
+      wallMs: performance.now() - started,
+    });
     return bytes;
   } finally {
     await handle.close();
   }
 }
 let workers = 0;
-function worker<T>(data: object): Promise<T> {
+function worker<T>(data: object, timing?: MetadataTiming): Promise<T> {
+  const started = timing ? performance.now() : 0;
   if (workers >= 4)
     return Promise.reject(new Error("Metadata worker budget is exhausted."));
   workers++;
@@ -218,7 +261,7 @@ function worker<T>(data: object): Promise<T> {
     let thread: Worker;
     try {
       thread = new Worker(url, {
-        workerData: data,
+        workerData: timing ? { ...data, timing: true } : data,
         execArgv: [],
         resourceLimits: {
           maxOldGenerationSizeMb: 384,
@@ -229,7 +272,15 @@ function worker<T>(data: object): Promise<T> {
       finish(error instanceof Error ? error : new Error(String(error)));
       return;
     }
+    const dispatched = timing ? performance.now() : 0;
     thread.once("message", (reply) => {
+      if (timing) {
+        timing("worker-roundtrip", {
+          wallMs: performance.now() - started,
+          dispatchMs: dispatched - started,
+        });
+        for (const sample of reply.timings ?? []) timing("worker", sample);
+      }
       reply.ok
         ? finish(undefined, reply.value as T)
         : finish(new Error(reply.error));
@@ -292,6 +343,7 @@ async function verifyCandidate(
   j: Journal,
   original: Uint8Array,
   candidate: Uint8Array,
+  timing?: MetadataTiming,
 ) {
   const result = await worker<{
     proof: {
@@ -300,13 +352,16 @@ async function verifyCandidate(
       audioSha256: string;
     };
     metadata: TrackMetadata;
-  }>({
-    mode: "verify",
-    original,
-    candidate,
-    patch: j.patch,
-    filename: j.filename,
-  });
+  }>(
+    {
+      mode: "verify",
+      original,
+      candidate,
+      patch: j.patch,
+      filename: j.filename,
+    },
+    timing,
+  );
   if (
     result.proof.originalSha256 !== j.originalSha256 ||
     result.proof.candidateSha256 !== j.candidateSha256 ||
@@ -405,7 +460,7 @@ function commit(
     throw error;
   }
 }
-async function reconcile(l: Library, j: Journal) {
+async function reconcile(l: Library, j: Journal, timing?: MetadataTiming) {
   checkTrack(l, j);
   await validateCurrentManagedReceipt(
     l.db,
@@ -413,6 +468,7 @@ async function reconcile(l: Library, j: Journal) {
     j.trackId,
     j.filename,
     j.relative,
+    receiptTiming(timing, "receipt-reconcile"),
   );
   const track = l.tracks(j.trackId)[0];
   const row = l.db.prepare("SELECT * FROM tracks WHERE id=?").get(j.trackId)!;
@@ -439,12 +495,16 @@ async function cleanup(
   put(l, id, disposition === "committed" ? "done" : "aborted", j);
 }
 
-/** Caller must hold an idle playback-use capability; unknown use fails closed. */
+/** Caller must hold an idle original-file capability; isolated decoder use is host-owned. */
 export async function editManagedFlac(
   l: Library,
   trackId: string,
   patch: MetadataEditPatch,
-  options: { usage?: MetadataUsage; hooks?: MetadataEditHooks } = {},
+  options: {
+    usage?: MetadataUsage;
+    hooks?: MetadataEditHooks;
+    timing?: MetadataTiming;
+  } = {},
 ) {
   const snapshot = structuredClone(patch);
   if (
@@ -455,7 +515,10 @@ export async function editManagedFlac(
     throw new Error("Phase 2A permits metadata fields only, not artwork.");
   if (pendingMetadataEdits(l.db))
     throw new Error("Resolve unfinished metadata edits first.");
+  const timing = options.timing;
+  timing?.("playback-gate-start");
   const use = options.usage?.acquireIdle(trackId);
+  timing?.("playback-gate-acquired");
   if (!use)
     throw new Error(
       "A reliable idle playback-use lease is required; editing an in-use or unknown target is not permitted.",
@@ -464,9 +527,28 @@ export async function editManagedFlac(
   let journal: Journal | undefined;
   let id: string | undefined;
   let locked = false;
+  let releaseBudget: (() => void) | undefined;
+  const committedRevision = () => {
+    if (!use.committedRevision || !journal) return;
+    const next = l.db
+      .prepare(
+        "SELECT rootId,relative,device,inode,digest FROM managed_file_receipts WHERE trackId=?",
+      )
+      .get(trackId) as unknown as MetadataFileRevision | undefined;
+    if (
+      !next ||
+      next.rootId !== journal.root.id ||
+      next.relative !== journal.relative ||
+      next.digest !== journal.candidateSha256
+    )
+      throw Error("Committed metadata revision is not verified.");
+    use.committedRevision(journal.receipt, next);
+  };
   try {
+    timing?.("sqlite-lock-start");
     await lock(l);
     locked = true;
+    timing?.("sqlite-lock-acquired");
     const track = l.tracks(trackId)[0],
       settings = l.mediaSettings();
     if (
@@ -492,7 +574,9 @@ export async function editManagedFlac(
       track.id,
       track.path,
       track.mediaRelativePath!,
+      receiptTiming(timing, "receipt-preflight"),
     );
+    timing?.("receipt-preflight-done");
     if (
       (await readdir(path.dirname(track.path))).some((n) =>
         n.startsWith(".rio-publication-"),
@@ -510,14 +594,25 @@ export async function editManagedFlac(
       },
       relative: track.mediaRelativePath!,
     };
+    timing?.("capability-start");
     const strategy = selectMetadataPublication(target);
+    timing?.("publication", { strategy });
+    options.timing?.("capability");
     const originalFingerprint = await fingerprint(track.path);
     const receipt = l.db
       .prepare(
         "SELECT rootId,relative,digest,device,inode FROM managed_file_receipts WHERE trackId=?",
       )
       .get(trackId) as unknown as Journal["receipt"];
-    const original = await bytesAt(track.path, receipt, receipt.digest);
+    releaseBudget = reserveMetadataInput(Number(originalFingerprint.size));
+    const original = await bytesAt(
+      track.path,
+      receipt,
+      receipt.digest,
+      timing,
+      "source-read",
+    );
+    const originalHashStart = timing ? performance.now() : 0;
     id = randomUUID();
     journal = {
       version: 1,
@@ -530,6 +625,11 @@ export async function editManagedFlac(
       receipt: structuredClone(receipt),
       patch: snapshot,
     };
+    timing?.("source-journal-hash", {
+      bytes: original.length,
+      wallMs: performance.now() - originalHashStart,
+    });
+    timing?.("journal-insert-start");
     l.db
       .prepare("INSERT INTO metadata_edits VALUES(?,?,?,?,?,?,NULL,?)")
       .run(
@@ -542,16 +642,30 @@ export async function editManagedFlac(
         Date.now(),
       );
     await options.hooks?.at?.("journal", id);
-    const prepared = await worker<FlacMetadataWriteResult>({
-      mode: "prepare",
-      original,
-      patch: snapshot,
-    });
+    options.timing?.("preflight");
+    const prepared = await worker<
+      FlacMetadataWriteResult & { metadata?: TrackMetadata }
+    >(
+      {
+        mode: "prepare",
+        filename: strategy === "in-place" ? journal.filename : undefined,
+        original,
+        patch: snapshot,
+      },
+      timing,
+    );
+    options.timing?.("prepare");
+    const candidateHashStart = timing ? performance.now() : 0;
     if (
       prepared.verification.originalSha256 !== journal.originalSha256 ||
       sha(prepared.candidate) !== prepared.verification.candidateSha256
     )
       throw new Error("FLAC writer candidate proof does not match bytes.");
+    timing?.("candidate-hash", {
+      bytes: prepared.candidate.length,
+      wallMs: performance.now() - candidateHashStart,
+    });
+    timing?.("candidate-validated");
     if (!prepared.changedFields.length) {
       put(l, id, "aborted", journal);
       return {
@@ -565,15 +679,16 @@ export async function editManagedFlac(
     put(l, id, "preparing", journal);
     if (strategy === "in-place") {
       journal.strategy = "in-place";
-      journal.metadata = await verifyCandidate(
-        journal,
-        original,
-        prepared.candidate,
-      );
+      // Preparation verifies tags, preserved blocks and audio before returning.
+      // The digest checked above binds that verification to this exact candidate.
+      if (!prepared.metadata)
+        throw new Error("Missing prepared metadata projection.");
+      journal.metadata = prepared.metadata;
       put(l, id, "staged", journal);
       await options.hooks?.at?.("candidate-staged", id);
       await options.hooks?.at?.("staged", id);
       await options.hooks?.at?.("before-publish", id);
+      timing?.("revalidate-start");
       await validateMediaRoot(root);
       checkTrack(l, journal);
       await validateCurrentManagedReceipt(
@@ -582,6 +697,7 @@ export async function editManagedFlac(
         trackId,
         track.path,
         journal.relative,
+        receiptTiming(timing, "receipt-revalidate"),
       );
       originalReceipt(l, journal);
       use.assertIdle();
@@ -593,24 +709,35 @@ export async function editManagedFlac(
       // Durable intent, not a claim of atomicity: physical rewrite may be partial.
       journal.writeStarted = true;
       put(l, id, "staged", journal);
+      options.timing?.("revalidate");
       publishMetadataInPlace(
         { ...target, expected: originalFingerprint },
         original,
         prepared.candidate,
       );
+      options.timing?.("publish");
       put(l, id, "published", journal);
       await options.hooks?.at?.("published", id);
       const actual = await bytesAt(
         track.path,
         originalFingerprint,
         journal.candidateSha256,
+        timing,
+        "published-read",
       );
-      const metadata = await verifyCandidate(journal, original, actual);
+      const metadata = await verifyCandidate(journal, original, actual, timing);
+      options.timing?.("verify-published");
       use.assertIdle();
-      commit(l, id, journal, await fingerprint(track.path), metadata);
+      const publishedFingerprint = await fingerprint(track.path);
+      timing?.("sqlite-commit-start");
+      commit(l, id, journal, publishedFingerprint, metadata);
+      committedRevision();
+      options.timing?.("db-commit");
       await options.hooks?.at?.("committed", id);
-      const reconciled = await reconcile(l, journal);
+      const reconciled = await reconcile(l, journal, timing);
+      options.timing?.("reconcile");
       put(l, id, "done", journal);
+      options.timing?.("cleanup");
       await options.hooks?.at?.("cleaned", id);
       return { status: "committed" as const, editId: id, track: reconciled };
     }
@@ -630,6 +757,7 @@ export async function editManagedFlac(
       throw new Error(
         `Publication staging failed: ${opened.reason ?? opened.status}`,
       );
+    options.timing?.("stage-native");
     leased = opened.lease;
     journal.record = leased.record;
     put(l, id, "staged", journal);
@@ -642,11 +770,15 @@ export async function editManagedFlac(
       ),
       journal.record.candidateIdentity,
       journal.candidateSha256,
+      timing,
+      "publication-read",
     );
-    journal.metadata = await verifyCandidate(journal, original, staged);
+    journal.metadata = await verifyCandidate(journal, original, staged, timing);
+    options.timing?.("verify-candidate");
     put(l, id, "staged", journal);
     await options.hooks?.at?.("staged", id);
     await options.hooks?.at?.("before-publish", id);
+    timing?.("revalidate-start");
     await validateMediaRoot(root);
     checkTrack(l, journal);
     const nowReceipt = l.db
@@ -662,6 +794,7 @@ export async function editManagedFlac(
       trackId,
       track.path,
       journal.relative,
+      receiptTiming(timing, "receipt-revalidate"),
     );
     use.assertIdle();
     if (
@@ -669,6 +802,7 @@ export async function editManagedFlac(
         ?.phase !== "staged"
     )
       throw new Error("Metadata edit journal changed before publication.");
+    options.timing?.("revalidate");
     const published = leased.exchangeAndObserve();
     if (published.status !== "exchanged-expected")
       throw new Error(
@@ -678,17 +812,32 @@ export async function editManagedFlac(
     await options.hooks?.at?.("published", id);
     if (leased.syncPublication().status !== "synced")
       throw new Error("Publication durability is unresolved.");
+    options.timing?.("publish");
     const authoritative = await bytesAt(
       track.path,
       journal.record.candidateIdentity,
       journal.candidateSha256,
+      timing,
+      "publication-read",
     );
-    const metadata = await verifyCandidate(journal, original, authoritative);
+    const metadata = await verifyCandidate(
+      journal,
+      original,
+      authoritative,
+      timing,
+    );
+    options.timing?.("verify-published");
     use.assertIdle();
-    commit(l, id, journal, await fingerprint(track.path), metadata);
+    const publishedFingerprint = await fingerprint(track.path);
+    timing?.("sqlite-commit-start");
+    commit(l, id, journal, publishedFingerprint, metadata);
+    committedRevision();
+    options.timing?.("db-commit");
     await options.hooks?.at?.("committed", id);
-    const reconciled = await reconcile(l, journal);
+    const reconciled = await reconcile(l, journal, timing);
+    options.timing?.("reconcile");
     await cleanup(l, id, journal, leased, "committed", options.hooks);
+    options.timing?.("cleanup");
     await options.hooks?.at?.("cleaned", id);
     return { status: "committed" as const, editId: id, track: reconciled };
   } catch (error) {
@@ -699,6 +848,7 @@ export async function editManagedFlac(
       const phase = l.db
         .prepare("SELECT phase FROM metadata_edits WHERE id=?")
         .get(id)?.phase;
+      if (phase === "done") committedRevision();
       if (phase === "done" && journal.strategy !== "in-place")
         return {
           status: "reconciled" as const,
@@ -708,9 +858,12 @@ export async function editManagedFlac(
     }
     throw error;
   } finally {
+    timing?.("release-start");
     leased?.close();
     if (locked) unlock(l);
     use.release();
+    releaseBudget?.();
+    timing?.("release-done");
   }
 }
 

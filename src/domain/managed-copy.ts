@@ -44,7 +44,19 @@ export interface ManagedLocation {
   jobId: string;
 }
 /** Reads only. Refuses changes during hashing rather than indexing inconsistent bytes. */
-export async function fileDigest(filename: string): Promise<string> {
+type DigestTiming = (details: {
+  bytes: number;
+  wallMs: number;
+  readWaitMs: number;
+  hashMs: number;
+}) => void;
+export async function fileDigest(
+  filename: string,
+  timing?: DigestTiming,
+): Promise<string> {
+  const started = timing ? performance.now() : 0;
+  let readWaitMs = 0,
+    hashMs = 0;
   const f = await open(filename, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
     const before = await f.stat();
@@ -53,9 +65,13 @@ export async function fileDigest(filename: string): Promise<string> {
       buffer = Buffer.alloc(1024 * 1024);
     let position = 0;
     while (true) {
+      const readStart = timing ? performance.now() : 0;
       const { bytesRead } = await f.read(buffer, 0, buffer.length, position);
+      if (timing) readWaitMs += performance.now() - readStart;
       if (!bytesRead) break;
+      const hashStart = timing ? performance.now() : 0;
       hash.update(buffer.subarray(0, bytesRead));
+      if (timing) hashMs += performance.now() - hashStart;
       position += bytesRead;
     }
     const after = await f.stat();
@@ -66,7 +82,16 @@ export async function fileDigest(filename: string): Promise<string> {
       position !== before.size
     )
       throw new Error("File changed while reading; try importing again.");
-    return hash.digest("hex");
+    const hashStart = timing ? performance.now() : 0;
+    const digest = hash.digest("hex");
+    if (timing)
+      timing({
+        bytes: position,
+        wallMs: performance.now() - started,
+        readWaitMs,
+        hashMs: hashMs + performance.now() - hashStart,
+      });
+    return digest;
   } finally {
     await f.close();
   }
@@ -124,6 +149,7 @@ async function directories(root: MediaRoot, relative: string, create: boolean) {
 export async function validateManagedLocation(
   root: MediaRoot,
   relative: string,
+  timing?: DigestTiming,
 ) {
   const target = await directories(root, relative, false);
   const canonical = await realpath(target);
@@ -131,7 +157,7 @@ export async function validateManagedLocation(
     throw new Error(
       "Managed file location changed. Choose its recovery source again.",
     );
-  await fileDigest(canonical);
+  await fileDigest(canonical, timing);
   return canonical;
 }
 /** Destructive authority requires a published copy receipt, not merely an indexed path. */
@@ -141,6 +167,7 @@ export async function validateCurrentManagedReceipt(
   trackId: string,
   filename: string,
   relative: string,
+  timing?: DigestTiming,
 ) {
   if (
     db
@@ -150,7 +177,7 @@ export async function validateCurrentManagedReceipt(
       .get(trackId)
   )
     throw new Error("Finish managed imports before using this receipt.");
-  const target = await validateManagedLocation(root, relative);
+  const target = await validateManagedLocation(root, relative, timing);
   const info = await lstat(target);
   const current = db
     .prepare("SELECT * FROM managed_file_receipts WHERE trackId=?")
@@ -170,7 +197,7 @@ export async function validateCurrentManagedReceipt(
     !receipt ||
     String(info.dev) !== receipt.stageDevice ||
     String(info.ino) !== receipt.stageInode ||
-    receipt.digest !== (await fileDigest(target))
+    receipt.digest !== (await fileDigest(target, timing))
   )
     throw new Error(
       "This file no longer matches Rio's managed copy receipt. It has not been moved to Trash.",
@@ -198,6 +225,7 @@ export async function validateManagedTrash(
   trackId: string,
   filename: string,
   relative: string,
+  timing?: DigestTiming,
 ) {
   if (
     db

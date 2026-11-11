@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 const exec = promisify(execFile);
-export async function localMetadataVolume(root) {
+export async function localMetadataVolume(root, size = "128m") {
   const image = path.join(root, "Local metadata.sparseimage");
   const directory = path.join(root, "Local metadata volume");
   await mkdir(directory);
@@ -12,7 +12,7 @@ export async function localMetadataVolume(root) {
     "create",
     "-quiet",
     "-size",
-    "128m",
+    size,
     "-fs",
     "APFS",
     "-type",

@@ -1,3 +1,4 @@
+import { FLAC_SIZE_MESSAGE } from "../shared/flac-limits.js";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { open, mkdir } from "node:fs/promises";
@@ -97,6 +98,11 @@ export function metadataError(error: unknown, recoveryRequired = false) {
   const message = error instanceof Error ? error.message : String(error);
   if (recoveryRequired)
     return "An unfinished metadata operation needs recovery. Restart Rio; if this continues, keep the library and media files intact and review the diagnostic log.";
+  if (message.includes("file-size limit")) return FLAC_SIZE_MESSAGE;
+  if (/not a regular file/i.test(message))
+    return "Rio can edit only regular managed FLAC files.";
+  if (/unexpected hard links/i.test(message))
+    return "Rio can’t edit a file with additional filesystem hard links. Import an independent managed copy.";
   if (/In-place metadata write failed/.test(message))
     return "Rio couldn’t save these changes. Reopen Track Info to check the file, or use Locate File to restore it. See the diagnostic reference for details.";
   if (/Require local writable APFS/.test(message))
@@ -106,7 +112,7 @@ export function metadataError(error: unknown, recoveryRequired = false) {
   if (/Publication support unavailable/.test(message))
     return "Rio can’t safely publish metadata changes on this volume. See the diagnostic log for details.";
   if (
-    /in use|playback-use|Playback ownership|Playback renderer|locked for metadata/i.test(
+    /in use|playback-use|Playback ownership|Playback renderer|Playback source|locked for metadata/i.test(
       message,
     )
   )
@@ -116,7 +122,7 @@ export function metadataError(error: unknown, recoveryRequired = false) {
   if (/unfinished|recovery|publication.*unresolved|ambiguous/i.test(message))
     return "An unfinished metadata operation needs recovery. Restart Rio; if this continues, keep the library and media files intact and review the diagnostic log.";
   if (
-    /receipt|location changed|Track\/path ownership|identity|link|root|ENOENT|EACCES|unavailable|missing/i.test(
+    /receipt|revision|location changed|Track\/path ownership|identity|link|root|ENOENT|EACCES|unavailable|missing/i.test(
       message,
     )
   )
@@ -143,6 +149,7 @@ export async function metadataEligibility(
   library: Library,
   id: string,
   usage: MetadataUsage,
+  timing?: import("../domain/metadata-edit.js").MetadataTiming,
 ) {
   const track = library.tracks(id)[0],
     settings = library.mediaSettings();
@@ -176,8 +183,12 @@ export async function metadataEligibility(
     id,
     track.path,
     track.mediaRelativePath!,
+    timing && ((detail) => timing("receipt-eligibility", detail)),
   );
+  timing?.("receipt-eligibility-done");
+  timing?.("playback-gate-start");
   const lease = usage.acquireIdle(id);
+  timing?.("playback-gate-acquired");
   try {
     lease.assertIdle();
     if (library.scanning)
@@ -202,8 +213,10 @@ export async function saveTrackMetadata(
   session: unknown,
   patch: unknown,
   usage: MetadataUsage,
+  timing?: import("../domain/metadata-edit.js").MetadataTiming,
 ) {
   validateMetadataTarget(id, session, library);
   const changes = validateMetadataPatch(patch);
-  return editManagedFlac(library, id, changes, { usage });
+  timing?.("validate-patch");
+  return editManagedFlac(library, id, changes, { usage, timing });
 }

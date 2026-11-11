@@ -1,3 +1,7 @@
+import {
+  MAX_FLAC_FILE_BYTES,
+  FLAC_SIZE_MESSAGE,
+} from "../shared/flac-limits.js";
 /** Isolated native publication capabilities. Never imported by UI, IPC or Library. */
 import { createRequire } from "node:module";
 import { createHash, randomUUID } from "node:crypto";
@@ -296,8 +300,12 @@ export function createPublicationAdapter(binding: NativePublicationBinding) {
       let handle: object | undefined;
       try {
         if (
+          options.candidate instanceof Uint8Array &&
+          options.candidate.byteLength > MAX_FLAC_FILE_BYTES
+        )
+          throw Error(FLAC_SIZE_MESSAGE);
+        if (
           !(options.candidate instanceof Uint8Array) ||
-          options.candidate.byteLength > 64 * 1024 * 1024 ||
           !/^[a-f0-9]{64}$/.test(options.originalSha256)
         )
           throw Error(

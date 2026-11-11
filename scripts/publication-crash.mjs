@@ -7,7 +7,7 @@ import {
   fsyncSync,
   closeSync,
 } from "node:fs";
-import { createPublicationAdapter } from "../src/domain/publication.ts";
+import { createPublicationAdapter } from "../dist/domain/publication.js";
 const [config, candidateFile, manifest, phase] = process.argv.slice(2);
 const binding = createRequire(import.meta.url)(
   "../dist/native/testing/publication.node",

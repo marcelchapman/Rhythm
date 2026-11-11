@@ -1,3 +1,5 @@
+import { reserveMetadataInput } from "../src/domain/metadata-budget";
+import { MAX_FLAC_FILE_BYTES } from "../src/shared/flac-limits";
 import { test, expect, vi } from "vitest";
 import {
   mkdtemp,
@@ -975,3 +977,36 @@ test.skipIf(process.platform !== "darwin").each(["before-publish", "partial"])(
     }
   },
 );
+
+test("aggregate admission refuses before journaling or mutation and releases the playback/library lease", () =>
+  fixture(async ({ l, t, use, before }) => {
+    const releases = [
+      reserveMetadataInput(MAX_FLAC_FILE_BYTES),
+      reserveMetadataInput(MAX_FLAC_FILE_BYTES),
+    ];
+    try {
+      await expect(
+        editManagedFlac(
+          l,
+          t.id,
+          { genre: { action: "set", value: "Budget retry" } },
+          { usage: use },
+        ),
+      ).rejects.toThrow(/memory budget/);
+      expect(await readFile(t.path)).toEqual(before);
+      expect(l.scanning).toBe(false);
+      expect(
+        l.db.prepare("SELECT count(*) AS n FROM metadata_edits").get()!.n,
+      ).toBe(0);
+      use.acquireIdle(t.id).release();
+    } finally {
+      releases.forEach((release) => release());
+    }
+    await editManagedFlac(
+      l,
+      t.id,
+      { genre: { action: "set", value: "Budget retry" } },
+      { usage: use },
+    );
+    expect(l.tracks(t.id)[0].genre).toBe("Budget retry");
+  }));

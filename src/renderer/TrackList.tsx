@@ -9,6 +9,9 @@ import {
   type TrackColumnId,
 } from "../shared/preferences";
 import type { Track } from "../shared/types";
+import { useInlineMetadata } from "./use-inline-metadata";
+import { sameInlineCell, type InlineSaveController } from "./inline-save";
+import { inlineCandidate, inlineColumn } from "./inline-metadata";
 import {
   TRACK_COLUMNS,
   sortTracks,
@@ -37,6 +40,8 @@ export function TrackList({
   onPresentationChange,
   label,
   ordered = false,
+  metadataSession,
+  metadataSave,
 }: {
   tracks: Track[];
   currentId?: string;
@@ -50,6 +55,8 @@ export function TrackList({
   onPresentationChange: (patch: TrackListPatch) => void;
   label: string;
   ordered?: boolean;
+  metadataSession?: string;
+  metadataSave?: InlineSaveController;
 }) {
   const [resizing, setResizing] = useState<{
     id: TrackColumnId;
@@ -105,6 +112,17 @@ export function TrackList({
   const [height, setHeight] = useState(500);
   const [viewportWidth, setViewportWidth] = useState(1000);
   const viewport = useRef<HTMLDivElement>(null);
+  const inline = useInlineMetadata({
+    session: metadataSession,
+    tracks: items,
+    columns: columns.map((c) => c.key),
+    viewport,
+    save: metadataSave,
+    select: (track) => {
+      chooseId(track.id);
+      onSelect(track);
+    },
+  });
   useEffect(() => {
     const el = viewport.current!;
     const observer = new ResizeObserver(() => {
@@ -121,6 +139,19 @@ export function TrackList({
   const pinFirst = columns[0]?.width < viewportWidth;
   const start = Math.max(0, Math.floor(scrollTop / ROW) - 8);
   const end = Math.min(items.length, start + Math.ceil(height / ROW) + 17);
+  const rendered = Array.from({ length: end - start }, (_, i) => start + i);
+  const editingGesture =
+    inline.edit?.phase === "editing" || inline.edit?.phase === "checking";
+  const savingId =
+    inline.save?.phase === "pending" &&
+    inline.save.draft.session === metadataSession
+      ? inline.save.draft.id
+      : undefined;
+  const failed = inline.save?.phase === "failed" ? inline.save : null;
+  const editingIndex = items.findIndex((t) => t.id === inline.edit?.id);
+  if (editingIndex >= 0 && !rendered.includes(editingIndex))
+    rendered.push(editingIndex);
+  rendered.sort((a, b) => a - b);
   const choose = (index: number, extend: boolean, toggle: boolean) => {
     const track = items[index];
     if (!track) return;
@@ -160,9 +191,65 @@ export function TrackList({
               Playlist order
             </button>
           )}
-          Drag headers to reorder · Double-click to play
+          {!metadataSession && "Drag headers to reorder · Double-click to play"}
         </span>
       </div>
+      {metadataSession && (
+        <div
+          id="inline-metadata-status"
+          className={
+            inline.message || failed ? "inline-metadata-status" : undefined
+          }
+        >
+          <span
+            className="inline-metadata-accessible"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {inline.save?.phase === "pending"
+              ? inline.edit?.phase === "waiting"
+                ? "Saving metadata. Editing resumes after Save."
+                : "Saving metadata."
+              : inline.edit?.phase === "checking"
+                ? "Checking editing eligibility."
+                : inline.edit?.phase === "editing"
+                  ? "Enter to save. Escape to cancel. Tab to save and move."
+                  : ""}
+          </span>
+          {(inline.message || failed) && (
+            <span role="alert" className="inline-metadata-error">
+              {inline.message ||
+                (failed &&
+                  failed.message +
+                    (inline.canReview
+                      ? ""
+                      : failed.draft.session === metadataSession
+                        ? " Show the edited row and column to review your change."
+                        : " This proposal belongs to another library session."))}
+            </span>
+          )}
+          {failed && (
+            <>
+              {inline.canReview && (
+                <button type="button" className="quiet" onClick={inline.review}>
+                  Review edit
+                </button>
+              )}
+              {failed.draft.session !== metadataSession && (
+                <input
+                  readOnly
+                  aria-label="Unsaved value from another library session"
+                  value={failed.draft.value}
+                />
+              )}
+              <button type="button" className="quiet" onClick={inline.discard}>
+                Discard edit
+              </button>
+            </>
+          )}
+        </div>
+      )}
       <div
         className="songs-viewport"
         ref={viewport}
@@ -198,7 +285,7 @@ export function TrackList({
               el.scrollTop = (next + 2) * ROW - el.clientHeight;
           } else if (e.key === "Enter" && index >= 0) {
             e.preventDefault();
-            onPlay(items[index], items);
+            if (items[index].id !== savingId) onPlay(items[index], items);
           } else if (
             (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey)) &&
             index >= 0
@@ -400,8 +487,8 @@ export function TrackList({
             role="rowgroup"
             style={{ height: items.length * ROW, position: "relative" }}
           >
-            {items.slice(start, end).map((track, offset) => {
-              const index = start + offset;
+            {rendered.map((index) => {
+              const track = items[index];
               return (
                 <div
                   role="row"
@@ -411,8 +498,12 @@ export function TrackList({
                   key={track.id}
                   className={`song-row ${selected.has(track.id) ? "selected" : ""} ${currentId === track.id ? "is-playing" : ""} ${track.missing ? "is-missing" : ""}`}
                   style={{ gridTemplateColumns, top: index * ROW }}
-                  draggable
+                  draggable={!inline.edit}
                   onDragStart={(e) => {
+                    if (inline.edit) {
+                      e.preventDefault();
+                      return;
+                    }
                     const ids = dragIds(track.id);
                     e.dataTransfer.setData(
                       TRACK_DRAG_TYPE,
@@ -421,6 +512,7 @@ export function TrackList({
                     e.dataTransfer.effectAllowed = "copy";
                   }}
                   onClick={(e) => {
+                    if (editingGesture) return;
                     viewport.current?.focus();
                     choose(
                       index,
@@ -428,28 +520,52 @@ export function TrackList({
                       selectionModifier(e, navigator.platform),
                     );
                   }}
-                  onDoubleClick={() => onPlay(track, items)}
+                  onDoubleClick={(e) => {
+                    if (
+                      !editingGesture &&
+                      track.id !== savingId &&
+                      !(e.target as HTMLElement).closest("button")
+                    )
+                      onPlay(track, items);
+                  }}
                   onContextMenu={(e) => {
                     e.preventDefault();
+                    if (editingGesture) return;
                     context(track);
                   }}
                 >
                   {columns.map((c, columnIndex) => (
                     <div
                       role="cell"
-                      className={`${columnIndex === 0 && pinFirst ? "sticky-title" : ""} ${c.key === "title" ? "song-title" : ""} ${["duration", "bpm", "bitRate", "disc", "track"].includes(c.key) ? "numeric" : ""}`}
+                      data-cell-column={c.key}
+                      className={`${columnIndex === 0 && pinFirst ? "sticky-title" : ""} ${c.key === "title" ? "song-title" : ""} ${inline.edit?.id === track.id && inline.edit.column === c.key ? "inline-editing" : ""} ${["duration", "bpm", "bitRate", "disc", "track"].includes(c.key) ? "numeric" : ""}`}
                       key={c.key}
+                      onDoubleClick={(event) => {
+                        if (
+                          !metadataSession ||
+                          !inlineColumn(c.key) ||
+                          !inlineCandidate(track) ||
+                          (event.target as HTMLElement).closest("button,input")
+                        )
+                          return;
+                        event.preventDefault();
+                        event.stopPropagation();
+                        void inline.begin(track, c.key);
+                      }}
                       title={
                         c.key === "title"
                           ? `${track.title}${track.missing ? " · File unavailable" : ""}`
                           : text(track, c.key)
                       }
                     >
-                      {c.key === "title" ? (
+                      {inline.edit?.id === track.id &&
+                      inline.edit.column === c.key ? (
+                        inline.input
+                      ) : c.key === "title" ? (
                         <>
                           <button
                             className="song-play"
-                            disabled={track.missing}
+                            disabled={track.missing || track.id === savingId}
                             aria-label={`Play ${track.title}`}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -483,6 +599,25 @@ export function TrackList({
                       ) : (
                         text(track, c.key)
                       )}
+                      {failed &&
+                        inline.save &&
+                        inline.save.draft.session === metadataSession &&
+                        inlineColumn(c.key) &&
+                        !(
+                          inline.edit &&
+                          sameInlineCell(inline.edit, {
+                            id: track.id,
+                            column: c.key,
+                          })
+                        ) &&
+                        sameInlineCell(inline.save.draft, {
+                          id: track.id,
+                          column: c.key,
+                        }) && (
+                          <span className="inline-metadata-marker inline-metadata-error">
+                            Save failed
+                          </span>
+                        )}
                     </div>
                   ))}
                 </div>

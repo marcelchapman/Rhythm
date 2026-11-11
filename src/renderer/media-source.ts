@@ -7,8 +7,10 @@ export class MediaSource {
   generation = 0;
   private releasing: Promise<void> = Promise.resolve();
   private releaseError?: unknown;
+  private acquiring?: Promise<void>;
   private active?: {
     key: string;
+    position: number;
     pending: boolean;
     promise: Promise<void>;
     cancel(): void;
@@ -17,17 +19,28 @@ export class MediaSource {
   constructor(
     private readonly audio: HTMLAudioElement,
     private readonly acquire: (url: string) => Promise<DecoderSource>,
+    private readonly serializeAcquisitions = false,
   ) {}
   private retire(lease: DecoderSource) {
-    // Preserve uncertainty on IPC failure; do not guess that the main process released it.
-    this.releasing = Promise.all([
-      this.releasing,
-      Promise.resolve().then(() => lease.release()),
-    ])
-      .then(() => {})
+    const released = Promise.resolve()
+      .then(() => lease.release())
       .catch((error) => {
         this.releaseError = error;
       });
+    this.releasing = Promise.all([this.releasing, released]).then(() => {});
+    return released;
+  }
+  /** Pending seeks are applied to the acquired source, never to a stale element. */
+  seek(position: number) {
+    if (!Number.isFinite(position) || position < 0 || !this.active) return;
+    this.active.position = position;
+    if (this.audio.getAttribute("src") && this.audio.readyState >= 1)
+      this.audio.currentTime = Math.min(
+        position,
+        Number.isFinite(this.audio.duration)
+          ? Math.max(0, this.audio.duration - 0.05)
+          : position,
+      );
   }
   ensure(
     key: string,
@@ -42,8 +55,7 @@ export class MediaSource {
       (this.active.pending ||
         (this.active.lease?.url === a.src &&
           !a.error &&
-          a.readyState >= 3 &&
-          !a.seeking))
+          (this.serializeAcquisitions || (a.readyState >= 3 && !a.seeking))))
     )
       return this.active.promise;
     this.clear();
@@ -81,12 +93,13 @@ export class MediaSource {
       const metadata = () => {
         if (generation !== this.generation || !lease || a.src !== lease.url)
           return;
-        if (position > 0)
+        const wanted = this.active?.position ?? position;
+        if (wanted > 0)
           a.currentTime = Math.min(
-            position,
+            wanted,
             Number.isFinite(a.duration)
               ? Math.max(0, a.duration - 0.05)
-              : position,
+              : wanted,
           );
         ready();
       };
@@ -122,15 +135,16 @@ export class MediaSource {
       a.addEventListener("seeked", ready);
       a.addEventListener("error", failed);
     });
-    this.active = { key, pending: true, promise, cancel };
-    void (async () => {
-      await this.releasing;
+    this.active = { key, position, pending: true, promise, cancel };
+    const barrier = this.releasing;
+    this.acquiring = (async () => {
+      await barrier;
       if (this.releaseError) throw this.releaseError;
       if (generation !== this.generation || this.active?.promise !== promise)
         return;
       const acquired = await this.acquire(url);
       if (generation !== this.generation || this.active?.promise !== promise) {
-        this.retire(acquired);
+        await this.retire(acquired);
         return;
       }
       lease = acquired;
@@ -147,6 +161,10 @@ export class MediaSource {
     this.generation++;
     this.active?.cancel();
     this.active = undefined;
+    if (this.serializeAcquisitions && this.acquiring)
+      this.releasing = Promise.all([this.releasing, this.acquiring]).then(
+        () => {},
+      );
     if (this.audio.getAttribute("src")) {
       this.audio.pause();
       this.audio.removeAttribute("src");

@@ -1,4 +1,4 @@
-import { createReadStream, type ReadStream } from "node:fs";
+import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { Readable } from "node:stream";
 
@@ -13,12 +13,17 @@ const MIME: Record<string, string> = {
   aif: "audio/aiff",
   aiff: "audio/aiff",
 };
+export interface MediaReader {
+  size(): Promise<number>;
+  stream(start: number, end: number): Readable;
+}
+type Ownership = { assertActive(): void; opened(stream: Readable): void };
 /** Serve only a resolved, indexed track. Byte ranges are required for reliable seeking. */
 export async function mediaResponse(
   filename: string,
   format: string,
   request: Request,
-  ownership?: { assertActive(): void; opened(stream: ReadStream): void },
+  ownership?: Ownership,
 ): Promise<Response> {
   let info;
   try {
@@ -26,7 +31,24 @@ export async function mediaResponse(
   } catch {
     return new Response("Music file is unavailable", { status: 404 });
   }
-  const size = info.size;
+  return mediaResponseFromSource(
+    {
+      size: async () => info.size,
+      stream: (start, end) => createReadStream(filename, { start, end }),
+    },
+    format,
+    request,
+    ownership,
+  );
+}
+/** Internal read capability; paths/descriptors are never part of the renderer contract. */
+export async function mediaResponseFromSource(
+  source: MediaReader,
+  format: string,
+  request: Request,
+  ownership?: Ownership,
+): Promise<Response> {
+  const size = await source.size();
   const headers: Record<string, string> = {
     "Content-Type": MIME[format] ?? "application/octet-stream",
     "Accept-Ranges": "bytes",
@@ -62,7 +84,7 @@ export async function mediaResponse(
   if (request.method === "HEAD" || size === 0)
     return new Response(null, { status: range ? 206 : 200, headers });
   ownership?.assertActive();
-  const stream = createReadStream(filename, { start, end });
+  const stream = source.stream(start, end);
   ownership?.opened(stream);
   const abort = () => stream.destroy();
   request.signal.addEventListener("abort", abort, { once: true });

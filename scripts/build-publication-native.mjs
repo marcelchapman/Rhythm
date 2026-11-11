@@ -1,3 +1,4 @@
+import { MAX_FLAC_FILE_BYTES } from "../src/shared/flac-limits.ts";
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
@@ -40,6 +41,7 @@ const flags = [
   "-Wextra",
   "-Werror",
   "-DNAPI_VERSION=8",
+  `-DRIO_MAX_FLAC_BYTES=${MAX_FLAC_FILE_BYTES}`,
   `-I${header}`,
   ...(process.platform === "darwin"
     ? [
@@ -114,3 +116,6 @@ for (const testing of process.argv.includes("--test")
   renameSync(temporaryManifest, manifest);
   console.log(`Built ${path.relative(process.cwd(), binary)} (Node-API 8).`);
 }
+
+// Build the dormant APFS source capability without changing publication exports.
+await import("./build-playback-source-native.mjs");

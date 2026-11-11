@@ -132,6 +132,8 @@ export interface PlaybackSourceLease {
   url: string;
 }
 export interface RioAPI {
+  stablePlaybackSourcesEnabled?: boolean;
+  metadataTimingEnabled?: boolean;
   metadataEligibility(
     id: string,
     session: string,

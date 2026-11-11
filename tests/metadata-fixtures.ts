@@ -171,12 +171,18 @@ export function flacFixture(
   blocks.push(block(1, Buffer.alloc(32), true));
   return Buffer.concat([Buffer.from("fLaC"), ...blocks, payload]);
 }
-/** Thirty seconds of decodable stereo silence, without an external encoder.
+/** Decodable stereo constant PCM (silence by default), without an external encoder.
  * Constant subframes retain small files; sequential UTF-8 frame numbers and both
  * FLAC CRCs are real, including counters beyond the one- and two-byte ranges.
  */
-export function playbackFlacFixture(values: [string, string][] = entries) {
-  const samples = 48000 * 30,
+export function playbackFlacFixture(
+  values: [string, string][] = entries,
+  seconds = 30,
+  value = 0,
+) {
+  if (!Number.isInteger(value) || value < -32768 || value > 32767)
+    throw Error("Invalid fixture PCM constant");
+  const samples = 48000 * seconds,
     frames: Buffer[] = [];
   for (let frame = 0; frame < samples / 128; frame++) {
     const number =
@@ -190,11 +196,14 @@ export function playbackFlacFixture(values: [string, string][] = entries) {
               0x80 | (frame & 63),
             ];
     const header = Buffer.from([255, 248, 0x6a, 0x18, ...number, 127]);
-    // Two independent 16-bit channels: constant subframe header + zero sample.
+    // Two independent 16-bit channels: constant subframe header + signed sample.
+    const constant = Buffer.alloc(6);
+    constant.writeInt16BE(value, 1);
+    constant.writeInt16BE(value, 4);
     const data = Buffer.concat([
       header,
       Buffer.from([crc(header, 8)]),
-      Buffer.alloc(6),
+      constant,
     ]);
     const footer = Buffer.alloc(2);
     footer.writeUInt16BE(crc(data, 16));
@@ -208,10 +217,10 @@ export function playbackFlacFixture(values: [string, string][] = entries) {
     (48000n << 44n) | (1n << 41n) | (15n << 36n) | BigInt(samples),
     10,
   );
-  createHash("md5")
-    .update(Buffer.alloc(samples * 4))
-    .digest()
-    .copy(stream, 18);
+  const pcm = Buffer.alloc(samples * 4);
+  if (value)
+    for (let at = 0; at < pcm.length; at += 2) pcm.writeInt16LE(value, at);
+  createHash("md5").update(pcm).digest().copy(stream, 18);
   return Buffer.concat([
     Buffer.from("fLaC"),
     ...blocks.map((b, i) =>

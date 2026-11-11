@@ -293,3 +293,80 @@ test("synchronous release-channel failure is retained as unknown ownership", asy
   );
   expect(acquire).toHaveBeenCalledTimes(1);
 });
+test("isolated acquisition drains a superseded pending grant before the latest acquisition starts", async () => {
+  const audio = new Decoder();
+  let grant!: (value: any) => void, closed!: () => void;
+  const calls: string[] = [],
+    release = new Promise<void>((r) => (closed = r));
+  const loader = new MediaSource(
+    audio as any,
+    async (url) => {
+      calls.push(url);
+      if (url === "old") return await new Promise((r) => (grant = r));
+      return { url, release: async () => {} };
+    },
+    true,
+  );
+  const a = loader.ensure("old", "old", 0),
+    cancelled = expect(a).rejects.toMatchObject({ name: "AbortError" });
+  await vi.waitFor(() => expect(calls).toEqual(["old"]));
+  const b = loader.ensure("middle", "middle", 0),
+    middle = expect(b).rejects.toMatchObject({ name: "AbortError" });
+  const c = loader.ensure("latest", "latest", 0);
+  grant({ url: "old", release: () => release });
+  await cancelled;
+  await middle;
+  for (let n = 0; n < 3; n++) await Promise.resolve();
+  expect(calls).toEqual(["old"]);
+  closed();
+  await vi.waitFor(() => expect(calls).toEqual(["old", "latest"]));
+  audio.metadata();
+  audio.ready();
+  await c;
+  expect(audio.src).toBe("latest");
+  loader.clear();
+});
+test("a seek during isolated preparation replaces the initial position", async () => {
+  const audio = new Decoder();
+  let grant!: (value: any) => void;
+  const loader = new MediaSource(
+    audio as any,
+    async () => await new Promise((r) => (grant = r)),
+    true,
+  );
+  const p = loader.ensure("a", "a", 0);
+  await vi.waitFor(() => expect(grant).toBeDefined());
+  loader.seek(7);
+  grant({ url: "a", release: async () => {} });
+  await vi.waitFor(() => expect(audio.src).toBe("a"));
+  audio.metadata();
+  expect(audio.currentTime).toBe(7);
+  audio.ready();
+  await p;
+  loader.clear();
+});
+
+test("isolated playback retains its acquired source while a seek is outstanding", async () => {
+  const audio = new Decoder();
+  const acquire = vi.fn(async (url: string) => ({
+    url,
+    release: async () => {},
+  }));
+  const loader = new MediaSource(audio as any, acquire, true);
+  const first = loader.ensure("track", "track", 0);
+  await vi.waitFor(() => expect(audio.src).toBe("track"));
+  audio.ready();
+  await first;
+  audio.seeking = true;
+  audio.readyState = 1;
+  const resumed = loader.ensure("track", "track", 8);
+  const drained = resumed.catch(() => {});
+  try {
+    for (let n = 0; n < 3; n++) await new Promise<void>((r) => setImmediate(r));
+    expect(acquire).toHaveBeenCalledTimes(1);
+    expect(audio.src).toBe("track");
+  } finally {
+    loader.clear();
+    await drained;
+  }
+});

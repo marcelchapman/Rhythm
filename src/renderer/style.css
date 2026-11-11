@@ -1405,6 +1405,60 @@ input[type="range"]:disabled {
   color: #e6b8c2;
   font-size: 10px;
 }
+.song-row > .inline-editing {
+  padding: 2px 4px;
+  line-height: normal;
+}
+.inline-metadata-input {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 3px 5px;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: #101923;
+  color: var(--text);
+  font: inherit;
+  caret-color: var(--accent);
+}
+.inline-metadata-input:focus {
+  outline: 1px solid var(--accent);
+  outline-offset: 0;
+}
+.inline-metadata-input[aria-invalid="true"] {
+  border-color: #e6b8c2;
+}
+.inline-metadata-input[aria-busy="true"] {
+  color: var(--muted);
+}
+.inline-metadata-accessible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.inline-metadata-status {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.inline-metadata-status .quiet {
+  margin-left: 8px;
+}
+.inline-metadata-marker {
+  margin-left: 6px;
+  color: var(--accent);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.inline-metadata-error {
+  color: #ffe1df;
+}
 .nav-item.drop-target {
   background: var(--selected);
   outline: 2px solid var(--accent);

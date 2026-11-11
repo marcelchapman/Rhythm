@@ -256,30 +256,59 @@ function handlers() {
     ipcMain.handle(
       `metadata:${operation}`,
       async (event, id: unknown, session: unknown, changes?: unknown) => {
+        const trace =
+          process.env.RIO_METADATA_TIMING === "1"
+            ? performance.now()
+            : undefined;
+        const stages: Record<string, number> = {};
+        const details: Record<string, Record<string, number | string>[]> = {};
+        const timing =
+          trace === undefined
+            ? undefined
+            : (stage: string, detail?: Record<string, number | string>) => {
+                if (detail) (details[stage] ??= []).push(detail);
+                else stages[stage] = performance.now() - trace;
+              };
         // Check the actual owner and top-level frame, not a renderer-provided URL.
         assertMetadataSender(event, win?.webContents);
+        let ok = false;
         try {
           const l = requireLibrary();
           const track = validateMetadataTarget(id, session, l);
+          timing?.("validate-target");
           if (movingLibrary || choosingLibrary || playlistIO || l.scanning)
             throw new Error("Wait for the current library operation.");
           if (operation === "eligibility") {
-            await metadataEligibility(l, track.id, playbackUse.usageFor(l));
+            await metadataEligibility(
+              l,
+              track.id,
+              playbackUse.usageFor(l),
+              timing,
+            );
+            timing?.("eligibility");
             validateMetadataTarget(id, session, library);
             if (movingLibrary || choosingLibrary || playlistIO || l.scanning)
               throw new Error("Wait for the current library operation.");
+            ok = true;
             return { editable: true };
           }
-          await playlistOperation((active) =>
-            saveTrackMetadata(
+          timing?.("playlist-lock-start");
+          await playlistOperation((active) => {
+            timing?.("playlist-lock-acquired");
+            return saveTrackMetadata(
               active,
               track.id,
               session,
               changes,
               playbackUse.usageFor(active),
-            ),
-          );
-          return { ok: true, snapshot: snapshot() };
+              timing,
+            );
+          });
+          timing?.("save");
+          const refreshed = snapshot();
+          timing?.("snapshot");
+          ok = true;
+          return { ok: true, snapshot: refreshed };
         } catch (error) {
           console.error(`Metadata ${operation} failed:`, error);
           const message = metadataError(
@@ -301,6 +330,17 @@ function handlers() {
               }
             : { ok: false, message, diagnosticId };
         } finally {
+          if (timing)
+            console.info(
+              "RIO_METADATA_MAIN",
+              JSON.stringify({
+                operation,
+                ok,
+                wallMs: performance.now() - trace!,
+                stages,
+                details,
+              }),
+            );
           setImmediate(() => void flushPlaylistFiles());
         }
       },
@@ -312,6 +352,7 @@ function handlers() {
       await playbackOwnerReady;
       if (
         event.sender !== win?.webContents ||
+        event.senderFrame !== win?.webContents.mainFrame ||
         event.senderFrame?.url !== "rio://app/index.html" ||
         movingLibrary ||
         choosingLibrary
@@ -323,7 +364,22 @@ function handlers() {
         typeof directory !== "string"
       )
         throw new Error("Invalid playback source.");
-      return playbackUse.acquire(event.sender.id, id, directory);
+      try {
+        return await playbackUse.acquireForPlayback(
+          event.sender.id,
+          id,
+          directory,
+        );
+      } catch (error) {
+        if (process.env.RIO_STABLE_PLAYBACK_SOURCES !== "1") throw error;
+        const code = (error as NodeJS.ErrnoException).code;
+        console.warn("Playback source acquisition failed", { code, error });
+        throw Error(
+          code === "ENOSPC"
+            ? "Rio could not prepare this track for playback. Free some space on its drive and try again."
+            : "Rio could not prepare this track for playback. Check its drive and permissions, then try again.",
+        );
+      }
     },
   );
   ipcMain.handle("playback:release", (event, token: string) => {
@@ -367,7 +423,11 @@ function handlers() {
       return result.canceled ? null : l.chooseMediaRoot(result.filePaths[0]);
     }),
   );
-  handle("track:check", (id: string) => requireLibrary().checkTrack(id));
+  handle("track:check", (id: string) =>
+    playbackUse.hasIsolatedPlayback(win!.webContents.id, id)
+      ? { missing: false }
+      : requireLibrary().checkTrack(id),
+  );
   handle("track:reveal", async (id: string) => {
     if (process.platform !== "darwin")
       throw new Error("Show in Finder is only available on macOS.");
@@ -975,9 +1035,25 @@ async function createWindow() {
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
+      additionalArguments: [
+        ...(process.env.RIO_METADATA_TIMING === "1"
+          ? ["--rio-metadata-timing"]
+          : []),
+        ...(process.env.RIO_STABLE_PLAYBACK_SOURCES === "1"
+          ? ["--rio-stable-playback-sources"]
+          : []),
+      ],
     },
   });
   const contents = win.webContents;
+  if (process.env.RIO_METADATA_TIMING === "1")
+    contents.on("console-message", ({ message, frame }) => {
+      if (
+        frame === contents.mainFrame &&
+        message.startsWith("RIO_METADATA_RENDERER ")
+      )
+        console.info(message);
+    });
   const owner = contents.id;
   let navigation = 0;
   contents.on("did-start-navigation", (_event, _url, _inPlace, isMainFrame) => {
@@ -1105,14 +1181,14 @@ if (!app.requestSingleInstanceLock()) {
               })
             : new Response(null, { status: 404 });
         }
-        const track = url.hostname === "track" ? library?.media(id) : undefined;
-        if (!track) return new Response(null, { status: 404 });
+        const token = url.searchParams.get("use") ?? "";
+        if (
+          url.hostname !== "track" ||
+          (!library?.media(id) && !playbackUse.canServeIsolated(token, id))
+        )
+          return new Response(null, { status: 404 });
         const owner = library!;
-        const response = await playbackUse.respond(
-          url.searchParams.get("use") ?? "",
-          id,
-          request,
-        );
+        const response = await playbackUse.respond(token, id, request);
         if (response.status === 404 && owner === library && !movingLibrary)
           await owner.checkTrack(id);
         return response;

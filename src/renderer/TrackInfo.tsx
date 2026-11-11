@@ -83,6 +83,9 @@ export function TrackInfo({
       onSubmit={async (event) => {
         event.preventDefault();
         if (savingRef.current || !eligibility?.editable || !changed) return;
+        const started = window.rio.metadataTimingEnabled
+          ? performance.now()
+          : undefined;
         setError("");
         let patch;
         try {
@@ -95,11 +98,29 @@ export function TrackInfo({
         setSaving(true);
         savingChanged(true);
         try {
+          const sent = started === undefined ? undefined : performance.now();
           const result = await window.rio.editTrackMetadata(
             track.id,
             session,
             patch,
           );
+          if (started !== undefined && sent !== undefined) {
+            const reply = performance.now();
+            requestAnimationFrame(() => {
+              const frame = performance.now();
+              console.info(
+                "RIO_METADATA_RENDERER",
+                JSON.stringify({
+                  surface: "track-info",
+                  ok: result.ok,
+                  wallMs: frame - started,
+                  eventToIpcMs: sent - started,
+                  ipcMs: reply - sent,
+                  replyToFrameMs: frame - reply,
+                }),
+              );
+            });
+          }
           if (!result.ok) {
             setError(
               result.message +

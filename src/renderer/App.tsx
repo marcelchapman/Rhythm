@@ -2,6 +2,7 @@ import { TrackInfo } from "./TrackInfo";
 import { MediaSource } from "./media-source";
 import rioWordmark from "../../assets/rio-wordmark.png";
 import { TrackList } from "./TrackList";
+import { useInlineSave } from "./inline-save";
 import { CollectionSummary } from "./CollectionSummary";
 import { useTrackSelection } from "./use-track-selection";
 import { selectionModifier } from "./track-selection";
@@ -230,6 +231,7 @@ export function App() {
   const [data, setData] = useState<Snapshot | null>(null);
   const [state, setState] = useState<PlayerState>(defaultState);
   const [playing, setPlaying] = useState(false);
+  const [preparingPlayback, setPreparingPlayback] = useState(false);
   const [position, setPosition] = useState(0);
   const [duration, setDuration] = useState(0);
   const [view, setView] = useState("Home");
@@ -270,6 +272,7 @@ export function App() {
   const lastPlaybackPosition = useRef(0);
   const stateRef = useRef(state);
   const dataRef = useRef(data);
+  const inlineSave = useInlineSave(dataRef, setData);
   const playingRef = useRef(false);
   const resume = useRef(0);
   const desiredPlay = useRef(false);
@@ -374,6 +377,7 @@ export function App() {
           release: () => api.releasePlayback(lease.token),
         };
       },
+      !!api.stablePlaybackSourcesEnabled,
     ));
     const intent = new URL(media(track));
     intent.searchParams.set("library", directory ?? "");
@@ -387,6 +391,7 @@ export function App() {
   const unavailable = (track: Track) => {
     mediaSource.current?.clear();
     desiredPlay.current = false;
+    setPreparingPlayback(false);
     audio.current?.pause();
     setPlaying(false);
     setData((previous) =>
@@ -441,12 +446,23 @@ export function App() {
       if (result.missing) unavailable(track);
       else {
         desiredPlay.current = false;
+        setPreparingPlayback(false);
         setPlaying(false);
         setRecoveryId(null);
         setError(
-          name === "AbortError"
-            ? "Playback was interrupted. Press Play to try again."
-            : "This track could not be played. The file may be damaged or use an unsupported codec. Try another track.",
+          api.stablePlaybackSourcesEnabled &&
+            cause instanceof Error &&
+            cause.message.includes(
+              "Rio could not prepare this track for playback.",
+            )
+            ? cause.message.slice(
+                cause.message.indexOf(
+                  "Rio could not prepare this track for playback.",
+                ),
+              )
+            : name === "AbortError"
+              ? "Playback was interrupted. Press Play to try again."
+              : "This track could not be played. The file may be damaged or use an unsupported codec. Try another track.",
         );
       }
     } catch (e) {
@@ -493,6 +509,7 @@ export function App() {
     if (stateRef.current.currentId === id) {
       playRequest.current++;
       desiredPlay.current = false;
+      setPreparingPlayback(false);
       audio.current?.pause();
     }
     setRecoveryId(id);
@@ -631,6 +648,7 @@ export function App() {
     if (snapshot.mediaSettings.setupError) setModal("settings");
     suppressSave.current = true;
     desiredPlay.current = false;
+    setPreparingPlayback(false);
     playRequest.current++;
     mediaSource.current?.clear();
     loadedTrackId.current = null;
@@ -804,6 +822,7 @@ export function App() {
         return;
       }
       desiredPlay.current = autoplay;
+      if (api.stablePlaybackSourcesEnabled) setPreparingPlayback(autoplay);
       if (track.missing)
         setData((previous) =>
           previous
@@ -830,14 +849,19 @@ export function App() {
         ...(ids ? { queue: ids } : {}),
       }));
       const ready = prepareMedia(track, savedPosition);
+      if (api.stablePlaybackSourcesEnabled && restart)
+        mediaSource.current?.seek(0);
       const generation = mediaSource.current!.generation;
       try {
         await ready;
         if (request !== playRequest.current) return;
-        if (restart) audio.current!.currentTime = 0;
+        if (restart && !api.stablePlaybackSourcesEnabled)
+          audio.current!.currentTime = 0;
         if (autoplay) await playPrepared(track.id, request);
       } catch (e) {
         await playbackFailure(e, track.id, generation, request);
+      } finally {
+        if (request === playRequest.current) setPreparingPlayback(false);
       }
     } catch (e) {
       console.warn("Rio Play request failed", { id: track.id, cause: e });
@@ -853,6 +877,8 @@ export function App() {
   const pausePlayback = () => {
     playRequest.current++;
     desiredPlay.current = false;
+    setPreparingPlayback(false);
+    if (api.stablePlaybackSourcesEnabled) setPlaying(false);
     audio.current?.pause();
   };
   const toggle = () => {
@@ -866,7 +892,11 @@ export function App() {
       if (items[0]) playTrack(items[0], items);
       return;
     }
-    if (!audio.current!.paused) pausePlayback();
+    if (
+      !audio.current!.paused ||
+      (api.stablePlaybackSourcesEnabled && desiredPlay.current)
+    )
+      pausePlayback();
     else {
       const track = dataRef.current?.tracks.find((t) => t.id === s.currentId);
       if (track) void requestPlayback(track, undefined, false);
@@ -903,6 +933,7 @@ export function App() {
         next = (next + valid.length) % valid.length;
       else {
         desiredPlay.current = false;
+        setPreparingPlayback(false);
         setPlaying(false);
         return;
       }
@@ -910,7 +941,14 @@ export function App() {
     const id = valid[next];
     const track = dataRef.current?.tracks.find((t) => t.id === id);
     if (track)
-      void requestPlayback(track, undefined, true, ended || playingRef.current);
+      void requestPlayback(
+        track,
+        undefined,
+        true,
+        ended ||
+          playingRef.current ||
+          (!!api.stablePlaybackSourcesEnabled && desiredPlay.current),
+      );
   };
   const moveLibrary = async () => {
     if (busy) return;
@@ -924,6 +962,7 @@ export function App() {
     const before = { ...stateRef.current, position: savedPosition };
     audio.current?.pause();
     desiredPlay.current = false;
+    setPreparingPlayback(false);
     mediaSource.current?.clear();
     setPlaying(false);
     setProgress("Moving library… Keep Rio open until it finishes.");
@@ -1824,7 +1863,10 @@ export function App() {
       )}
       <audio
         ref={audio}
-        onPlay={() => setPlaying(true)}
+        onPlay={() => {
+          setPreparingPlayback(false);
+          setPlaying(true);
+        }}
         onPause={() => setPlaying(false)}
         onLoadedMetadata={() =>
           setDuration(
@@ -2053,6 +2095,35 @@ export function App() {
             </IconButton>
           </div>
         )}
+        {inlineSave.status?.phase === "failed" &&
+          (view !== "Songs" || !showsTracks || !visible.length) && (
+            <div className="notice error" role="alert">
+              <AlertCircle size={18} />
+              <span>
+                {inlineSave.status.message}{" "}
+                {inlineSave.status.draft.session === data?.metadataSession
+                  ? "Reopen the edited cell in Songs to recover your proposed value."
+                  : "This proposal belongs to another library session."}
+              </span>
+              {inlineSave.status.draft.session !== data?.metadataSession && (
+                <input
+                  readOnly
+                  aria-label="Unsaved value from another library session"
+                  value={inlineSave.status.draft.value}
+                />
+              )}
+              <button
+                type="button"
+                className="quiet"
+                onClick={() => {
+                  if (inlineSave.status?.phase === "failed")
+                    inlineSave.discard(inlineSave.status.draft);
+                }}
+              >
+                Discard edit
+              </button>
+            </div>
+          )}
         {error && (
           <div className="notice error" role="alert">
             <AlertCircle size={18} />
@@ -2429,6 +2500,12 @@ export function App() {
                       setShowQueue(false);
                     }}
                     onFavorite={(id) => void favorite(id)}
+                    metadataSession={
+                      view === "Songs"
+                        ? (data.metadataSession ?? undefined)
+                        : undefined
+                    }
+                    metadataSave={inlineSave}
                   />
                 ) : (
                   renderAlbums(visibleAlbums)
@@ -2599,11 +2676,11 @@ export function App() {
             </IconButton>
             <button
               className="play-button"
-              aria-label={playing ? "Pause" : "Play"}
+              aria-label={playing || preparingPlayback ? "Pause" : "Play"}
               disabled={!tracks.some((t) => !t.missing)}
               onClick={toggle}
             >
-              {playing ? (
+              {playing || preparingPlayback ? (
                 <Pause size={23} fill="currentColor" />
               ) : (
                 <Play size={23} fill="currentColor" />
@@ -2656,7 +2733,11 @@ export function App() {
               }
               onChange={(e) => {
                 const p = Number(e.target.value);
-                audio.current!.currentTime = p;
+                if (api.stablePlaybackSourcesEnabled) {
+                  mediaSource.current?.seek(p);
+                  lastPlaybackPosition.current = p;
+                  resume.current = p;
+                } else audio.current!.currentTime = p;
                 setPosition(p);
                 setState((s) => ({ ...s, position: p }));
               }}

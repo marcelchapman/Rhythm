@@ -132,6 +132,25 @@ const crcTable = (bits: 8 | 16, polynomial: number) =>
   });
 const crc8 = crcTable(8, 0x07),
   crc16 = crcTable(16, 0x8005);
+const crc16Byte = (crc: number, byte: number) =>
+  ((crc << 8) ^ crc16[(crc >>> 8) ^ byte]) & 65535;
+const crc16Advance1 = crc16.map((crc) => crc16Byte(crc, 0)),
+  crc16Advance2 = crc16Advance1.map((crc) => crc16Byte(crc, 0)),
+  crc16Advance3 = crc16Advance2.map((crc) => crc16Byte(crc, 0));
+function frameCrc(bytes: Uint8Array, start: number, end: number) {
+  let crc = 0,
+    at = start;
+  // Linearity lets each lookup contribute one byte followed by zero bytes.
+  // The incoming CRC is XORed into the first two bytes of each group.
+  for (; at + 4 <= end; at += 4)
+    crc =
+      crc16Advance3[(crc >>> 8) ^ bytes[at]] ^
+      crc16Advance2[(crc & 255) ^ bytes[at + 1]] ^
+      crc16Advance1[bytes[at + 2]] ^
+      crc16[bytes[at + 3]];
+  for (; at < end; at++) crc = crc16Byte(crc, bytes[at]);
+  return crc;
+}
 interface FrameHeader {
   end: number;
   blockSize: number;
@@ -236,17 +255,66 @@ class Bits {
   }
   read(n: number): number {
     if (n > 32) invalid("Unsupported FLAC bit field.");
+    const start = this.at;
     this.skip(n);
-    let value = 0;
-    for (let bit = this.at - n; bit < this.at; bit++)
-      value = value * 2 + ((this.data[bit >> 3] >> (7 - (bit & 7))) & 1);
+    if (!n) return 0;
+    let byte = start >>> 3;
+    const first = Math.min(n, 8 - (start & 7));
+    let value =
+      (this.data[byte++] >>> (8 - (start & 7) - first)) & ((1 << first) - 1);
+    n -= first;
+    while (n >= 8) {
+      value = value * 256 + this.data[byte++];
+      n -= 8;
+    }
+    if (n) value = value * (1 << n) + (this.data[byte] >>> (8 - n));
     return value;
   }
   unary(limit: number): number {
-    let zeros = 0;
-    while (this.read(1) === 0)
-      if (++zeros > limit) invalid("Invalid FLAC unary value.");
-    return zeros;
+    let at = this.at,
+      zeros = 0;
+    const data = this.data;
+    while (at < data.length * 8) {
+      const offset = at & 7;
+      const prefix = Math.clz32(data[at >>> 3] << (24 + offset));
+      if (prefix < 8 - offset) {
+        zeros += prefix;
+        if (zeros > limit) invalid("Invalid FLAC unary value.");
+        this.at = at + prefix + 1;
+        return zeros;
+      }
+      zeros += 8 - offset;
+      if (zeros > limit) invalid("Invalid FLAC unary value.");
+      at += 8 - offset;
+    }
+    return invalid("Truncated FLAC subframe.");
+  }
+  rice(count: number, parameter: number) {
+    const limit = 0xfffffffe >>> parameter,
+      maxRemainder = 2 ** parameter - 1,
+      end = this.data.length * 8;
+    for (let sample = 0; sample < count; sample++) {
+      const at = this.at,
+        offset = at & 7;
+      if (at < end) {
+        const zeros = Math.clz32(this.data[at >>> 3] << (24 + offset));
+        if (zeros < 8 - offset && zeros < limit) {
+          const next = at + zeros + 1 + parameter;
+          if (next > end) invalid("Truncated FLAC subframe.");
+          this.at = next;
+          continue;
+        }
+      }
+      const quotient = this.unary(limit);
+      // Below the largest possible quotient every remainder is in range.
+      // At that quotient, only the all-ones remainder gives reserved 0xffffffff.
+      if (parameter && quotient === limit) {
+        if (this.read(parameter) === maxRemainder)
+          invalid("Invalid FLAC residual magnitude.");
+      } else {
+        this.skip(parameter);
+      }
+    }
   }
 }
 function subframes(
@@ -300,22 +368,15 @@ function subframes(
       const parameter = bits.read(parameterBits),
         count = size - (partition === 0 ? order : 0);
       if (parameter === 2 ** parameterBits - 1) bits.skip(count * bits.read(5));
-      else
-        for (let sample = 0; sample < count; sample++) {
-          const quotient = bits.unary(Math.floor(0xfffffffe / 2 ** parameter));
-          if (quotient * 2 ** parameter + bits.read(parameter) > 0xfffffffe)
-            invalid("Invalid FLAC residual magnitude.");
-        }
+      else bits.rice(count, parameter);
     }
   }
   const padding = (8 - (bits.at % 8)) % 8;
   if (bits.read(padding)) invalid("Nonzero FLAC frame padding.");
   const footer = bits.at / 8;
   bits.skip(16);
-  let crc = 0;
-  for (let i = start; i < footer + 2; i++)
-    crc = ((crc << 8) ^ crc16[((crc >> 8) ^ info.audio[i]) & 255]) & 65535;
-  if (crc !== 0) invalid("Invalid FLAC audio frame checksum.");
+  if (frameCrc(info.audio, start, footer + 2) !== 0)
+    invalid("Invalid FLAC audio frame checksum.");
   return footer + 2;
 }
 /** Structural subframes, CRC and sample-sequence checks, not a PCM decoder. */

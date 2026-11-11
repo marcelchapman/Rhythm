@@ -7,6 +7,10 @@ import type {
   PlaylistAction,
 } from "../shared/types.js";
 const api: RioAPI = {
+  stablePlaybackSourcesEnabled: process.argv.includes(
+    "--rio-stable-playback-sources",
+  ),
+  metadataTimingEnabled: process.argv.includes("--rio-metadata-timing"),
   metadataEligibility: (id, session) =>
     ipcRenderer.invoke("metadata:eligibility", id, session),
   editTrackMetadata: (id, session, changes) =>
