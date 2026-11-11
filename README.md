@@ -2,11 +2,97 @@
   <img src="assets/rio-github-banner.png" alt="Rio — Your Music. Everywhere." width="100%">
 </p>
 
-# Rio 0.1
+# Rio
 
-A local personal music library and player for macOS and Linux, built around music you own. The desktop interface follows `artfiles/rio-desktop-prototype.png`.
+**Your music. Your library. Your choice.**
 
-Rio’s long-term scope includes macOS, Windows, Linux, Android, iOS, and cloud synchronization/access across your devices. Version 0.1 implements local desktop functionality. [PRODUCT.md](PRODUCT.md) is the product authority; the promotional landing page is not an implementation specification.
+Rio is a music application built around a simple belief: enjoying a personal music collection should be beautiful, intuitive, private, and independent of any particular operating system or commercial ecosystem.
+
+No tracking. No advertising profiles. No selling your listening data. No algorithm deciding what you should hear next.
+
+Just you and your music.
+
+## Why I Built Rio
+
+Rio began with a very personal need.
+
+For years, I used Apple's music applications to maintain and enjoy my music collection. I became accustomed to their organisation, functionality, attention to detail, and overall experience. I appreciated having a familiar environment where I could manage my library and listen to the music I had collected over the years.
+
+But I wanted something else: freedom.
+
+I didn't want my music experience to depend on whether I was using macOS, Linux, Windows, or eventually a mobile device. I wanted to move between operating systems without feeling that I had to leave behind the features, familiar workflows, and carefully maintained collection I had come to value.
+
+And I wanted to enjoy music without being tracked, profiled, or constantly encouraged to consume something else.
+
+I wasn't looking for another streaming service. I wanted an application for the music I already own.
+
+That was the beginning of Rio.
+
+My original ambition was modest: build a functional, pleasant-looking music player that could offer the capabilities I had enjoyed for years, without tying me to a particular ecosystem.
+
+As the project evolved, so did my expectations.
+
+I realised that I didn't simply want something that worked. I wanted something coherent, thoughtfully designed, reliable, and genuinely enjoyable to use. I wanted everyday tasks to feel natural. I wanted the application to handle technical complexity without placing that burden on the person using it.
+
+Above all, I wanted to create software that respected its users.
+
+Rio is still growing, and there is much more I want it to become. But its purpose hasn't changed.
+
+**I wanted the freedom to enjoy my music, my way, wherever I choose to listen to it.**
+
+## How Rio Is Being Built
+
+Rio is also part of my personal journey into software development.
+
+After completing my university degree in Database Technology, I began exploring how to apply and deepen what I had learned through practical projects.
+
+My programming knowledge is still developing. Rather than waiting until I could independently implement every component of a complex application, I decided to learn while building something that genuinely mattered to me.
+
+Rio is developed with substantial assistance from OpenAI Codex and ChatGPT.
+
+I guide its product direction, define its requirements, make design decisions, investigate alternatives, conduct manual acceptance tests, and determine what does and doesn't meet the standards I want the application to achieve.
+
+AI assists extensively with implementation, technical investigation, automated testing, and debugging.
+
+This collaboration doesn't replace my learning. It is part of it.
+
+Alongside development, I study programming, operating systems, databases, networking, and cybersecurity, gradually developing a deeper understanding of the technologies and engineering decisions behind Rio.
+
+The process is iterative: build, test, observe, question, investigate, improve, and repeat.
+
+I don't claim to have personally written every line of Rio's source code, nor do I present the application as proof of programming expertise I haven't yet acquired.
+
+I do take responsibility for the direction of the project, the decisions behind it, and the quality standards it aims to meet.
+
+For me, Rio is both a practical application and a continuing education in software engineering.
+
+## The Principles Behind Rio
+
+Rio is guided by a few convictions.
+
+**Privacy is a principle, not a premium feature.** A personal music player has no reason to build advertising profiles or monetise someone's listening habits.
+
+**Good design should make technology feel effortless.** Sophistication belongs behind the interface, not in the way of the person using it.
+
+**Reliability matters more than impressive claims.** A music application must respect the integrity of the collection entrusted to it.
+
+**Freedom of platform matters.** Rio is being developed with cross-platform independence as a long-term goal, rather than treating one operating system as the permanent centre of someone's digital life.
+
+**Software should serve people.** Success should never require compromising the principles that motivated the project.
+
+Rio is not finished, and I don't expect every decision to be perfect. There will be mistakes, limitations, revisions, and plenty more to learn.
+
+But I know what I want this project to stand for.
+
+**Thoughtful software, built with curiosity, guided by principles, and made for the simple pleasure of listening to music.**
+
+## Project status
+
+Rio’s source code is publicly available, and the project is intended to become open source. A licence has yet to be selected. Until a licence is adopted, public access alone grants no open-source permissions.
+
+Version 0.1 implements local desktop functionality. The Linux instructions below cover building from source and creating local packages. The desktop interface follows `artfiles/rio-desktop-prototype.png`.
+
+Rio’s long-term scope includes macOS, Windows, Linux, Android, iOS, and cloud synchronization/access across your devices. [PRODUCT.md](PRODUCT.md) is the product authority; the promotional landing page is not an implementation specification.
 
 ## What works
 
