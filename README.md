@@ -14,39 +14,24 @@ Just you and your music.
 
 ## Why I Built Rio
 
-Rio began with a very personal need.
+For years, I relied on Apple's music applications to manage and enjoy my personal music collection. I valued their organisation, functionality, and attention to detail, but I wanted the freedom to enjoy the same experience across different operating systems, without being tied to a particular ecosystem.
 
-For years, I used Apple's music applications to maintain and enjoy my music collection. I became accustomed to their organisation, functionality, attention to detail, and overall experience. I appreciated having a familiar environment where I could manage my library and listen to the music I had collected over the years.
+I wasn't looking for a streaming service. I wanted a well-designed, reliable application for the music I already own, with an intuitive interface and no tracking, profiling, or unwanted recommendations.
 
-But I wanted something else: freedom.
+Rio grew from that need: a personal music player that combines simplicity, functionality, privacy, and platform independence.
 
-I didn't want my music experience to depend on whether I was using macOS, Linux, Windows, or eventually a mobile device. I wanted to move between operating systems without feeling that I had to leave behind the features, familiar workflows, and carefully maintained collection I had come to value.
+**The freedom to enjoy my music, my way, wherever I choose to listen to it.**
 
-And I wanted to enjoy music without being tracked, profiled, or constantly encouraged to consume something else.
-
-I wasn't looking for another streaming service. I wanted an application for the music I already own.
-
-That was the beginning of Rio.
-
-My original ambition was modest: build a functional, pleasant-looking music player that could offer the capabilities I had enjoyed for years, without tying me to a particular ecosystem.
-
-As the project evolved, so did my expectations.
-
-I realised that I didn't simply want something that worked. I wanted something coherent, thoughtfully designed, reliable, and genuinely enjoyable to use. I wanted everyday tasks to feel natural. I wanted the application to handle technical complexity without placing that burden on the person using it.
-
-Above all, I wanted to create software that respected its users.
-
-Rio is still growing, and there is much more I want it to become. But its purpose hasn't changed.
-
-**I wanted the freedom to enjoy my music, my way, wherever I choose to listen to it.**
 
 ## How Rio Is Being Built
 
 Rio is also part of my personal journey into software development.
 
-After completing my university degree in Database Technology, I began exploring how to apply and deepen what I had learned through practical projects.
+With an academic background in Database Technology, I see Rio as an opportunity to expand my knowledge beyond Data and develop the practical skills needed for my transition into Software Engineering.
 
-My programming knowledge is still developing. Rather than waiting until I could independently implement every component of a complex application, I decided to learn while building something that genuinely mattered to me.
+My approach is simple: **build to learn, not build to earn**.
+
+Rather than waiting until I had mastered every technology involved, I chose to learn through the process of building something that genuinely matters to me.
 
 Rio is developed with substantial assistance from OpenAI Codex and ChatGPT.
 
@@ -54,37 +39,27 @@ I guide its product direction, define its requirements, make design decisions, i
 
 AI assists extensively with implementation, technical investigation, automated testing, and debugging.
 
-This collaboration doesn't replace my learning. It is part of it.
+This collaboration doesn't replace my learning. **It is part of how I learn.**
 
-Alongside development, I study programming, operating systems, databases, networking, and cybersecurity, gradually developing a deeper understanding of the technologies and engineering decisions behind Rio.
+The process is iterative: build, test, observe, question, investigate, understand, improve, and repeat.
 
-The process is iterative: build, test, observe, question, investigate, improve, and repeat.
+I do take responsibility for the direction of the project, the decisions behind it, and the quality standards it aims to meet. Learning through development doesn't make reliability, security, or the integrity of someone's music collection any less important.
 
-I don't claim to have personally written every line of Rio's source code, nor do I present the application as proof of programming expertise I haven't yet acquired.
-
-I do take responsibility for the direction of the project, the decisions behind it, and the quality standards it aims to meet.
-
-For me, Rio is both a practical application and a continuing education in software engineering.
+**The purpose is to build something useful, learn something meaningful, and become a better developer along the way.**
 
 ## The Principles Behind Rio
 
-Rio is guided by a few convictions.
+Rio is guided by five principles.
 
-**Privacy is a principle, not a premium feature.** A personal music player has no reason to build advertising profiles or monetise someone's listening habits.
+**Privacy by design.** No tracking, advertising profiles, or monetisation of listening habits.
 
-**Good design should make technology feel effortless.** Sophistication belongs behind the interface, not in the way of the person using it.
+**Sophisticated design, effortless usability.** A beautiful, coherent interface where visual refinement and functionality work together, without unnecessary complexity.
 
-**Reliability matters more than impressive claims.** A music application must respect the integrity of the collection entrusted to it.
+**Reliability and integrity.** Protecting music collections and their data is a fundamental requirement.
 
-**Freedom of platform matters.** Rio is being developed with cross-platform independence as a long-term goal, rather than treating one operating system as the permanent centre of someone's digital life.
+**Platform independence.** A consistent experience across operating systems, without ecosystem restrictions.
 
-**Software should serve people.** Success should never require compromising the principles that motivated the project.
-
-Rio is not finished, and I don't expect every decision to be perfect. There will be mistakes, limitations, revisions, and plenty more to learn.
-
-But I know what I want this project to stand for.
-
-**Thoughtful software, built with curiosity, guided by principles, and made for the simple pleasure of listening to music.**
+**Respect for users.** Software should serve people without compromising their privacy, freedom, or trust.
 
 ## Project status
 
